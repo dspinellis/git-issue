@@ -39,6 +39,7 @@ You can even put `gi` in your project's current directory and run it from there.
 You use _gi_ with the following sub-commands.
 
 * `gi init`: Create a new issues repository in the current directory.
+* `gi clone`: Clone the specified remote repository.
 * `gi new`: Create a new open issue with the specified summary.
 * `gi list`: List the issues with the specified tag.
   By default this lists issues that are tagged as `open`.
