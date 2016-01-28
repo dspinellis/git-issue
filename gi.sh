@@ -310,6 +310,24 @@ Date:	%aD
   } | pager
 }
 
+# clone: Clone the specified remote repository {{{1
+usage_clone()
+{
+  cat <<\USAGE_clone_EOF
+gi assign usage: gi clone <URL> <local-dir>
+USAGE_clone_EOF
+  exit 2
+}
+
+sub_clone()
+{
+  test "$1" -a "$2" || usage_clone
+  mkdir -p "$2" || error "Unable to create local directory"
+  cd "$2"
+  git clone "$1" .issues
+  echo "Cloned $1 into $2"
+}
+
 # assign: assign (or reassign) an issue to a person {{{1
 usage_assign()
 {
@@ -537,6 +555,9 @@ shift
 case "$subcommand" in
   init) # Initialize a new issue repository
     sub_init
+    ;;
+  clone) # Clone specified remote directory
+    sub_clone "$@"
     ;;
   new) # Create a new issue and mark it as open.
     sub_new "$@"
