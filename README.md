@@ -39,7 +39,7 @@ You can even put `gi` in your project's current directory and run it from there.
 You use _gi_ with the following sub-commands.
 
 * `gi init`: Create a new issues repository in the current directory.
-* `gi new`: Create a new issue and mark it as open.
+* `gi new`: Create a new open issue with the specified summary.
 * `gi list`: List the issues with the specified tag.
   By default this lists issues that are tagged as `open`.
 * `gi show`: Show specified issue.
@@ -50,8 +50,10 @@ You use _gi_ with the following sub-commands.
   The form `@name` or `name@` can be used as a shortcut, provided it
   uniquely identifies an existing assignee or committer.
 * `gi attach`: Attach (or remove with `-r`) a file to an issue.
-* `gi watch`: Add (or remove with `-r`) an issue watcher.
+* `gi watcher`: Add (or remove with `-r`) an issue watcher.
 * `gi close`: Remove the `open` tag from the issue, marking it as closed.
+* `gi edit`: Edit the specified issue's summary or comment.
+* `gi log`: Output a log of changes made
 * `gi push`: Update remote repository with local changes.
 * `gi pull`: Update local repository with remote changes.
 * `gi git`: Run the specified Git command on the issues repository.
@@ -62,10 +64,13 @@ commit that opened them.
 ## Internals
 * All data are stored under `.issues`.
 * A `.git` directory contains the Git data associated with the issues.
+* A `config` file with configuration data.
+* A `templates` directory with message templates.
 * An `issues` directory contains the individual issues.
 * Each issue is stored in a directory named `issues/xx/xxxxxxx...`,
   where the x's are the SHA of the issue's initial commit.
 * Each issue can have the following elements in its directory.
+  * A `description` file with a one-line summary and a description of the issue.
   * A `comments` directory where comments are stored.
   * An `attachments` directory where issue's attachments are stored.
   * A `tags` file containing the issue's tags, one in each line.
