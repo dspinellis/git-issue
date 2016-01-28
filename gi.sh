@@ -63,7 +63,7 @@ cdissues()
 {
   while : ; do
     cd .issues 2>/dev/null && return
-    if [ $(filesysid .) == $(filesysid /) ] ; then
+    if [ $(filesysid .) = $(filesysid /) ] ; then
       error 'Not an issues repository (or any of the parent directories)'
     fi
     cd ..
