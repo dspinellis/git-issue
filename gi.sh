@@ -26,6 +26,7 @@ usage()
 usage: gi <command> [<args>]
 The following commands are available
 gi init: Create a new issues repository in the current directory.
+gi clone: Clone the specified remote repository.
 gi new: Create a new open issue with the specified summary.
 gi list: List the issues with the specified tag.
 gi show: Show specified issue.
