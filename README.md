@@ -38,21 +38,20 @@ You can even put `gi` in your project's current directory and run it from there.
 ## Use
 You use _gi_ with the following sub-commands.
 
-* `gi init`: Verifies system functionality
-  and creates a new issues repository in the current directory.
-* `gi new`: Creates a new issue and marks it as open.
-* `gi list`: Lists the issues with the specified tag.
+* `gi init`: Create a new issues repository in the current directory.
+* `gi new`: Create a new issue and mark it as open.
+* `gi list`: List the issues with the specified tag.
   By default this lists issues that are tagged as `open`.
-* `gi show`: Shows specified issue.
-* `gi comment`: Adds an issue comment.
-* `gi tag`: Adds (or removes with `-r`) a tag.
-* `gi assign`: Assigns (or reassigns) an issue to a person.
+* `gi show`: Show specified issue.
+* `gi comment`: Add an issue comment.
+* `gi tag`: Add (or remove with `-r`) a tag.
+* `gi assign`: Assign (or reassign) an issue to a person.
   The person is specified with his/her email address.
   The form `@name` or `name@` can be used as a shortcut, provided it
   uniquely identifies an existing assignee or committer.
-* `gi attach`: Attaches (or removes with `-r`) a file to an issue.
-* `gi watch`: Adds (or removes with `-r`) an issue watcher.
-* `gi close`: Removes the `open` tag from the issue, marking it as closed.
+* `gi attach`: Attach (or remove with `-r`) a file to an issue.
+* `gi watch`: Add (or remove with `-r`) an issue watcher.
+* `gi close`: Remove the `open` tag from the issue, marking it as closed.
 * `gi push`: Update remote repository with local changes.
 * `gi pull`: Update local repository with remote changes.
 * `gi git`: Run the specified Git command on the issues repository.
