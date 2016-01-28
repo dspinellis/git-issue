@@ -29,10 +29,10 @@ It has the following advantages over other systems.
 ## Installation
 Simply copy the `gi` shell script somewhere in the system's path.
 If you have administrative access you can install it with
-`sudo install gi /usr/local/bin`.
+`sudo install gi.sh /usr/local/bin/gi`.
 For your personal use,
 assuming that the directory `~/bin` exists and is in your path,
-you can install it with `install gi ~/bin`.
+you can install it with `install gi.sh ~/bin/gi`.
 You can even put `gi` in your project's current directory and run it from there.
 
 ## Use
