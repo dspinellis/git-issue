@@ -24,6 +24,19 @@ usage()
   cat <<\USAGE_EOF
 usage: gi <command> [<args>]
 The following commands are available
+gi init: Verifies system functionality
+gi new: Creates a new issue and marks it as open.
+gi list: Lists the issues with the specified tag.
+gi show: Shows specified issue.
+gi comment: Adds an issue comment.
+gi tag: Adds (or removes with -r) a tag.
+gi assign: Assigns (or reassigns) an issue to a person.
+gi attach: Attaches (or removes with -r) a file to an issue.
+gi watch: Adds (or removes with -r) an issue watcher.
+gi close: Removes the open tag from the issue, marking it as closed.
+gi push: Update remote repository with local changes.
+gi pull: Update local repository with remote changes.
+gi git: Run the specified Git command on the issues repository.
 USAGE_EOF
   exit 1
 }

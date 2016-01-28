@@ -53,6 +53,9 @@ You use _gi_ with the following sub-commands.
 * `gi attach`: Attaches (or removes with `-r`) a file to an issue.
 * `gi watch`: Adds (or removes with `-r`) an issue watcher.
 * `gi close`: Removes the `open` tag from the issue, marking it as closed.
+* `gi push`: Update remote repository with local changes.
+* `gi pull`: Update local repository with remote changes.
+* `gi git`: Run the specified Git command on the issues repository.
 
 Issues and comments are specified through the SHA hash associated with the
 commit that opened them.
