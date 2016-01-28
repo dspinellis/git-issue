@@ -76,3 +76,14 @@ commit that opened them.
   * A `tags` file containing the issue's tags, one in each line.
   * A `watchers` file containing the emails of persons to be notified when the issue changes (one per line).
   * An `assignee` file containing the email for the person assigned to the issue.
+
+## Project status
+This is work in progress.
+The system has achieved the status of a minimal viable prototype:
+it can be used to manage issues.
+
+## Contributing
+Contributions are welcomed through pull requests.
+Currently the first priority is to increase the system's portability.
+Before working on a new feature please look at open issues, and if no
+corresponding issue is open, create one to claim priority over the task.
