@@ -270,12 +270,13 @@ sub_show()
   {
     # SHA, author, date
     echo "issue $isha"
-    git show --no-patch --format=$'Author:\t%an <%ae>\nDate:\t%aD' $isha
+    git show --no-patch --format='Author:	%an <%ae>
+Date:	%aD' $isha
 
     # Tags
-    echo -n $'Tags:'
+    echo -n 'Tags:'
     if [ -s $path/tags ] ; then
-      fmt $path/tags | sed $'s/^/\t/'
+      fmt $path/tags | sed 's/^/	/'
     else
       echo
     fi
@@ -296,7 +297,9 @@ sub_show()
     while read csha ; do
       echo
       echo "comment $csha"
-      git show --no-patch --format=$'Author:\t%an <%ae>\nDate:\t%aD\n' $csha
+      git show --no-patch --format='Author:	%an <%ae>
+Date:	%aD
+' $csha
       sed 's/^/    /' $path/comments/$csha
     done
   } | pager
