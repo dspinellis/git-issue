@@ -274,11 +274,15 @@ sub_show()
 Date:	%aD' $isha
 
     # Tags
-    echo -n 'Tags:'
     if [ -s $path/tags ] ; then
+      echo -n 'Tags:'
       fmt $path/tags | sed 's/^/	/'
-    else
-      echo
+    fi
+
+    # Watchers
+    if [ -s $path/watchers ] ; then
+      echo -n 'Watchers:'
+	fmt $path/watchers | sed 's/^/	/'
     fi
 
     # Assignee
