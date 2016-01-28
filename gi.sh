@@ -526,6 +526,7 @@ sub_log()
 }
 
 # Subcommand selection {{{1
+test "$1" || usage
 subcommand="$1"
 shift
 case "$subcommand" in
