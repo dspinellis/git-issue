@@ -192,6 +192,7 @@ EOF
 EOF
   git add config templates/comment templates/description
   commit 'gi: Initialize issues repository' 'gi init'
+  echo "Initialized empty Issues repository in $(pwd)"
 }
 
 # new: Open a new issue {{{1
