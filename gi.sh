@@ -277,19 +277,19 @@ Date:	%aD' $isha
 
     # Tags
     if [ -s $path/tags ] ; then
-      echo -n 'Tags:'
+      printf '%s' 'Tags:'
       fmt $path/tags | sed 's/^/	/'
     fi
 
     # Watchers
     if [ -s $path/watchers ] ; then
-      echo -n 'Watchers:'
-	fmt $path/watchers | sed 's/^/	/'
+      printf '%s' 'Watchers:'
+      fmt $path/watchers | sed 's/^/	/'
     fi
 
     # Assignee
     if [ -r $path/assignee ] ; then
-      echo -n 'Assigned-to: '
+      printf '%s' 'Assigned-to: '
       cat $path/assignee
     fi
 
@@ -509,7 +509,7 @@ sub_list()
   while read tagpath ; do
     path=$(expr $tagpath : '\(.*\)/tags')
     id=$(echo $tagpath | sed 's/issues\/\(..\)\/\(.....\).*/\1\2/')
-    echo -n "$id "
+    printf '%s' "$id "
     head -1 $path/description
   done |
   sort -k 2 |
