@@ -264,7 +264,7 @@ sub_show()
   done
   shift $((OPTIND - 1));
 
-  test "$1" || usage_comment
+  test "$1" || usage_show
 
   cdissues
   path=$(issue_path_part $1)
