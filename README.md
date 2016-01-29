@@ -21,8 +21,9 @@ It has the following advantages over other systems.
   Issues are changed and shared through Git.
   This provides _gi_ with a robust, efficient, portable, and widely available
   infrastructure.
-  It allows you to reuse your Git credentials and infrastructure and also
-  provides a solid audit trail regarding any changes.
+  It allows you to reuse your Git credentials and infrastructure, allows
+  the efficient merging of work, and also provides a solid audit trail
+  regarding any changes.
   You can even use Git and command-line tools directly to make sophisticated
   changes to your issue database.
 
@@ -34,6 +35,11 @@ For your personal use,
 assuming that the directory `~/bin` exists and is in your path,
 you can install it with `install gi.sh ~/bin/gi`.
 You can even put `gi` in your project's current directory and run it from there.
+
+The `gi` script has been tested on: Debian GNU/Linux, FreeBSD, Mac OS X, and
+Cygwin.
+If you're running `gi` on another system, run the `test.sh` script to verify
+its operation, and (please) update this file.
 
 ## Use
 You use _gi_ with the following sub-commands.
@@ -85,7 +91,6 @@ it can be used to manage issues.
 
 ## Contributing
 Contributions are welcomed through pull requests.
-Currently the first priority is to increase the system's portability.
 Before working on a new feature please look at open issues, and if no
 corresponding issue is open, create one to claim priority over the task.
 Issues are managed with gi through the [gi-issues](git@github.com:dspinellis/gi-issues.git) repo.
