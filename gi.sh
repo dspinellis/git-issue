@@ -238,6 +238,24 @@ sub_new()
   echo "Added issue $(short_sha $sha)"
 }
 
+# edit: Edit an issue summary {{{1
+usage_edit()
+{
+  cat <<\USAGE_edit_EOF
+gi edit usage: edit summary: gi edit <sha>
+USAGE_edit_EOF
+  exit 2
+}
+
+sub_edit()
+{
+  test "$1" || usage_edit
+  trans_start
+  file=$(issue_path_part $1)/description
+  edit $file || trans_abort
+  git add $file
+}
+
 # show: Show the specified issue {{{1
 usage_show()
 {
@@ -586,8 +604,7 @@ case "$subcommand" in
     sub_watcher "$@"
     ;;
   edit) # Edit the specified issue's summary or comment.
-    echo 'Not implemented yet' 1>&2
-    exit 1
+    sub_edit "$@"
     ;;
   close) # Remove the open tag from the issue, marking it as closed.
     sub_tag -r "$1" open
