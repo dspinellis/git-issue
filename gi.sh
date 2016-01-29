@@ -233,7 +233,7 @@ sub_new()
     cp templates/description $path/description || trans_abort
     edit $path/description || trans_abort
   fi
-  git add $path/description $path/tags
+  git add $path/description $path/tags || trans_abort
   commit 'gi: Add issue description' "gi new description $sha"
   echo "Added issue $(short_sha $sha)"
 }
@@ -267,7 +267,7 @@ sub_show()
   test "$1" || usage_show
 
   cdissues
-  path=$(issue_path_part $1)
+  path=$(issue_path_part $1) || exit
   isha=$(issue_sha $path)
   {
     # SHA, author, date
@@ -345,11 +345,11 @@ sub_assign()
   test "$1" -a "$2" || usage_assign
 
   cdissues
-  path=$(issue_path_part "$1")
+  path=$(issue_path_part "$1") || exit
   isha=$(issue_sha $path)
   printf "%s\n" "$2" >$path/assignee || error 'Unable to modify assignee file'
   trans_start
-  git add $path/assignee
+  git add $path/assignee || trans_abort
   commit 'gi: Assign issue' "gi assign $2"
   echo "Assigned to $2"
 }
@@ -381,7 +381,7 @@ file_add_rm()
   test "$1" -a "$2" || $usage
 
   cdissues
-  path=$(issue_path_part "$1")
+  path=$(issue_path_part "$1") || exit
   shift
   isha=$(issue_sha $path)
   touch $path/$file || error "Unable to modify $file file"
@@ -395,6 +395,7 @@ file_add_rm()
       fi
       mv $path/$file.new $path/$file
       trans_start
+      git add $path/$file || trans_abort
       commit "gi: Remove $name" "gi $name remove $entry"
       echo "Removed $name $entry"
     else
@@ -404,7 +405,7 @@ file_add_rm()
       fi
       printf "%s\n" "$entry" >>$path/$file
       trans_start
-      git add $path/$file
+      git add $path/$file || trans_abort
       commit "gi: Add $name" "gi $name add $entry"
       echo "Added $name $entry"
     fi
@@ -457,7 +458,7 @@ sub_comment()
   test "$1" || usage_comment
 
   cdissues
-  path=$(issue_path_part $1)
+  path=$(issue_path_part $1) || exit
   isha=$(issue_sha $path)
   mkdir -p $path/comments || error "Unable to create comments directory"
   trans_start
@@ -465,7 +466,7 @@ sub_comment()
   csha=$(git rev-parse HEAD)
   cp templates/comment $path/comments/$csha || trans_abort
   edit $path/comments/$csha || trans_abort
-  git add $path/comments/$csha
+  git add $path/comments/$csha || trans_abort
   commit 'gi: Add comment message' "gi comment message $isha $csha"
   echo "Added comment $(short_sha $csha)"
 }
