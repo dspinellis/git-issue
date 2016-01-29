@@ -191,7 +191,7 @@ try test $n -ge 18
 
 # clone
 # Required in order to allow a push to a non-bare repo
-gi git config --add receive.denyCurrentBranch ignore
+$gi git config --add receive.denyCurrentBranch ignore
 cd ..
 rm -rf testdir2
 mkdir testdir2
@@ -210,7 +210,7 @@ try $gi tag $issue cloned
 try $gi push
 cd ../testdir
 try $gi pull
-gi git reset --hard >/dev/null # Required, because we pushed to a non-bare repo
+$gi git reset --hard >/dev/null # Required, because we pushed to a non-bare repo
 start ; $gi show $issue | try_grep '^Tags:.*cloned'
 
 cd ..
