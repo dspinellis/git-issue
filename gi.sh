@@ -18,6 +18,9 @@
 # along with CScout.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+# Activate immediate exit
+set -e
+
 # Display system usage and exit
 usage()
 {
