@@ -213,4 +213,5 @@ try $gi pull
 gi git reset --hard >/dev/null # Required, because we pushed to a non-bare repo
 start ; $gi show $issue | try_grep '^Tags:.*cloned'
 
+cd ..
 rm -rf testdir testdir2
