@@ -219,7 +219,7 @@ sub_new()
       ;;
     esac
   done
-  shift $((OPTIND - 1));
+  shift $(($OPTIND - 1));
 
   trans_start
   commit 'gi: Add issue' 'gi new mark'
@@ -262,7 +262,7 @@ sub_show()
       ;;
     esac
   done
-  shift $((OPTIND - 1));
+  shift $(($OPTIND - 1));
 
   test "$1" || usage_show
 
@@ -376,7 +376,7 @@ file_add_rm()
       ;;
     esac
   done
-  shift $((OPTIND - 1));
+  shift $(($OPTIND - 1));
 
   test "$1" -a "$2" || $usage
 
@@ -389,7 +389,7 @@ file_add_rm()
     if [ "$remove" ] ; then
       grep -v "^$entry$" $path/$file >$path/$file.new
       if cmp $path/$file $path/$file.new >/dev/null 2>&1 ; then
-	echo "No such entry $entry" 1>&2
+	echo "No such $name entry: $entry" 1>&2
 	rm $path/$file.new
 	exit 1
       fi
@@ -493,7 +493,7 @@ sub_list()
       ;;
     esac
   done
-  shift $((OPTIND - 1));
+  shift $(($OPTIND - 1));
 
   tag="$1"
   : ${tag:=open}
@@ -538,7 +538,7 @@ sub_log()
       ;;
     esac
   done
-  shift $((OPTIND - 1));
+  shift $(($OPTIND - 1));
 
   cdissues
   if [ "$sha" ] ; then
@@ -590,8 +590,9 @@ case "$subcommand" in
     exit 1
     ;;
   close) # Remove the open tag from the issue, marking it as closed.
-    sub_tag -r "$1" open
-    sub_tag "$1" closed
+    sha="$1"
+    sub_tag "$sha" closed
+    sub_tag -r "$sha" open
     ;;
   log) # Output log of changes made
     sub_log "$@"
