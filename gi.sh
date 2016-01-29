@@ -197,7 +197,7 @@ Visit [gi](https://github.com/dspinellis/gi) for more information.
 EOF
   git add config README.md templates/comment templates/description
   commit 'gi: Initialize issues repository' 'gi init'
-  echo "Initialized empty Issues repository in $(pwd)"
+  echo "Initialized empty issues repository in $(pwd)"
 }
 
 # new: Open a new issue {{{1

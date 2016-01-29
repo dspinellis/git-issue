@@ -88,6 +88,7 @@ Contributions are welcomed through pull requests.
 Currently the first priority is to increase the system's portability.
 Before working on a new feature please look at open issues, and if no
 corresponding issue is open, create one to claim priority over the task.
+Issues are managed with gi through the [gi-issues](git@github.com:dspinellis/gi-issues.git) repo.
 
 ## Example session
 ```
