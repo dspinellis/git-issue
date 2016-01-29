@@ -191,7 +191,7 @@ try test $n -ge 18
 
 # clone
 # Required in order to allow a push to a non-bare repo
-gi git config --add receive.denyCurrentBranch ignore
+$gi git config --add receive.denyCurrentBranch ignore
 cd ..
 rm -rf testdir2
 mkdir testdir2
