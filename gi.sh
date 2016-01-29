@@ -136,13 +136,14 @@ $2" || trans_abort
 
 # Allow the user to edit the specified file
 # Remove lines starting with '#'
-# Succeed if at the resulting file is non-empty
+# Succeed if the resulting file is non-empty
 edit()
 {
   local file
-
+  editor=$(git config --get core.editor) || ${VISUAL:-vi}
+  
   file="$1"
-  ${VISUAL:-vi} "$file" || return 1
+  ${editor} "$file" || return 1
   grep -v '^#' "$file" >"$file.new"
   if [ $(grep -c . "$file.new") -eq 0 ] ; then
     echo 'Empty file' 1>&2
