@@ -195,3 +195,9 @@ $ gi list # List open issues
 abc9adc Issue added on another host
 e6a95c9 New issue entered from the command line
 ```
+## Related work
+* [deft](https://github.com/npryce/deft) developed in 2011 is based on
+  the same idea.
+  It requires Python and offers a GUI.
+* [git-appraise](https://github.com/google/git-appraise) is a distributed
+  code review system for Git repos based again on Git.
