@@ -191,7 +191,11 @@ EOF
 # Lines starting with '#' will be ignored, and an empty message aborts
 # the issue addition.
 EOF
-  git add config templates/comment templates/description
+  cat >README.md <<\EOF
+This is an distributed issue tracking repository based on Git.
+Visit [gi](https://github.com/dspinellis/gi) for more information.
+EOF
+  git add config README.md templates/comment templates/description
   commit 'gi: Initialize issues repository' 'gi init'
   echo "Initialized empty Issues repository in $(pwd)"
 }
