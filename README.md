@@ -205,5 +205,7 @@ e6a95c9 New issue entered from the command line
 * [deft](https://github.com/npryce/deft) developed in 2011 is based on
   the same idea.
   It requires Python and offers a GUI.
+* [Bugs Everywhere](http://www.bugseverywhere.org/), also written in Python, supports many version control backends and offers a web interface.
 * [git-appraise](https://github.com/google/git-appraise) is a distributed
   code review system for Git repos based again on Git.
+* [Fossil](http://fossil-scm.org/) is a distributed version control software that also supports issue tracking and a wiki. It runs as a single executable.
