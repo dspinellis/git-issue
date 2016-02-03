@@ -96,6 +96,8 @@ corresponding issue is open, create one to claim priority over the task.
 Issues are managed with gi through the [gi-issues](git@github.com:dspinellis/gi-issues.git) repo.
 
 ## Example session
+You can view a video of the session on [YouTube](https://youtu.be/zrPM5kNQcKU).
+
 ```
 $ gi init # Initialize issue repository
 Initialized empty Issues repository in /home/dds/src/gi/.issues
