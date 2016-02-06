@@ -319,7 +319,7 @@ Date:	%aD
 usage_clone()
 {
   cat <<\USAGE_clone_EOF
-gi assign usage: gi clone <URL> <local-dir>
+gi clone usage: gi clone <URL> <local-dir>
 USAGE_clone_EOF
   exit 2
 }
