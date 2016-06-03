@@ -49,7 +49,7 @@ You use _gi_ with the following sub-commands.
 * `gi new`: Create a new open issue with the specified summary.
 * `gi list`: List the issues with the specified tag.
   By default this lists issues that are tagged as `open`.
-* `gi show`: Show specified issue.
+* `gi show`: Show specified issue (and its comments with `-c`).
 * `gi comment`: Add an issue comment.
 * `gi tag`: Add (or remove with `-r`) a tag.
 * `gi assign`: Assign (or reassign) an issue to a person.
