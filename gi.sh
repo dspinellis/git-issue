@@ -435,7 +435,7 @@ sub_tag()
 usage_watcher()
 {
   cat <<\USAGE_watcher_EOF
-gi tag usage: gi watcher [-r] <sha> <tag> ...
+gi watcher usage: gi watcher [-r] <sha> <tag> ...
 -r	Remove the specified watcher
 USAGE_watcher_EOF
   exit 2
