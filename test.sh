@@ -130,7 +130,8 @@ Second issue
 
 Line in description
 EOF
-VISUAL='mv ../issue-desc ' try $gi new
+export VISUAL='mv ../issue-desc '; try $gi new
+export VISUAL=
 
 issue=$($gi list | awk '/Second issue/{print $1}')
 
@@ -147,7 +148,8 @@ cat <<EOF >comment
 Comment first line
 comment second line
 EOF
-VISUAL='mv ../comment ' try $gi comment $issue
+export VISUAL='mv ../comment '; try $gi comment $issue
+export VISUAL=
 start ; $gi show -c $issue | try_grep 'comment second line'
 
 # Assign
