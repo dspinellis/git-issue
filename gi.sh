@@ -558,7 +558,7 @@ sub_log()
 sub_tags()
 {
 	cdissues
-	cat issues/*/*/tags | sort | uniq
+	cat issues/*/*/tags | sort | uniq -c
 }
 
 # Subcommand selection {{{1
