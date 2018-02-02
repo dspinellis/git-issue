@@ -29,7 +29,7 @@ gi init: Create a new issues repository in the current directory.
 gi clone: Clone the specified remote repository.
 gi new: Create a new open issue with the specified summary.
 gi list: List the issues with the specified tag.
-gi show: Show specified issue.
+gi show: Show specified issue (and its comments with -c).
 gi comment: Add an issue comment.
 gi tag: Add (or remove with -r) a tag.
 gi assign: Assign (or reassign) an issue to a person.
@@ -571,7 +571,7 @@ case "$subcommand" in
   list) # List the issues with the specified tag.
     sub_list "$@"
     ;;
-  show) # Show specified issue.
+  show) # Show specified issue (and its comments with -c).
     sub_show "$@"
     ;;
   comment) # Add an issue comment.
