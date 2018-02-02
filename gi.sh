@@ -559,10 +559,10 @@ test "$1" || usage
 subcommand="$1"
 shift
 case "$subcommand" in
-  init) # Initialize a new issue repository
+  init) # Initialize a new issue repository.
     sub_init
     ;;
-  clone) # Clone specified remote directory
+  clone) # Clone specified remote directory.
     sub_clone "$@"
     ;;
   new) # Create a new issue and mark it as open.
@@ -599,7 +599,7 @@ case "$subcommand" in
     sub_tag "$sha" closed
     sub_tag -r "$sha" open
     ;;
-  log) # Output log of changes made
+  log) # Output log of changes made.
     sub_log "$@"
     ;;
   push) # Update remote repository with local changes.
