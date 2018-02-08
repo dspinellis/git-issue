@@ -41,6 +41,7 @@ gi log: Output a log of changes made
 gi push: Update remote repository with local changes.
 gi pull: Update local repository with remote changes.
 gi git: Run the specified Git command on the issues repository.
+gi tags: List all tags defined for all issues.
 USAGE_EOF
   exit 2
 }
@@ -554,6 +555,12 @@ sub_log()
 
 }
 
+sub_tags()
+{
+	cdissues
+	cat issues/*/*/tags | sort | uniq -c
+}
+
 # Subcommand selection {{{1
 test "$1" || usage
 subcommand="$1"
@@ -614,6 +621,9 @@ case "$subcommand" in
     cdissues
     git "$@"
     ;;
+	tags) # List all tags
+		sub_tags
+		;;
   *)
     usage
       ;;
