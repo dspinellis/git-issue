@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# (C) Copyright 2016 Diomidis Spinellis
+# (C) Copyright 2016-2018 Diomidis Spinellis
 #
 # This file is part of gi, the Git-based issue management system.
 #
@@ -555,10 +555,11 @@ sub_log()
 
 }
 
+# tags: List all used tags and their count {{{1
 sub_tags()
 {
 	cdissues
-	cat issues/*/*/tags | sort | uniq -c
+	sort issues/*/*/tags | uniq -c | pager
 }
 
 # Subcommand selection {{{1
@@ -621,10 +622,10 @@ case "$subcommand" in
     cdissues
     git "$@"
     ;;
-	tags) # List all tags
-		sub_tags
-		;;
+  tags) # List all tags
+    sub_tags
+    ;;
   *)
     usage
-      ;;
+    ;;
 esac
