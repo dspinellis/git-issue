@@ -76,7 +76,7 @@ cdissues()
 # issue_path_full <SHA>
 issue_path_full()
 {
-  local sha partial path
+  local sha
 
   sha="$1"
   echo issues/$(expr $sha : '\(..\)')/$(expr $sha : '..\(.*\)'$)
