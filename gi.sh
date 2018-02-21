@@ -57,7 +57,7 @@ error()
 filesysid()
 {
   stat --printf='%d:%i' "$1" 2>/dev/null ||
-    stat -f '%d:%i' "$1"
+    stat -f --printf='%d:%i' "$1"
 }
 
 # Move to the .issues directory
