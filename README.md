@@ -60,6 +60,7 @@ You use _gi_ with the following sub-commands.
 * `gi watcher`: Add (or remove with `-r`) an issue watcher.
 * `gi close`: Remove the `open` tag from the issue, marking it as closed.
 * `gi edit`: Edit the specified issue's summary or comment.
+* `gi help`: Display help information about gi.
 * `gi log`: Output a log of changes made
 * `gi push`: Update remote repository with local changes.
 * `gi pull`: Update local repository with remote changes.
