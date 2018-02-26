@@ -18,7 +18,7 @@
 # along with gi.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# Autocompetes the gi subcommand sequence.
+# Autocompletes the gi subcommand sequence.
 _autocomplete_subcommand()
 {
   local IFS=$'\n' command_regex="gi\s([^:]*):.*"
@@ -32,7 +32,7 @@ _autocomplete_subcommand()
   done <<< "$(gi help 2>/dev/null)"
 }
 
-# Autocompetes the gi subcommands' argument sequence.
+# Autocompletes the gi subcommands' argument sequence.
 _autocomplete_subcommand_argument()
 {
   local list_args subcommand=${COMP_WORDS[1]}

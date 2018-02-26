@@ -73,7 +73,7 @@ commit that opened them.
 
 If you use the Bash shell, `gi` comes with an auto-completion script you can enable. Copy the `gi-completion.sh` file to your home directory, and add this to your `.bashrc` file:
 ```
-source ~/gi-completion.bash
+source ~/gi-completion.sh
 ```
 
 ## Internals
