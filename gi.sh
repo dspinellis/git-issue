@@ -18,34 +18,6 @@
 # along with gi.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# Display system usage and exit
-usage()
-{
-  # The following list is automatically created from README.md
-  cat <<\USAGE_EOF
-usage: gi <command> [<args>]
-The following commands are available
-gi init: Create a new issues repository in the current directory.
-gi clone: Clone the specified remote repository.
-gi new: Create a new open issue with the specified summary.
-gi list: List the issues with the specified tag.
-gi show: Show specified issue (and its comments with -c).
-gi comment: Add an issue comment.
-gi tag: Add (or remove with -r) a tag.
-gi assign: Assign (or reassign) an issue to a person.
-gi attach: Attach (or remove with -r) a file to an issue.
-gi watcher: Add (or remove with -r) an issue watcher.
-gi close: Remove the open tag from the issue, marking it as closed.
-gi edit: Edit the specified issue's summary or comment.
-gi log: Output a log of changes made
-gi push: Update remote repository with local changes.
-gi pull: Update local repository with remote changes.
-gi git: Run the specified Git command on the issues repository.
-gi tags: List all tags defined for all issues.
-USAGE_EOF
-  exit 2
-}
-
 # Exit after displaying the specified error
 error()
 {
@@ -76,7 +48,7 @@ cdissues()
 # issue_path_full <SHA>
 issue_path_full()
 {
-  local sha partial path
+  local sha
 
   sha="$1"
   echo issues/$(expr $sha : '\(..\)')/$(expr $sha : '..\(.*\)'$)
@@ -562,8 +534,43 @@ sub_tags()
 	sort issues/*/*/tags | uniq -c | pager
 }
 
+# help: display help information {{{1
+usage_help()
+{
+  cat <<\USAGE_help_EOF
+gi help usage: gi help
+USAGE_help_EOF
+  exit 2
+}
+
+sub_help()
+{
+  # The following list is automatically created from README.md
+  cat <<\USAGE_EOF
+usage: gi <command> [<args>]
+The following commands are available
+gi init: Create a new issues repository in the current directory.
+gi clone: Clone the specified remote repository.
+gi new: Create a new open issue with the specified summary.
+gi list: List the issues with the specified tag.
+gi show: Show specified issue (and its comments with -c).
+gi comment: Add an issue comment.
+gi tag: Add (or remove with -r) a tag.
+gi assign: Assign (or reassign) an issue to a person.
+gi attach: Attach (or remove with -r) a file to an issue.
+gi watcher: Add (or remove with -r) an issue watcher.
+gi close: Remove the open tag from the issue, marking it as closed.
+gi edit: Edit the specified issue's summary or comment.
+gi help: Display help information about gi.
+gi log: Output a log of changes made
+gi push: Update remote repository with local changes.
+gi pull: Update local repository with remote changes.
+gi git: Run the specified Git command on the issues repository.
+USAGE_EOF
+}
+
 # Subcommand selection {{{1
-test "$1" || usage
+test "$1" || sub_help
 subcommand="$1"
 shift
 case "$subcommand" in
@@ -607,6 +614,9 @@ case "$subcommand" in
     sub_tag "$sha" closed
     sub_tag -r "$sha" open
     ;;
+  help) # Display help information.
+    sub_help
+    ;;
   log) # Output log of changes made.
     sub_log "$@"
     ;;
@@ -626,6 +636,7 @@ case "$subcommand" in
     sub_tags
     ;;
   *)
-    usage
+    # Default to help.
+    sub_help
     ;;
 esac

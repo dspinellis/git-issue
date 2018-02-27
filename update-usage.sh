@@ -30,3 +30,4 @@
   sed -n '/^USAGE_EOF/,$p' gi.sh
 } >newgi.sh
 mv newgi.sh gi.sh
+chmod +x gi.sh

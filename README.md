@@ -60,6 +60,7 @@ You use _gi_ with the following sub-commands.
 * `gi watcher`: Add (or remove with `-r`) an issue watcher.
 * `gi close`: Remove the `open` tag from the issue, marking it as closed.
 * `gi edit`: Edit the specified issue's summary or comment.
+* `gi help`: Display help information about gi.
 * `gi log`: Output a log of changes made
 * `gi push`: Update remote repository with local changes.
 * `gi pull`: Update local repository with remote changes.
@@ -67,6 +68,13 @@ You use _gi_ with the following sub-commands.
 
 Issues and comments are specified through the SHA hash associated with the
 commit that opened them.
+
+## Auto-completion
+
+If you use the Bash shell, `gi` comes with an auto-completion script you can enable. Copy the `gi-completion.sh` file to your home directory, and add this to your `.bashrc` file:
+```
+source ~/gi-completion.sh
+```
 
 ## Internals
 * All data are stored under `.issues`.
@@ -202,6 +210,16 @@ $ gi list # List open issues
 7dfa5b7 An issue entered from the editor
 abc9adc Issue added on another host
 e6a95c9 New issue entered from the command line
+
+$ # sub-command auto-completion
+$ gi [Tab]
+assign   clone    comment  git      init     log      pull     show     watcher  
+attach   close    edit     help     list     new      push     tag
+
+$ # issue sha auto-completion
+$ gi show [Tab]
+7dfa5b7 - An issue entered from the editor
+e6a95c9 - New issue entered from the command line
 ```
 ## Related work
 * [deft](https://github.com/npryce/deft) developed in 2011 is based on
