@@ -28,6 +28,21 @@ It has the following advantages over other systems.
   changes to your issue database.
 
 ## Installation
+Clone the repo and register a git alias to the `git-issue.sh` script:
+
+```
+git config --global alias.issue '!'"${REPO_PATH}/git-issue.sh"
+```
+
+if you are using a bash shell, you can also register the autocompletion by adding the following to your .bashrc
+
+```
+source ${REPO_PATH}/gi-completion.sh
+```
+
+for backwards compatibility you can also use the 'old way' by coping gi.sh to someplace in your path, but you must register the git alias to use the auto completion feature
+
+```
 Simply copy the `gi` shell script somewhere in the system's path.
 If you have administrative access you can install it with
 `sudo install gi.sh /usr/local/bin/gi`.
@@ -35,6 +50,7 @@ For your personal use,
 assuming that the directory `~/bin` exists and is in your path,
 you can install it with `install gi.sh ~/bin/gi`.
 You can even put `gi` in your project's current directory and run it from there.
+```
 
 The `gi` script has been tested on: Debian GNU/Linux, FreeBSD, Mac OS X, and
 Cygwin.
@@ -44,37 +60,30 @@ its operation, and (please) update this file.
 ## Use
 You use _gi_ with the following sub-commands.
 
-* `gi init`: Create a new issues repository in the current directory.
-* `gi clone`: Clone the specified remote repository.
-* `gi new`: Create a new open issue with the specified summary.
-* `gi list`: List the issues with the specified tag.
+* `git issue init`: Create a new issues repository in the current directory.
+* `git issue clone`: Clone the specified remote repository.
+* `git issue new`: Create a new open issue with the specified summary.
+* `git issue list`: List the issues with the specified tag.
   By default this lists issues that are tagged as `open`.
-* `gi show`: Show specified issue (and its comments with `-c`).
-* `gi comment`: Add an issue comment.
-* `gi tag`: Add (or remove with `-r`) a tag.
-* `gi assign`: Assign (or reassign) an issue to a person.
+* `git issue show`: Show specified issue (and its comments with `-c`).
+* `git issue comment`: Add an issue comment.
+* `git issue tag`: Add (or remove with `-r`) a tag.
+* `git issue assign`: Assign (or reassign) an issue to a person.
   The person is specified with his/her email address.
   The form `@name` or `name@` can be used as a shortcut, provided it
   uniquely identifies an existing assignee or committer.
-* `gi attach`: Attach (or remove with `-r`) a file to an issue.
-* `gi watcher`: Add (or remove with `-r`) an issue watcher.
-* `gi close`: Remove the `open` tag from the issue, marking it as closed.
-* `gi edit`: Edit the specified issue's summary or comment.
-* `gi help`: Display help information about gi.
-* `gi log`: Output a log of changes made
-* `gi push`: Update remote repository with local changes.
-* `gi pull`: Update local repository with remote changes.
-* `gi git`: Run the specified Git command on the issues repository.
+* `git issue attach`: Attach (or remove with `-r`) a file to an issue.
+* `git issue watcher`: Add (or remove with `-r`) an issue watcher.
+* `git issue close`: Remove the `open` tag from the issue, marking it as closed.
+* `git issue edit`: Edit the specified issue's summary or comment.
+* `git issue help`: Display help information about git issue.
+* `git issue log`: Output a log of changes made
+* `git issue push`: Update remote repository with local changes.
+* `git issue pull`: Update local repository with remote changes.
+* `git issue git`: Run the specified Git command on the issues repository.
 
 Issues and comments are specified through the SHA hash associated with the
 commit that opened them.
-
-## Auto-completion
-
-If you use the Bash shell, `gi` comes with an auto-completion script you can enable. Copy the `gi-completion.sh` file to your home directory, and add this to your `.bashrc` file:
-```
-source ~/gi-completion.sh
-```
 
 ## Internals
 * All data are stored under `.issues`.
@@ -107,33 +116,33 @@ Issues are managed with gi through the [gi-issues](git@github.com:dspinellis/gi-
 You can view a video of the session on [YouTube](https://youtu.be/zrPM5kNQcKU).
 
 ```
-$ gi init # Initialize issue repository
+$ git issue init # Initialize issue repository
 Initialized empty Issues repository in /home/dds/src/gi/.issues
-$ gi new -s 'New issue entered from the command line'
+$ git issue new -s 'New issue entered from the command line'
 Added issue e6a95c9
-$ gi new # Create a new issue (opens editor window)
+$ git issue new # Create a new issue (opens editor window)
 Added issue 7dfa5b7
-$ gi list # List open issues
+$ git issue list # List open issues
 7dfa5b7 An issue entered from the editor
 e6a95c9 New issue entered from the command line
-$ gi comment e6a95c9 # Add an issue comment (opens editor window)
+$ git issue comment e6a95c9 # Add an issue comment (opens editor window)
 Added comment 8c0d5b3
-$ gi tag e6a9 urgent # Add tag to an issue
+$ git issue tag e6a9 urgent # Add tag to an issue
 Added tag urgent
-$ gi tag e6a9 gui crash # Add two more tags
+$ git issue tag e6a9 gui crash # Add two more tags
 Added tag gui
 Added tag crash
-$ gi tag -r e6a9 urgent # Remove a tag
+$ git issue tag -r e6a9 urgent # Remove a tag
 Removed tag urgent
-$ gi assign e6a9 joe@example.com # Assign issue
+$ git issue assign e6a9 joe@example.com # Assign issue
 Assigned to joe@example.com
-$ gi watcher e6a9 jane@example.com # Add issue watcher
+$ git issue watcher e6a9 jane@example.com # Add issue watcher
 Added watcher jane@example.com
-$ gi list gui # List issues tagged as gui
+$ git issue list gui # List issues tagged as gui
 e6a95c9 New issue entered from the command line
 $ # Push issues repository to a server
-$ gi git remote add origin git@github.com:dspinellis/gi-example.git
-$ gi git push -u origin master
+$ git issue git remote add origin git@github.com:dspinellis/gi-example.git
+$ git issue git push -u origin master
 Counting objects: 60, done.
 Compressing objects: 100% (50/50), done.
 Writing objects: 100% (60/60), 5.35 KiB | 0 bytes/s, done.
@@ -144,7 +153,7 @@ Branch master set up to track remote branch master from origin.
 
 
 $ # Clone issues repository from server
-$ gi clone git@github.com:dspinellis/gi-example.git my-issues
+$ git issue clone git@github.com:dspinellis/gi-example.git my-issues
 Cloning into '.issues'...
 remote: Counting objects: 60, done.
 remote: Compressing objects: 100% (42/42), done.
@@ -153,19 +162,19 @@ Receiving objects: 100% (60/60), 5.35 KiB | 0 bytes/s, done.
 Resolving deltas: 100% (8/8), done.
 Checking connectivity... done.
 Cloned git@github.com:dspinellis/gi-example.git into my-issues
-$ gi list # List open issues
+$ git issue list # List open issues
 7dfa5b7 An issue entered from the editor
 e6a95c9 New issue entered from the command line
-$ gi new -s 'Issue added on another host' # Create new issue
+$ git issue new -s 'Issue added on another host' # Create new issue
 Added issue abc9adc
-$ gi push # Push changes to server
+$ git issue push # Push changes to server
 Counting objects: 7, done.
 Compressing objects: 100% (6/6), done.
 Writing objects: 100% (7/7), 767 bytes | 0 bytes/s, done.
 Total 7 (delta 0), reused 0 (delta 0)
 To git@github.com:dspinellis/gi-example.git
    d6be890..740f9a0  master -> master
-$ gi show 7dfa5b7 # Show issue added on the other host
+$ git issue show 7dfa5b7 # Show issue added on the other host
 issue 7dfa5b7f4591ecaa8323716f229b84ad40f5275b
 Author: Diomidis Spinellis <dds@aueb.gr>
 Date:   Fri, 29 Jan 2016 01:03:24 +0200
@@ -174,7 +183,7 @@ Tags:   open
     An issue entered from the editor
 
     Here is a longer description.
-$ gi show -c e6a95c9 # Show issue and coments
+$ git issue show -c e6a95c9 # Show issue and coments
 issue e6a95c91b31ded8fc229a41cc4bd7d281ce6e0f1
 Author: Diomidis Spinellis <dds@aueb.gr>
 Date:   Fri, 29 Jan 2016 01:03:20 +0200
@@ -192,7 +201,7 @@ Date:   Fri, 29 Jan 2016 01:03:57 +0200
 
 
 $ # On the original host
-$ gi pull # Pull in remote changes
+$ git issue pull # Pull in remote changes
 remote: Counting objects: 7, done.
 remote: Compressing objects: 100% (6/6), done.
 remote: Total 7 (delta 0), reused 7 (delta 0), pack-reused 0
@@ -206,18 +215,18 @@ Fast-forward
  2 files changed, 2 insertions(+)
  create mode 100644 issues/ab/c9adc61025a3cb73b0c67470b65cefc133a8d0/description
  create mode 100644 issues/ab/c9adc61025a3cb73b0c67470b65cefc133a8d0/tags
-$ gi list # List open issues
+$ git issue list # List open issues
 7dfa5b7 An issue entered from the editor
 abc9adc Issue added on another host
 e6a95c9 New issue entered from the command line
 
 $ # sub-command auto-completion
-$ gi [Tab]
+$ git issue [Tab]
 assign   clone    comment  git      init     log      pull     show     watcher  
 attach   close    edit     help     list     new      push     tag
 
 $ # issue sha auto-completion
-$ gi show [Tab]
+$ git issue show [Tab]
 7dfa5b7 - An issue entered from the editor
 e6a95c9 - New issue entered from the command line
 ```

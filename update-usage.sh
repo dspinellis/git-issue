@@ -21,7 +21,7 @@
 # Update usage information in the script based on README.md
 {
   sed -n '1,/^The following commands are available/p' gi.sh
-  sed -n '/^\* `gi init`/,/^\* `gi git`/ {
+  sed -n '/^\* `git issue init`/,/^\* `git issue git`/ {
     /^\* /!d
     s/`//g
     s/^\* //
