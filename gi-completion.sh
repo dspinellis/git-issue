@@ -19,9 +19,9 @@
 #
 
 # Autocompletes the gi subcommand sequence.
-_autocomplete_subcommand()
+_gi_autocomplete_subcommand()
 {
-  local IFS=$'\n' command_regex="gi\s([^:]*):.*"
+  local IFS=$'\n' command_regex="git issue\s([^:]*):.*"
 
   # parse help information for sub commands
   while read -r line; do
@@ -29,13 +29,13 @@ _autocomplete_subcommand()
     if [[ $line =~ $command_regex ]]; then
       COMPREPLY+=($(compgen -W "${BASH_REMATCH[1]}" -- "$1"))
     fi
-  done <<< "$(gi help 2>/dev/null)"
+  done <<< "$(git issue help 2>/dev/null)"
 }
 
 # Autocompletes the gi subcommands' argument sequence.
-_autocomplete_subcommand_argument()
+_gi_autocomplete_subcommand_argument()
 {
-  local list_args subcommand=${COMP_WORDS[1]}
+  local list_args subcommand=${COMP_WORDS[COMP_CWORD-1]}
 
   case $subcommand in
     show | comment | tag | assign | attach | watcher)
@@ -61,7 +61,7 @@ _autocomplete_subcommand_argument()
       # Store the matching issues along with their description
       gi_list+=($(printf '%*s' "-$COLUMNS" "$cmd - ${desc[1]}"))
     fi
-  done <<< "$(gi list $list_args 2>/dev/null)"
+  done <<< "$(git issue list $list_args 2>/dev/null)"
 
   if [[ ${#gi_list[@]} == 1 ]]; then
     # If only one match, autocomplete the sha without the description
@@ -77,12 +77,32 @@ _autocomplete_subcommand_argument()
 _gi_autocomplete()
 {
   local word="${COMP_WORDS[COMP_CWORD]}"
-
-  if [ "$COMP_CWORD" -eq "1" ]; then
-      _autocomplete_subcommand $word
+  local basecmd=${COMP_WORDS[0]}
+  local baseidx="-1"
+  if [ "$basecmd" = "gi" ]; then
+    baseidx="1"
   else
-      _autocomplete_subcommand_argument $word
+    basecmd="${COMP_WORDS[1]}"
+    if [ "$basecmd" = "issue" ]; then
+      baseidx="2"
+    else
+      baseidx="-1"
+    fi
   fi
+
+  if [ "$COMP_CWORD" -ge "$baseidx" ]; then
+    if [ "$COMP_CWORD" -eq "$baseidx" ]; then
+        _gi_autocomplete_subcommand $word
+    else
+        _gi_autocomplete_subcommand_argument $word
+    fi 
+  else
+    __git_wrap__gitk_main
+  fi
+}
+
+function _git_issue() {
+  _gi_autocomplete
 }
 
 complete -F _gi_autocomplete gi

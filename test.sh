@@ -108,7 +108,7 @@ start()
 
 echo 'TAP version 13'
 ntest=0
-gi=../gi.sh
+gi=../git-issue.sh
 gi_re=$(echo $gi | sed 's/[^0-9A-Za-z]/\\&/g')
 rm -rf testdir
 mkdir testdir
