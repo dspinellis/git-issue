@@ -2,20 +2,20 @@
 #
 # (C) Copyright 2016-2018 Diomidis Spinellis
 #
-# This file is part of gi, the Git-based issue management system.
+# This file is part of git-issue, the Git-based issue management system.
 #
-# gi is free software: you can redistribute it and/or modify
+# git-issue is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# gi is distributed in the hope that it will be useful,
+# git-issue is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with gi.  If not, see <http://www.gnu.org/licenses/>.
+# along with git-issue.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 # Exit after displaying the specified error
@@ -545,7 +545,11 @@ USAGE_help_EOF
 
 sub_help()
 {
-  # The following list is automatically created from README.md
+  #
+  # The following list is automatically created from README.md by running
+  # ./update-usage.sh
+  # DO NOT EDIT IT HERE; UPDATE README.md instead
+  #
   cat <<\USAGE_EOF
 usage: git issue <command> [<args>]
 The following commands are available
@@ -561,7 +565,7 @@ git issue attach: Attach (or remove with -r) a file to an issue.
 git issue watcher: Add (or remove with -r) an issue watcher.
 git issue close: Remove the open tag from the issue, marking it as closed.
 git issue edit: Edit the specified issue's summary or comment.
-git issue help: Display help information about gi.
+git issue help: Display help information about git issue.
 git issue log: Output a log of changes made
 git issue push: Update remote repository with local changes.
 git issue pull: Update local repository with remote changes.
