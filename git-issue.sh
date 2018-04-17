@@ -642,5 +642,6 @@ case "$subcommand" in
   *)
     # Default to help.
     sub_help
+    exit 1
     ;;
 esac
