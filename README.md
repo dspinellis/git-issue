@@ -103,11 +103,6 @@ commit that opened them.
   * A `watchers` file containing the emails of persons to be notified when the issue changes (one per line).
   * An `assignee` file containing the email for the person assigned to the issue.
 
-## Project status
-This is work in progress.
-The system has achieved the status of a minimal viable prototype:
-it can be used to manage issues.
-
 ## Contributing
 Contributions are welcomed through pull requests.
 Before working on a new feature please look at open issues, and if no
