@@ -574,7 +574,7 @@ USAGE_EOF
 }
 
 # Subcommand selection {{{1
-test "$1" || sub_help
+
 subcommand="$1"
 shift
 case "$subcommand" in
