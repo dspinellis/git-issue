@@ -2,19 +2,19 @@
 #
 # (C) Copyright 2016-2018 Diomidis Spinellis
 #
-# This file is part of gi, the Git-based issue management system.
+# This file is part of git-issue, the Git-based issue management system.
 #
-# gi is free software: you can redistribute it and/or modify
+# git-issue is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# gi is distributed in the hope that it will be useful,
+# git-issue is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with gi.  If not, see <http://www.gnu.org/licenses/>.
+# along with git-issue.  If not, see <http://www.gnu.org/licenses/>.
 #
-git issue "$@"
+exec git issue "$@"
