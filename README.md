@@ -107,8 +107,6 @@ commit that opened them.
 Contributions are welcomed through pull requests.
 Before working on a new feature please look at open issues, and if no
 corresponding issue is open, create one to claim priority over the task.
-Issues are managed with _git issue_ through the
-[gi-issues](git@github.com:dspinellis/gi-issues.git) repo.
 
 ## Example session
 You can view a video of the session on [YouTube](https://youtu.be/zrPM5kNQcKU).
