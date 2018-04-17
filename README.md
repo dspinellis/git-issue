@@ -5,8 +5,8 @@
 This is a minimalist distributed issue management system based on Git.
 It has the following advantages over other systems.
 
-* **No backend**
-  You can install and use _gi_ with a single shell script.
+* **No backend, no dependencies**
+  You can install and use _git issue_ with a single shell script.
   There's no need for a server or a database back-end, and the corresponding
   problems and requirements for their administration.
 * **Distributed asynchronous management**
@@ -21,8 +21,8 @@ It has the following advantages over other systems.
   failed.
 * **Git based**
   Issues are changed and shared through Git.
-  This provides _gi_ with a robust, efficient, portable, and widely available
-  infrastructure.
+  This provides _git issue_ with a robust, efficient, portable,
+  and widely available infrastructure.
   It allows you to reuse your Git credentials and infrastructure, allows
   the efficient merging of work, and also provides a solid audit trail
   regarding any changes.
@@ -36,31 +36,31 @@ Clone the repo and register a git alias to the `git-issue.sh` script:
 git config --global alias.issue '!'"${REPO_PATH}/git-issue.sh"
 ```
 
-if you are using a bash shell, you can also register the autocompletion by adding the following to your .bashrc
+If you are using a bash shell, you can also register the autocompletion
+by adding the following to your .bashrc.
 
 ```
 source ${REPO_PATH}/gi-completion.sh
 ```
 
-for backwards compatibility you can also use the 'old way' by coping gi.sh to someplace in your path, but you must register the git alias to use the auto completion feature
-
-```
-Simply copy the `gi` shell script somewhere in the system's path.
+For backwards compatibility you can also use the original *gi* command,
+by copying `gi.sh` to someplace in your path.
+In this case you must register the git alias to use the auto completion feature.
 If you have administrative access you can install it with
 `sudo install gi.sh /usr/local/bin/gi`.
 For your personal use,
 assuming that the directory `~/bin` exists and is in your path,
 you can install it with `install gi.sh ~/bin/gi`.
 You can even put `gi` in your project's current directory and run it from there.
-```
 
-The `gi` script has been tested on: Debian GNU/Linux, FreeBSD, Mac OS X, and
-Cygwin.
-If you're running `gi` on another system, run the `test.sh` script to verify
+The `git-issue.sh` script has been tested on:
+Debian GNU/Linux, FreeBSD, Mac OS X, and Cygwin.
+If you're running _git issue* on another system,
+run the `test.sh` script to verify
 its operation, and (please) update this file.
 
 ## Use
-You use _gi_ with the following sub-commands.
+You use _git issue_ with the following sub-commands.
 
 * `git issue init`: Create a new issues repository in the current directory.
 * `git issue clone`: Clone the specified remote repository.
@@ -112,7 +112,8 @@ it can be used to manage issues.
 Contributions are welcomed through pull requests.
 Before working on a new feature please look at open issues, and if no
 corresponding issue is open, create one to claim priority over the task.
-Issues are managed with gi through the [gi-issues](git@github.com:dspinellis/gi-issues.git) repo.
+Issues are managed with _git issue_ through the
+[gi-issues](git@github.com:dspinellis/gi-issues.git) repo.
 
 ## Example session
 You can view a video of the session on [YouTube](https://youtu.be/zrPM5kNQcKU).
