@@ -1,4 +1,6 @@
-# Git Issues
+[![Build Status](https://travis-ci.org/dspinellis/git-issue.svg?branch=master)](https://travis-ci.org/dspinellis/git-issue)
+
+# git-issue
 
 This is a minimalist distributed issue management system based on Git.
 It has the following advantages over other systems.
