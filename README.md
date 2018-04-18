@@ -115,6 +115,11 @@ following elements.
 Contributions are welcomed through pull requests.
 Before working on a new feature please look at open issues, and if no
 corresponding issue is open, create one to claim priority over the task.
+Contributions should pass tests and should be accompanied with a
+corresponding test case and documentation update.
+Note that to avoid duplicating information, the subcommands, the used files,
+and usage examples, are automatically inserted into the script and its
+documentation from the `README.md` file using the `sync-docs.sh` command.
 
 ## Example session
 You can view a video of the session on [YouTube](https://youtu.be/zrPM5kNQcKU).
