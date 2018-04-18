@@ -30,6 +30,11 @@ It has the following advantages over other systems.
   changes to your issue database.
 
 ## Installation
+
+### Administrator installation
+Clone the repo and run `make install` with appropriate privileges.
+
+### Personal installation
 Clone the repo and register a git alias to the `git-issue.sh` script:
 
 ```
@@ -43,7 +48,8 @@ by adding the following to your .bashrc.
 source ${REPO_PATH}/gi-completion.sh
 ```
 
-For backwards compatibility you can also use the original *gi* command,
+### Backward compatibility with the gi command
+For backward compatibility you can also use the original *gi* command,
 by copying `gi.sh` to someplace in your path.
 In this case you must register the git alias to use the auto completion feature.
 If you have administrative access you can install it with
@@ -53,6 +59,7 @@ assuming that the directory `~/bin` exists and is in your path,
 you can install it with `install gi.sh ~/bin/gi`.
 You can even put `gi` in your project's current directory and run it from there.
 
+### Portability and testing
 The `git-issue.sh` script has been tested on:
 Debian GNU/Linux, FreeBSD, Mac OS X, and Cygwin.
 If you're running _git issue* on another system,
