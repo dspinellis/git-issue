@@ -176,90 +176,98 @@ You can view a video of the session on YouTube <https://youtu.be/zrPM5kNQcKU>.
 
 .ft P
 .fi
-.ft P
-.fi
 .PP
 Initialize issue repository
 .ft C
 .nf
-git issue init
+$ git issue init
 Initialized empty Issues repository in /home/dds/src/gi/.issues
 $ git issue new -s 'New issue entered from the command line'
 Added issue e6a95c9
+
 .ft P
 .fi
 .PP
 Create a new issue (opens editor window)
 .ft C
 .nf
-git issue new
+$ git issue new
 Added issue 7dfa5b7
+
 .ft P
 .fi
 .PP
 List open issues
 .ft C
 .nf
-git issue list
+$ git issue list
 7dfa5b7 An issue entered from the editor
 e6a95c9 New issue entered from the command line
+
 .ft P
 .fi
 .PP
 Add an issue comment (opens editor window)
 .ft C
 .nf
-git issue comment e6a95c9
+$ git issue comment e6a95c9
 Added comment 8c0d5b3
+
 .ft P
 .fi
 .PP
 Add tag to an issue
 .ft C
 .nf
-git issue tag e6a9 urgent
+$ git issue tag e6a9 urgent
 Added tag urgent
+
 .ft P
 .fi
 .PP
 Add two more tags
 .ft C
 .nf
-git issue tag e6a9 gui crash
+$ git issue tag e6a9 gui crash
 Added tag gui
 Added tag crash
+
 .ft P
 .fi
 .PP
 Remove a tag
 .ft C
 .nf
-git issue tag -r e6a9 urgent
+$ git issue tag -r e6a9 urgent
 Removed tag urgent
+
 .ft P
 .fi
 .PP
 Assign issue
 .ft C
 .nf
-git issue assign e6a9 joe@example.com
+$ git issue assign e6a9 joe@example.com
 Assigned to joe@example.com
+
 .ft P
 .fi
 .PP
 Add issue watcher
 .ft C
 .nf
-git issue watcher e6a9 jane@example.com
+$ git issue watcher e6a9 jane@example.com
 Added watcher jane@example.com
+
 .ft P
 .fi
 .PP
 List issues tagged as gui
 .ft C
 .nf
-git issue list gui
+$ git issue list gui
 e6a95c9 New issue entered from the command line
+
 .ft P
 .fi
 .PP
@@ -276,7 +284,6 @@ To git@github.com:dspinellis/gi-example.git
  * [new branch]      master -> master
 Branch master set up to track remote branch master from origin.
 
-
 .ft P
 .fi
 .PP
@@ -292,43 +299,47 @@ Receiving objects: 100% (60/60), 5.35 KiB | 0 bytes/s, done.
 Resolving deltas: 100% (8/8), done.
 Checking connectivity... done.
 Cloned git@github.com:dspinellis/gi-example.git into my-issues
+
 .ft P
 .fi
 .PP
 List open issues
 .ft C
 .nf
-git issue list
+$ git issue list
 7dfa5b7 An issue entered from the editor
 e6a95c9 New issue entered from the command line
+
 .ft P
 .fi
 .PP
 Create new issue
 .ft C
 .nf
-git issue new -s 'Issue added on another host'
+$ git issue new -s 'Issue added on another host'
 Added issue abc9adc
+
 .ft P
 .fi
 .PP
 Push changes to server
 .ft C
 .nf
-git issue push
+$ git issue push
 Counting objects: 7, done.
 Compressing objects: 100% (6/6), done.
 Writing objects: 100% (7/7), 767 bytes | 0 bytes/s, done.
 Total 7 (delta 0), reused 0 (delta 0)
 To git@github.com:dspinellis/gi-example.git
    d6be890..740f9a0  master -> master
+
 .ft P
 .fi
 .PP
 Show issue added on the other host
 .ft C
 .nf
-git issue show 7dfa5b7
+$ git issue show 7dfa5b7
 issue 7dfa5b7f4591ecaa8323716f229b84ad40f5275b
 Author: Diomidis Spinellis <dds@aueb.gr>
 Date:   Fri, 29 Jan 2016 01:03:24 +0200
@@ -337,13 +348,14 @@ Tags:   open
     An issue entered from the editor
 
     Here is a longer description.
+
 .ft P
 .fi
 .PP
-Show issue and coments
+Show issue and comments
 .ft C
 .nf
-git issue show -c e6a95c9
+$ git issue show -c e6a95c9
 issue e6a95c91b31ded8fc229a41cc4bd7d281ce6e0f1
 Author: Diomidis Spinellis <dds@aueb.gr>
 Date:   Fri, 29 Jan 2016 01:03:20 +0200
@@ -359,20 +371,13 @@ Date:   Fri, 29 Jan 2016 01:03:57 +0200
 
     First comment regarding the issue.
 
-
 .ft P
 .fi
 .PP
-On the original host
+Pull in remote changes (on the original host)
 .ft C
 .nf
-.ft P
-.fi
-.PP
-Pull in remote changes
-.ft C
-.nf
-git issue pull
+$ git issue pull
 remote: Counting objects: 7, done.
 remote: Compressing objects: 100% (6/6), done.
 remote: Total 7 (delta 0), reused 7 (delta 0), pack-reused 0
@@ -386,13 +391,14 @@ Fast-forward
  2 files changed, 2 insertions(+)
  create mode 100644 issues/ab/c9adc61025a3cb73b0c67470b65cefc133a8d0/description
  create mode 100644 issues/ab/c9adc61025a3cb73b0c67470b65cefc133a8d0/tags
+
 .ft P
 .fi
 .PP
 List open issues
 .ft C
 .nf
-git issue list
+$ git issue list
 7dfa5b7 An issue entered from the editor
 abc9adc Issue added on another host
 e6a95c9 New issue entered from the command line
@@ -400,24 +406,24 @@ e6a95c9 New issue entered from the command line
 .ft P
 .fi
 .PP
-sub-command auto-completion
+Sub-command auto-completion
 .ft C
 .nf
 $ git issue [Tab]
-assign   clone    comment  git      init     log      pull     show     watcher  
+assign   clone    comment  git      init     log      pull     show     watcher
 attach   close    edit     help     list     new      push     tag
 
 .ft P
 .fi
 .PP
-issue sha auto-completion
+Issue SHA auto-completion
 .ft C
 .nf
 $ git issue show [Tab]
 7dfa5b7 - An issue entered from the editor
 e6a95c9 - New issue entered from the command line
-.ft P
-.fi
+
+
 .SH SEE ALSO
 .BR git ( 1 ),
 <\fIhttps://github\.com/dspinellis/git\-issue\fR>

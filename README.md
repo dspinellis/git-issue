@@ -124,32 +124,83 @@ documentation from the `README.md` file using the `sync-docs.sh` command.
 ## Example session
 You can view a video of the session on [YouTube](https://youtu.be/zrPM5kNQcKU).
 
+### Initialize issue repository
+
 ```
-$ git issue init # Initialize issue repository
+$ git issue init
 Initialized empty Issues repository in /home/dds/src/gi/.issues
 $ git issue new -s 'New issue entered from the command line'
 Added issue e6a95c9
-$ git issue new # Create a new issue (opens editor window)
+```
+
+### Create a new issue (opens editor window)
+
+```
+$ git issue new
 Added issue 7dfa5b7
-$ git issue list # List open issues
+```
+
+### List open issues
+
+```
+$ git issue list
 7dfa5b7 An issue entered from the editor
 e6a95c9 New issue entered from the command line
-$ git issue comment e6a95c9 # Add an issue comment (opens editor window)
+```
+
+### Add an issue comment (opens editor window)
+
+```
+$ git issue comment e6a95c9
 Added comment 8c0d5b3
-$ git issue tag e6a9 urgent # Add tag to an issue
+```
+
+### Add tag to an issue
+
+```
+$ git issue tag e6a9 urgent
 Added tag urgent
-$ git issue tag e6a9 gui crash # Add two more tags
+```
+
+### Add two more tags
+
+```
+$ git issue tag e6a9 gui crash
 Added tag gui
 Added tag crash
-$ git issue tag -r e6a9 urgent # Remove a tag
+```
+
+### Remove a tag
+
+```
+$ git issue tag -r e6a9 urgent
 Removed tag urgent
-$ git issue assign e6a9 joe@example.com # Assign issue
+```
+
+### Assign issue
+
+```
+$ git issue assign e6a9 joe@example.com
 Assigned to joe@example.com
-$ git issue watcher e6a9 jane@example.com # Add issue watcher
+```
+
+### Add issue watcher
+
+```
+$ git issue watcher e6a9 jane@example.com
 Added watcher jane@example.com
-$ git issue list gui # List issues tagged as gui
+```
+
+### List issues tagged as gui
+
+```
+$ git issue list gui
 e6a95c9 New issue entered from the command line
-$ # Push issues repository to a server
+```
+
+### Push issues repository to a server
+
+```
 $ git issue git remote add origin git@github.com:dspinellis/gi-example.git
 $ git issue git push -u origin master
 Counting objects: 60, done.
@@ -159,9 +210,11 @@ Total 60 (delta 8), reused 0 (delta 0)
 To git@github.com:dspinellis/gi-example.git
  * [new branch]      master -> master
 Branch master set up to track remote branch master from origin.
+```
 
+### Clone issues repository from server
 
-$ # Clone issues repository from server
+```
 $ git issue clone git@github.com:dspinellis/gi-example.git my-issues
 Cloning into '.issues'...
 remote: Counting objects: 60, done.
@@ -171,19 +224,39 @@ Receiving objects: 100% (60/60), 5.35 KiB | 0 bytes/s, done.
 Resolving deltas: 100% (8/8), done.
 Checking connectivity... done.
 Cloned git@github.com:dspinellis/gi-example.git into my-issues
-$ git issue list # List open issues
+```
+
+### List open issues
+
+```
+$ git issue list
 7dfa5b7 An issue entered from the editor
 e6a95c9 New issue entered from the command line
-$ git issue new -s 'Issue added on another host' # Create new issue
+```
+
+### Create new issue
+
+```
+$ git issue new -s 'Issue added on another host'
 Added issue abc9adc
-$ git issue push # Push changes to server
+```
+
+### Push changes to server
+
+```
+$ git issue push
 Counting objects: 7, done.
 Compressing objects: 100% (6/6), done.
 Writing objects: 100% (7/7), 767 bytes | 0 bytes/s, done.
 Total 7 (delta 0), reused 0 (delta 0)
 To git@github.com:dspinellis/gi-example.git
    d6be890..740f9a0  master -> master
-$ git issue show 7dfa5b7 # Show issue added on the other host
+```
+
+### Show issue added on the other host
+
+```
+$ git issue show 7dfa5b7
 issue 7dfa5b7f4591ecaa8323716f229b84ad40f5275b
 Author: Diomidis Spinellis <dds@aueb.gr>
 Date:   Fri, 29 Jan 2016 01:03:24 +0200
@@ -192,7 +265,12 @@ Tags:   open
     An issue entered from the editor
 
     Here is a longer description.
-$ git issue show -c e6a95c9 # Show issue and comments
+```
+
+### Show issue and comments
+
+```
+$ git issue show -c e6a95c9
 issue e6a95c91b31ded8fc229a41cc4bd7d281ce6e0f1
 Author: Diomidis Spinellis <dds@aueb.gr>
 Date:   Fri, 29 Jan 2016 01:03:20 +0200
@@ -207,10 +285,12 @@ Author: Diomidis Spinellis <dds@aueb.gr>
 Date:   Fri, 29 Jan 2016 01:03:57 +0200
 
     First comment regarding the issue.
+```
 
+### Pull in remote changes (on the original host)
 
-$ # On the original host
-$ git issue pull # Pull in remote changes
+```
+$ git issue pull
 remote: Counting objects: 7, done.
 remote: Compressing objects: 100% (6/6), done.
 remote: Total 7 (delta 0), reused 7 (delta 0), pack-reused 0
@@ -224,21 +304,33 @@ Fast-forward
  2 files changed, 2 insertions(+)
  create mode 100644 issues/ab/c9adc61025a3cb73b0c67470b65cefc133a8d0/description
  create mode 100644 issues/ab/c9adc61025a3cb73b0c67470b65cefc133a8d0/tags
-$ git issue list # List open issues
+```
+
+### List open issues
+
+```
+$ git issue list
 7dfa5b7 An issue entered from the editor
 abc9adc Issue added on another host
 e6a95c9 New issue entered from the command line
+```
 
-$ # Sub-command auto-completion
+### Sub-command auto-completion
+
+```
 $ git issue [Tab]
 assign   clone    comment  git      init     log      pull     show     watcher
 attach   close    edit     help     list     new      push     tag
+```
 
-$ # Issue SHA auto-completion
+### Issue SHA auto-completion
+
+```
 $ git issue show [Tab]
 7dfa5b7 - An issue entered from the editor
 e6a95c9 - New issue entered from the command line
 ```
+
 
 ## Related work
 * [deft](https://github.com/npryce/deft) developed in 2011 is based on

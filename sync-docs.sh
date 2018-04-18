@@ -79,4 +79,4 @@ replace_section()
 # from the README file
 replace_section 'GIT ISSUE COMMANDS' 'Use' 's/^\* `\([^`]*\)`: /.RE\n.PP\n\\fB\1\\fP\n.RS 4\n/'
 replace_section FILES 'Internals'
-replace_section EXAMPLES 'Example session' 's/^\$ # \(.*\)/.ft P\n.fi\n.PP\n\1\n.ft C\n.nf/;s/^\$ \(...*\) # \(.*\)/.ft P\n.fi\n.PP\n\2\n.ft C\n.nf\n\1/;s/```/.ft P\n.fi/'
+replace_section EXAMPLES 'Example session' '/```/d;/^###/N;s/^### \(.*\)\n/.ft P\n.fi\n.PP\n\1\n.ft C\n.nf/'
