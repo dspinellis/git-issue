@@ -88,13 +88,14 @@ Issues and comments are specified through the SHA hash associated with the
 commit that opened them.
 
 ## Internals
-* All data are stored under `.issues`.
+All data are stored under `.issues`. The directory contains the
+following elements.
 * A `.git` directory contains the Git data associated with the issues.
 * A `config` file with configuration data.
 * A `templates` directory with message templates.
 * An `issues` directory contains the individual issues.
 * Each issue is stored in a directory named `issues/xx/xxxxxxx...`,
-  where the x's are the SHA of the issue's initial commit.
+    where the x's are the SHA of the issue's initial commit.
 * Each issue can have the following elements in its directory.
   * A `description` file with a one-line summary and a description of the issue.
   * A `comments` directory where comments are stored.
