@@ -192,7 +192,7 @@ Tags:   open
     An issue entered from the editor
 
     Here is a longer description.
-$ git issue show -c e6a95c9 # Show issue and coments
+$ git issue show -c e6a95c9 # Show issue and comments
 issue e6a95c91b31ded8fc229a41cc4bd7d281ce6e0f1
 Author: Diomidis Spinellis <dds@aueb.gr>
 Date:   Fri, 29 Jan 2016 01:03:20 +0200
@@ -229,16 +229,17 @@ $ git issue list # List open issues
 abc9adc Issue added on another host
 e6a95c9 New issue entered from the command line
 
-$ # sub-command auto-completion
+$ # Sub-command auto-completion
 $ git issue [Tab]
-assign   clone    comment  git      init     log      pull     show     watcher  
+assign   clone    comment  git      init     log      pull     show     watcher
 attach   close    edit     help     list     new      push     tag
 
-$ # issue sha auto-completion
+$ # Issue SHA auto-completion
 $ git issue show [Tab]
 7dfa5b7 - An issue entered from the editor
 e6a95c9 - New issue entered from the command line
 ```
+
 ## Related work
 * [deft](https://github.com/npryce/deft) developed in 2011 is based on
   the same idea.
