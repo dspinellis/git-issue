@@ -1,0 +1,430 @@
+.TH GIT-ISSUE 1 "17 April 2018"
+.\"
+.\" (C) Copyright 2016-2018 Diomidis Spinellis
+.\"
+.\" This file is part of git-issue, the Git-based issue management system.
+.\"
+.\" git-issue is free software: you can redistribute it and/or modify
+.\" it under the terms of the GNU General Public License as published by
+.\" the Free Software Foundation, either version 3 of the License, or
+.\" (at your option) any later version.
+.\"
+.\" git-issue is distributed in the hope that it will be useful,
+.\" but WITHOUT ANY WARRANTY; without even the implied warranty of
+.\" MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+.\" GNU General Public License for more details.
+.\"
+.\" You should have received a copy of the GNU General Public License
+.\" along with git-issue.  If not, see <http://www.gnu.org/licenses/>.
+.\"
+.SH NAME
+git-issue \- distributed issue management system based on Git
+.SH SYNOPSIS
+\fBgit-issue\fP <command> [<arguments>]
+.SH DESCRIPTION
+\fIGit-issue\fP manages issues, bugs, tickets, feature proposals
+using Git.
+Issues are stored as simple text files, which you can be
+viewed, edited, shared, and backed up with all text-based tools.
+By being based on Git, anyone can add, comment, and
+edit issues without requiring online access to a centralized server.
+The use of Git gives \fIgit issue\fP a robust, efficient, portable,
+and widely available infrastructure.
+It allows the reuse of Git credentials and repositories,
+to support the efficient merging of work, while also providing
+a solid audit trail regarding any changes.
+
+.SH GIT ISSUE COMMANDS
+.\" Auto-generated content from README.md; do not edit this section
+You use \fIgit issue\fP with the following sub-commands.
+
+.RE
+.PP
+\fBgit issue init\fP
+.RS 4
+Create a new issues repository in the current directory.
+.RE
+.PP
+\fBgit issue clone\fP
+.RS 4
+Clone the specified remote repository.
+.RE
+.PP
+\fBgit issue new\fP
+.RS 4
+Create a new open issue with the specified summary.
+.RE
+.PP
+\fBgit issue list\fP
+.RS 4
+List the issues with the specified tag.
+  By default this lists issues that are tagged as \fCopen\fP.
+.RE
+.PP
+\fBgit issue show\fP
+.RS 4
+Show specified issue (and its comments with \fC-c\fP).
+.RE
+.PP
+\fBgit issue comment\fP
+.RS 4
+Add an issue comment.
+.RE
+.PP
+\fBgit issue tag\fP
+.RS 4
+Add (or remove with \fC-r\fP) a tag.
+.RE
+.PP
+\fBgit issue assign\fP
+.RS 4
+Assign (or reassign) an issue to a person.
+  The person is specified with his/her email address.
+  The form \fC@name\fP or \fCname@\fP can be used as a shortcut, provided it
+  uniquely identifies an existing assignee or committer.
+.RE
+.PP
+\fBgit issue attach\fP
+.RS 4
+Attach (or remove with \fC-r\fP) a file to an issue.
+.RE
+.PP
+\fBgit issue watcher\fP
+.RS 4
+Add (or remove with \fC-r\fP) an issue watcher.
+.RE
+.PP
+\fBgit issue close\fP
+.RS 4
+Remove the \fCopen\fP tag from the issue, marking it as closed.
+.RE
+.PP
+\fBgit issue edit\fP
+.RS 4
+Edit the specified issue's summary or comment.
+.RE
+.PP
+\fBgit issue help\fP
+.RS 4
+Display help information about git issue.
+.RE
+.PP
+\fBgit issue log\fP
+.RS 4
+Output a log of changes made
+.RE
+.PP
+\fBgit issue push\fP
+.RS 4
+Update remote repository with local changes.
+.RE
+.PP
+\fBgit issue pull\fP
+.RS 4
+Update local repository with remote changes.
+.RE
+.PP
+\fBgit issue git\fP
+.RS 4
+Run the specified Git command on the issues repository.
+
+Issues and comments are specified through the SHA hash associated with the
+commit that opened them.
+
+.SH ENVIRONMENT
+The \fCVISUAL\fP environment variable is used for determining the user's
+editor.
+The \fCPAGER\fP environment variable is used for determining the program
+to use to display long lists of results.
+
+.SH FILES
+.\" Auto-generated content from README.md; do not edit this section
+All data are stored under \fC.issues\fP. The directory contains the
+following elements.
+.IP "" 4
+A \fC.git\fP directory contains the Git data associated with the issues.
+.IP "" 4
+A \fCconfig\fP file with configuration data.
+.IP "" 4
+A \fCtemplates\fP directory with message templates.
+.IP "" 4
+An \fCissues\fP directory contains the individual issues.
+.IP "" 4
+Each issue is stored in a directory named \fCissues/xx/xxxxxxx...\fP,
+    where the x's are the SHA of the issue's initial commit.
+.IP "" 4
+Each issue can have the following elements in its directory.
+.IP "" 8
+A \fCdescription\fP file with a one-line summary and a description of the issue.
+.IP "" 8
+A \fCcomments\fP directory where comments are stored.
+.IP "" 8
+An \fCattachments\fP directory where issue's attachments are stored.
+.IP "" 8
+A \fCtags\fP file containing the issue's tags, one in each line.
+.IP "" 8
+A \fCwatchers\fP file containing the emails of persons to be notified when the issue changes (one per line).
+.IP "" 8
+An \fCassignee\fP file containing the email for the person assigned to the issue.
+
+.SH EXIT STATUS
+The command terminates with a non zero exit code on errors.
+
+.SH EXAMPLES
+.\" Auto-generated content from README.md; do not edit this section
+You can view a video of the session on YouTube <https://youtu.be/zrPM5kNQcKU>.
+
+.ft P
+.fi
+.ft P
+.fi
+.PP
+Initialize issue repository
+.ft C
+.nf
+git issue init
+Initialized empty Issues repository in /home/dds/src/gi/.issues
+$ git issue new -s 'New issue entered from the command line'
+Added issue e6a95c9
+.ft P
+.fi
+.PP
+Create a new issue (opens editor window)
+.ft C
+.nf
+git issue new
+Added issue 7dfa5b7
+.ft P
+.fi
+.PP
+List open issues
+.ft C
+.nf
+git issue list
+7dfa5b7 An issue entered from the editor
+e6a95c9 New issue entered from the command line
+.ft P
+.fi
+.PP
+Add an issue comment (opens editor window)
+.ft C
+.nf
+git issue comment e6a95c9
+Added comment 8c0d5b3
+.ft P
+.fi
+.PP
+Add tag to an issue
+.ft C
+.nf
+git issue tag e6a9 urgent
+Added tag urgent
+.ft P
+.fi
+.PP
+Add two more tags
+.ft C
+.nf
+git issue tag e6a9 gui crash
+Added tag gui
+Added tag crash
+.ft P
+.fi
+.PP
+Remove a tag
+.ft C
+.nf
+git issue tag -r e6a9 urgent
+Removed tag urgent
+.ft P
+.fi
+.PP
+Assign issue
+.ft C
+.nf
+git issue assign e6a9 joe@example.com
+Assigned to joe@example.com
+.ft P
+.fi
+.PP
+Add issue watcher
+.ft C
+.nf
+git issue watcher e6a9 jane@example.com
+Added watcher jane@example.com
+.ft P
+.fi
+.PP
+List issues tagged as gui
+.ft C
+.nf
+git issue list gui
+e6a95c9 New issue entered from the command line
+.ft P
+.fi
+.PP
+Push issues repository to a server
+.ft C
+.nf
+$ git issue git remote add origin git@github.com:dspinellis/gi-example.git
+$ git issue git push -u origin master
+Counting objects: 60, done.
+Compressing objects: 100% (50/50), done.
+Writing objects: 100% (60/60), 5.35 KiB | 0 bytes/s, done.
+Total 60 (delta 8), reused 0 (delta 0)
+To git@github.com:dspinellis/gi-example.git
+ * [new branch]      master -> master
+Branch master set up to track remote branch master from origin.
+
+
+.ft P
+.fi
+.PP
+Clone issues repository from server
+.ft C
+.nf
+$ git issue clone git@github.com:dspinellis/gi-example.git my-issues
+Cloning into '.issues'...
+remote: Counting objects: 60, done.
+remote: Compressing objects: 100% (42/42), done.
+remote: Total 60 (delta 8), reused 60 (delta 8), pack-reused 0
+Receiving objects: 100% (60/60), 5.35 KiB | 0 bytes/s, done.
+Resolving deltas: 100% (8/8), done.
+Checking connectivity... done.
+Cloned git@github.com:dspinellis/gi-example.git into my-issues
+.ft P
+.fi
+.PP
+List open issues
+.ft C
+.nf
+git issue list
+7dfa5b7 An issue entered from the editor
+e6a95c9 New issue entered from the command line
+.ft P
+.fi
+.PP
+Create new issue
+.ft C
+.nf
+git issue new -s 'Issue added on another host'
+Added issue abc9adc
+.ft P
+.fi
+.PP
+Push changes to server
+.ft C
+.nf
+git issue push
+Counting objects: 7, done.
+Compressing objects: 100% (6/6), done.
+Writing objects: 100% (7/7), 767 bytes | 0 bytes/s, done.
+Total 7 (delta 0), reused 0 (delta 0)
+To git@github.com:dspinellis/gi-example.git
+   d6be890..740f9a0  master -> master
+.ft P
+.fi
+.PP
+Show issue added on the other host
+.ft C
+.nf
+git issue show 7dfa5b7
+issue 7dfa5b7f4591ecaa8323716f229b84ad40f5275b
+Author: Diomidis Spinellis <dds@aueb.gr>
+Date:   Fri, 29 Jan 2016 01:03:24 +0200
+Tags:   open
+
+    An issue entered from the editor
+
+    Here is a longer description.
+.ft P
+.fi
+.PP
+Show issue and coments
+.ft C
+.nf
+git issue show -c e6a95c9
+issue e6a95c91b31ded8fc229a41cc4bd7d281ce6e0f1
+Author: Diomidis Spinellis <dds@aueb.gr>
+Date:   Fri, 29 Jan 2016 01:03:20 +0200
+Tags:   open urgent gui crash
+Watchers:       jane@example.com
+Assigned-to: joe@example.com
+
+    New issue entered from the command line
+
+comment 8c0d5b3d77bf93b937cb11038b129f927d49e34a
+Author: Diomidis Spinellis <dds@aueb.gr>
+Date:   Fri, 29 Jan 2016 01:03:57 +0200
+
+    First comment regarding the issue.
+
+
+.ft P
+.fi
+.PP
+On the original host
+.ft C
+.nf
+.ft P
+.fi
+.PP
+Pull in remote changes
+.ft C
+.nf
+git issue pull
+remote: Counting objects: 7, done.
+remote: Compressing objects: 100% (6/6), done.
+remote: Total 7 (delta 0), reused 7 (delta 0), pack-reused 0
+Unpacking objects: 100% (7/7), done.
+From github.com:dspinellis/gi-example
+   d6be890..740f9a0  master     -> origin/master
+Updating d6be890..740f9a0
+Fast-forward
+ issues/ab/c9adc61025a3cb73b0c67470b65cefc133a8d0/description | 1 +
+ issues/ab/c9adc61025a3cb73b0c67470b65cefc133a8d0/tags        | 1 +
+ 2 files changed, 2 insertions(+)
+ create mode 100644 issues/ab/c9adc61025a3cb73b0c67470b65cefc133a8d0/description
+ create mode 100644 issues/ab/c9adc61025a3cb73b0c67470b65cefc133a8d0/tags
+.ft P
+.fi
+.PP
+List open issues
+.ft C
+.nf
+git issue list
+7dfa5b7 An issue entered from the editor
+abc9adc Issue added on another host
+e6a95c9 New issue entered from the command line
+
+.ft P
+.fi
+.PP
+sub-command auto-completion
+.ft C
+.nf
+$ git issue [Tab]
+assign   clone    comment  git      init     log      pull     show     watcher  
+attach   close    edit     help     list     new      push     tag
+
+.ft P
+.fi
+.PP
+issue sha auto-completion
+.ft C
+.nf
+$ git issue show [Tab]
+7dfa5b7 - An issue entered from the editor
+e6a95c9 - New issue entered from the command line
+.ft P
+.fi
+.SH SEE ALSO
+.BR git ( 1 ),
+<\fIhttps://github\.com/dspinellis/git\-issue\fR>
+
+.SH AUTHOR
+Written by Diomidis Spinellis <\fIdds@aueb\.gr\fP>
+
+.SH BUGS
+Report bugs through
+<\fIhttps://github\.com/dspinellis/git\-issue/issues\fR>
