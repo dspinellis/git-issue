@@ -601,6 +601,11 @@ USAGE_EOF
 # Subcommand selection {{{1
 
 subcommand="$1"
+if ! [ "$subcommand" ] ; then
+  sub_help
+  exit 1
+fi
+
 shift
 case "$subcommand" in
   init) # Initialize a new issue repository.
