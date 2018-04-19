@@ -132,12 +132,37 @@ pager()
 }
 
 # init: Initialize a new issue repository {{{1
+usage_init()
+{
+  cat <<\USAGE_new_EOF
+gi init usage: git issue init [-e]
+-e	Use existing project's Git repository
+USAGE_new_EOF
+  exit 2
+}
+
 sub_init()
 {
+  local existing
+
+  while getopts e flag ; do
+    case $flag in
+    e)
+      existing=1
+      ;;
+    ?)
+      usage_init
+      ;;
+    esac
+  done
+  shift $(($OPTIND - 1));
+
   test -d .issues && error 'An .issues directory is already present'
   mkdir .issues || error 'Unable to create .issues directory'
   cdissues
-  git init -q || error 'Unable to initialize Git directory'
+  if ! [ "$existing" ] ; then
+    git init -q || error 'Unable to initialize Git directory'
+  fi
 
   # Editing templates
   touch config || error 'Unable to create configuration file'
@@ -579,7 +604,7 @@ subcommand="$1"
 shift
 case "$subcommand" in
   init) # Initialize a new issue repository.
-    sub_init
+    sub_init "$@"
     ;;
   clone) # Clone specified remote directory.
     sub_clone "$@"

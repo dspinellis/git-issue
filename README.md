@@ -70,6 +70,7 @@ its operation, and (please) update this file.
 You use _git issue_ with the following sub-commands.
 
 * `git issue init`: Create a new issues repository in the current directory.
+  The `-e` option uses an existing Git project repository.
 * `git issue clone`: Clone the specified remote repository.
 * `git issue new`: Create a new open issue with the specified summary.
 * `git issue list`: List the issues with the specified tag.
