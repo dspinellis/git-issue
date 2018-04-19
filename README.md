@@ -5,21 +5,21 @@
 This is a minimalist distributed issue management system based on Git.
 It has the following advantages over other systems.
 
-* **No backend, no dependencies**
+* **No backend, no dependencies:**
   You can install and use _git issue_ with a single shell script.
   There's no need for a server or a database back-end, and the corresponding
   problems and requirements for their administration.
-* **Distributed asynchronous management**
+* **Distributed asynchronous management:**
   Anyone can add, comment, and edit issues without requiring online access
   to a centralized server.
   There's no need for online connectivity; you can pull and push issues
   when you're online.
-* **Transparent text file format**
+* **Transparent text file format:**
   Issues are stored as simple text files, which you can view, edit, share, and
   backup with any tool you like.
   There's no risk of loosing access to your issues because a server has
   failed.
-* **Git based**
+* **Git-based:**
   Issues are changed and shared through Git.
   This provides _git issue_ with a robust, efficient, portable,
   and widely available infrastructure.
@@ -61,7 +61,7 @@ You can even put `gi` in your project's current directory and run it from there.
 
 ### Portability and testing
 The `git-issue.sh` script has been tested on:
-Debian GNU/Linux, FreeBSD, Mac OS X, and Cygwin.
+Debian GNU/Linux, FreeBSD, macOS, and Cygwin.
 If you're running _git issue* on another system,
 run the `test.sh` script to verify
 its operation, and (please) update this file.
