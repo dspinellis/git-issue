@@ -96,8 +96,9 @@ Issues and comments are specified through the SHA hash associated with the
 commit that opened them.
 
 ## Internals
-All data are stored under `.issues`. The directory contains the
-following elements.
+All data are stored under `.issues`, which should be placed under `.gitignore`,
+if it will coexist with another Git-based project.
+The directory contains the following elements.
 * A `.git` directory contains the Git data associated with the issues.
 * A `config` file with configuration data.
 * A `templates` directory with message templates.
