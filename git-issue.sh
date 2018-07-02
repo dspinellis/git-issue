@@ -572,7 +572,7 @@ sub_help()
 {
   #
   # The following list is automatically created from README.md by running
-  # ./update-usage.sh
+  # make sync-docs
   # DO NOT EDIT IT HERE; UPDATE README.md instead
   #
   cat <<\USAGE_EOF
