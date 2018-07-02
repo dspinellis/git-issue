@@ -69,14 +69,15 @@ its operation, and (please) update this file.
 ## Use
 You use _git issue_ with the following sub-commands.
 
+### start an issue repository
+* `git issue clone`: Clone the specified remote repository.
 * `git issue init`: Create a new issues repository in the current directory.
   The `-e` option uses an existing Git project repository.
-* `git issue clone`: Clone the specified remote repository.
-* `git issue new`: Create a new open issue with the specified summary.
-* `git issue list`: List the issues with the specified tag.
-  By default this lists issues that are tagged as `open`.
+### work with an issue
+* `git issue new`: Create a new open issue (with optional `-s` summary).
 * `git issue show`: Show specified issue (and its comments with `-c`).
 * `git issue comment`: Add an issue comment.
+* `git issue edit`: Edit the specified issue's summary (not yet implemented)
 * `git issue tag`: Add (or remove with `-r`) a tag.
 * `git issue assign`: Assign (or reassign) an issue to a person.
   The person is specified with his/her email address.
@@ -84,12 +85,16 @@ You use _git issue_ with the following sub-commands.
   uniquely identifies an existing assignee or committer.
 * `git issue attach`: Attach (or remove with `-r`) a file to an issue.
 * `git issue watcher`: Add (or remove with `-r`) an issue watcher.
-* `git issue close`: Remove the `open` tag from the issue, marking it as closed.
-* `git issue edit`: Edit the specified issue's summary or comment.
-* `git issue help`: Display help information about git issue.
-* `git issue log`: Output a log of changes made
+* `git issue close`: Remove the `open` tag, add the closed tag
+### show multiple issues
+* `git issue list`: List all issues (or just those with a given tag)
+  By default this lists issues that are tagged as `open`.
+### synchronize with remote repository
 * `git issue push`: Update remote repository with local changes.
 * `git issue pull`: Update local repository with remote changes.
+### help and debug
+* `git issue help`: Display help information about git issue.
+* `git issue log`: Output a log of changes made
 * `git issue git`: Run the specified Git command on the issues repository.
 
 Issues and comments are specified through the SHA hash associated with the
