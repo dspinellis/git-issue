@@ -124,10 +124,18 @@ edit()
   local file
 
   file="$1"
-  ${VISUAL:-vi} "$file" || return 1
-  grep -v '^#' "$file" >"$file.new"
+  touch "$file"
+  cp "$file" "$file.new"
+  echo "Opening editor..."
+  ${VISUAL:-vi} "$file.new" || return 1
+  sed -i '/^#/d' "$file.new"
   if [ $(grep -c . "$file.new") -eq 0 ] ; then
     echo 'Empty file' 1>&2
+    rm -f "$file.new"
+    return 1
+  fi
+  if [ $(diff "$file" "$file.new" > /dev/null 2>&1) ]; then
+    echo 'File was not changed' 1>&2
     rm -f "$file.new"
     return 1
   fi
