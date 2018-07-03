@@ -87,8 +87,7 @@ You use _git issue_ with the following sub-commands.
 * `git issue watcher`: Add (or remove with `-r`) an issue watcher.
 * `git issue close`: Remove the `open` tag, add the closed tag
 ### show multiple issues
-* `git issue list`: List all issues (or just those with a given tag)
-  By default this lists issues that are tagged as `open`.
+* `git issue list`: List open issues (or all with `-a`); supports tags
 ### synchronize with remote repository
 * `git issue push`: Update remote repository with local changes.
 * `git issue pull`: Update local repository with remote changes.

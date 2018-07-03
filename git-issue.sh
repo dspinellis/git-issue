@@ -596,7 +596,7 @@ work with an issue
    close      Remove the open tag, add the closed tag
 
 show multiple issues
-   list       List all issues (or just those with a given tag)
+   list       List open issues (or all with -a); supports tags
 
 synchronize with remote repository
    push       Update remote repository with local changes
