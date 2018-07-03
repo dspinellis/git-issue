@@ -102,9 +102,18 @@ trans_abort()
 # commit <summary> <message>
 commit()
 {
-  git commit --allow-empty -q -m "$1
+    commit_summary=$1
+    shift
+    commit_message=$1
+    shift
+    if [ "$1" ]; then
+        commit_date=$1
+    else
+        commit_date=$(date -R)
+    fi
+  git commit --allow-empty -q --date="$commit_date" -m "$commit_summary
 
-$2" || trans_abort
+$commit_message" || trans_abort
 }
 
 # Allow the user to edit the specified file
@@ -224,7 +233,8 @@ sub_new()
   shift $(($OPTIND - 1));
 
   trans_start
-  commit 'gi: Add issue' 'gi new mark'
+  date=$(date -R)
+  commit 'gi: Add issue' 'gi new mark' "$date"
   sha=$(git rev-parse HEAD)
   path=$(issue_path_full $sha)
   mkdir -p $path || trans_abort
@@ -236,7 +246,7 @@ sub_new()
     edit $path/description || trans_abort
   fi
   git add $path/description $path/tags || trans_abort
-  commit 'gi: Add issue description' "gi new description $sha"
+  commit 'gi: Add issue description' "gi new description $sha" "$date"
   echo "Added issue $(short_sha $sha)"
 }
 
