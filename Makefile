@@ -17,6 +17,9 @@ install:
 sync-docs:
 	./sync-docs.sh
 
+test:
+	./test.sh
+
 uninstall:
 	rm -f $(DESTDIR)$(BINPREFIX)/git-issue
 	rm -f $(DESTDIR)$(MANPREFIX)/git-issue.
@@ -24,4 +27,4 @@ uninstall:
 
 clean:
 
-.PHONY: default clean install uninstall sync-docs
+.PHONY: default clean install uninstall sync-docs test

@@ -577,24 +577,35 @@ sub_help()
   #
   cat <<\USAGE_EOF
 usage: git issue <command> [<args>]
-The following commands are available
-git issue init: Create a new issues repository in the current directory.
-git issue clone: Clone the specified remote repository.
-git issue new: Create a new open issue with the specified summary.
-git issue list: List the issues with the specified tag.
-git issue show: Show specified issue (and its comments with -c).
-git issue comment: Add an issue comment.
-git issue tag: Add (or remove with -r) a tag.
-git issue assign: Assign (or reassign) an issue to a person.
-git issue attach: Attach (or remove with -r) a file to an issue.
-git issue watcher: Add (or remove with -r) an issue watcher.
-git issue close: Remove the open tag from the issue, marking it as closed.
-git issue edit: Edit the specified issue's summary or comment.
-git issue help: Display help information about git issue.
-git issue log: Output a log of changes made
-git issue push: Update remote repository with local changes.
-git issue pull: Update local repository with remote changes.
-git issue git: Run the specified Git command on the issues repository.
+
+The following commands are available:
+
+start an issue repository
+   clone      Clone the specified remote repository
+   init       Create a new issues repository in the current directory
+
+work with an issue
+   new        Create a new open issue (with optional -s summary)
+   show       Show specified issue (and its comments with -c)
+   comment    Add an issue comment
+   edit       Edit the specified issue's summary (not yet implemented)
+   tag        Add (or remove with -r) a tag
+   assign     Assign (or reassign) an issue to a person
+   attach     Attach (or remove with -r) a file to an issue
+   watcher    Add (or remove with -r) an issue watcher
+   close      Remove the open tag, add the closed tag
+
+show multiple issues
+   list       List open issues (or all with -a); supports tags
+
+synchronize with remote repository
+   push       Update remote repository with local changes
+   pull       Update local repository with remote changes
+
+help and debug
+   help       Display help information about git issue
+   log        Output a log of changes made
+   git        Run the specified Git command on the issues repository
 USAGE_EOF
 }
 

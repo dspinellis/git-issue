@@ -25,11 +25,26 @@ MAN_PAGE=git-issue.1
 
 # Update usage information in the script based on README.md
 {
-  sed -n '1,/^The following commands are available/p' $SCRIPT_NAME
-  sed -n '/^\* `git issue init`/,/^\* `git issue git`/ {
-    /^\* /!d
+  sed -n '1,/^The following commands are available:/p' $SCRIPT_NAME
+  # Keep lines from `### start ` to `git issue git`
+  sed -n '/^### start/,/^\* `git issue git`/ {
+    # Only keep listed commands or subheaders
+    /^\* \|^### /!d
+    # Format headers by eliminating all preceding space
+    s/^### \(.*\)/\n\1/g
+    # Remove repetitive git issue
+    s/git issue //g
+    # Remove code markup
     s/`//g
-    s/^\* //
+    # Remove fullstops
+    s/\.//g
+    # Format commands, depending on length
+    s/^\* \([^:]\{3\}\): /   \1        /g
+    s/^\* \([^:]\{4\}\): /   \1       /g
+    s/^\* \([^:]\{5\}\): /   \1      /g
+    s/^\* \([^:]\{6\}\): /   \1     /g
+    s/^\* \([^:]\{7\}\): /   \1    /g
+
     p
   }' README.md
   sed -n '/^USAGE_EOF/,$p' $SCRIPT_NAME
@@ -55,6 +70,7 @@ replace_section()
       $command"'
       # Remove section titles
       /^## /d
+      /^###/d
       # Set code text with Courier (twice per line)
       s/`/\\fC/;s/`/\\fP/
       s/`/\\fC/;s/`/\\fP/

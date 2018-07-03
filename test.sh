@@ -111,6 +111,18 @@ ntest=0
 gi=../git-issue.sh
 gi_re=$(echo $gi | sed 's/[^0-9A-Za-z]/\\&/g')
 rm -rf testdir
+
+start
+GenFiles="git-issue.sh git-issue.1"
+make sync-docs
+Status=$(git status --porcelain -- $GenFiles)
+if [ -z "$Status" ]; then
+    ok "make sync-docs left $GenFiles as committed"
+else
+    fail "make sync-docs changed $GenFiles"
+    git checkout -- $GenFiles
+fi
+
 mkdir testdir
 cd testdir
 

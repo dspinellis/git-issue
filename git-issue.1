@@ -40,26 +40,20 @@ You use \fIgit issue\fP with the following sub-commands.
 
 .RE
 .PP
+\fBgit issue clone\fP
+.RS 4
+Clone the specified remote repository.
+.RE
+.PP
 \fBgit issue init\fP
 .RS 4
 Create a new issues repository in the current directory.
   The \fC-e\fP option uses an existing Git project repository.
 .RE
 .PP
-\fBgit issue clone\fP
-.RS 4
-Clone the specified remote repository.
-.RE
-.PP
 \fBgit issue new\fP
 .RS 4
-Create a new open issue with the specified summary.
-.RE
-.PP
-\fBgit issue list\fP
-.RS 4
-List the issues with the specified tag.
-  By default this lists issues that are tagged as \fCopen\fP.
+Create a new open issue (with optional \fC-s\fP summary).
 .RE
 .PP
 \fBgit issue show\fP
@@ -70,6 +64,11 @@ Show specified issue (and its comments with \fC-c\fP).
 \fBgit issue comment\fP
 .RS 4
 Add an issue comment.
+.RE
+.PP
+\fBgit issue edit\fP
+.RS 4
+Edit the specified issue's summary (not yet implemented)
 .RE
 .PP
 \fBgit issue tag\fP
@@ -97,22 +96,12 @@ Add (or remove with \fC-r\fP) an issue watcher.
 .PP
 \fBgit issue close\fP
 .RS 4
-Remove the \fCopen\fP tag from the issue, marking it as closed.
+Remove the \fCopen\fP tag, add the closed tag
 .RE
 .PP
-\fBgit issue edit\fP
+\fBgit issue list\fP
 .RS 4
-Edit the specified issue's summary or comment.
-.RE
-.PP
-\fBgit issue help\fP
-.RS 4
-Display help information about git issue.
-.RE
-.PP
-\fBgit issue log\fP
-.RS 4
-Output a log of changes made
+List open issues (or all with \fC-a\fP); supports tags
 .RE
 .PP
 \fBgit issue push\fP
@@ -123,6 +112,16 @@ Update remote repository with local changes.
 \fBgit issue pull\fP
 .RS 4
 Update local repository with remote changes.
+.RE
+.PP
+\fBgit issue help\fP
+.RS 4
+Display help information about git issue.
+.RE
+.PP
+\fBgit issue log\fP
+.RS 4
+Output a log of changes made
 .RE
 .PP
 \fBgit issue git\fP
@@ -140,8 +139,9 @@ to use to display long lists of results.
 
 .SH FILES
 .\" Auto-generated content from README.md; do not edit this section
-All data are stored under \fC.issues\fP. The directory contains the
-following elements.
+All data are stored under \fC.issues\fP, which should be placed under \fC.gitignore\fP,
+if it will coexist with another Git-based project.
+The directory contains the following elements.
 .IP "" 4
 A \fC.git\fP directory contains the Git data associated with the issues.
 .IP "" 4
