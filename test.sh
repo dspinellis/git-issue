@@ -153,7 +153,6 @@ Second issue
 Line in description
 EOF
 try $gi new
-export VISUAL=
 
 issue=$($gi list | awk '/Second issue/{print $1}')
 
@@ -163,6 +162,23 @@ start ; $gi show $issue | try_grep 'Line in description'
 start ; $gi show $issue | try_grep '^Author:'
 start ; $gi show $issue | try_grep '^Tags:[ 	]*open'
 ntry $gi show xyzzy
+
+# Edit
+
+# Unmodified issue should fail
+ntry $gi edit $issue
+
+cat <<EOF >issue-desc
+Second issue
+
+Modified line in description
+EOF
+try $gi edit $issue
+start ; $gi show $issue | try_grep 'Second issue'
+start ; $gi show $issue | try_grep 'Modified line in description'
+start ; $gi show $issue | try_ngrep 'Line in description'
+
+export VISUAL=
 
 # Comment
 start
@@ -225,7 +241,7 @@ start ; $gi show $issue | try_grep '^Watchers:.*alice@example.com'
 start ; $gi show $issue | try_grep '^Tags:.*feature'
 start ; $gi show $issue | try_grep '^Assigned-to:[ 	]joe@example.com'
 start ; $gi show $issue | try_grep 'Second issue'
-start ; $gi show $issue | try_grep 'Line in description'
+start ; $gi show $issue | try_grep 'Modified line in description'
 start ; $gi show $issue | try_grep '^Author:'
 start ; $gi show $issue | try_grep '^Tags:.*closed'
 

@@ -317,6 +317,11 @@ Date:	%aD' $isha
     echo
     sed 's/^/    /' $path/description
 
+    # Edit History
+    echo
+    printf '%s\n' 'Edit History:'
+    git log --reverse --format="%aD by %an <%ae>" $path/description | fmt | sed 's/^/* /'
+
     # Comments
     test "$comments" || return
     git log --reverse --grep="^gi comment mark $isha" --format='%H' |
@@ -491,6 +496,32 @@ sub_comment()
   echo "Added comment $(short_sha $csha)"
 }
 
+# edit: Edit an issue's description
+usage_edit()
+{
+  cat <<\USAGE_edit_EOF
+gi comment usage: git issue edit <sha>
+USAGE_edit_EOF
+  exit 2
+}
+
+sub_edit()
+{
+  local isha csha path
+
+  test "$1" || usage_edit
+
+  cdissues
+  path=$(issue_path_part $1) || exit
+  isha=$(issue_sha $path)
+
+  trans_start
+  edit $path/description || trans_abort
+  git add $path/description || trans_abort
+  commit 'gi: Edit issue description' "gi edit description $isha"
+  echo "Edited issue $(short_sha $isha)"
+}
+
 # list: Show issues matching a tag {{{1
 usage_list()
 {
@@ -606,7 +637,7 @@ work with an issue
    new        Create a new open issue (with optional -s summary)
    show       Show specified issue (and its comments with -c)
    comment    Add an issue comment
-   edit       Edit the specified issue's summary (not yet implemented)
+   edit       Edit the specified issue's description
    tag        Add (or remove with -r) a tag
    assign     Assign (or reassign) an issue to a person
    attach     Attach (or remove with -r) a file to an issue
@@ -669,8 +700,7 @@ case "$subcommand" in
     sub_watcher "$@"
     ;;
   edit) # Edit the specified issue's summary or comment.
-    echo 'Not implemented yet' 1>&2
-    exit 1
+    sub_edit "$@"
     ;;
   close) # Remove the open tag from the issue, marking it as closed.
     sha="$1"
