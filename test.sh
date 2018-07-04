@@ -40,6 +40,7 @@ ok()
 
 fail()
 {
+  failed=1
   message fail $*
 }
 
@@ -107,6 +108,7 @@ start()
 }
 
 echo 'TAP version 13'
+failed=0
 ntest=0
 gi=$(pwd)/git-issue.sh
 gi_re=$(echo $gi | sed 's/[^0-9A-Za-z]/\\&/g')
@@ -230,3 +232,10 @@ try $gi pull
 $gi git reset --hard >/dev/null # Required, because we pushed to a non-bare repo
 start ; $gi show $issue | try_grep '^Tags:.*cloned'
 
+if [ $failed -eq 0 ]; then
+    echo "All tests passed!"
+    exit 0
+else
+    echo "Some tests failed!"
+    exit 1
+fi
