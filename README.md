@@ -77,7 +77,7 @@ You use _git issue_ with the following sub-commands.
 * `git issue new`: Create a new open issue (with optional `-s` summary).
 * `git issue show`: Show specified issue (and its comments with `-c`).
 * `git issue comment`: Add an issue comment.
-* `git issue edit`: Edit the specified issue's summary (not yet implemented)
+* `git issue edit`: Edit the specified issue's description
 * `git issue tag`: Add (or remove with `-r`) a tag.
 * `git issue assign`: Assign (or reassign) an issue to a person.
   The person is specified with his/her email address.

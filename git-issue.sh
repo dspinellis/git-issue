@@ -102,9 +102,18 @@ trans_abort()
 # commit <summary> <message>
 commit()
 {
-  git commit --allow-empty -q -m "$1
+    commit_summary=$1
+    shift
+    commit_message=$1
+    shift
+    if [ "$1" ]; then
+        commit_date=$1
+    else
+        commit_date=$(date -R)
+    fi
+  git commit --allow-empty -q --date="$commit_date" -m "$commit_summary
 
-$2" || trans_abort
+$commit_message" || trans_abort
 }
 
 # Allow the user to edit the specified file
@@ -115,10 +124,18 @@ edit()
   local file
 
   file="$1"
-  ${VISUAL:-vi} "$file" || return 1
-  grep -v '^#' "$file" >"$file.new"
+  touch "$file"
+  cp "$file" "$file.new"
+  echo "Opening editor..."
+  ${VISUAL:-vi} "$file.new" || return 1
+  sed -i '/^#/d' "$file.new"
   if [ $(grep -c . "$file.new") -eq 0 ] ; then
     echo 'Empty file' 1>&2
+    rm -f "$file.new"
+    return 1
+  fi
+  if [ $(diff "$file" "$file.new" > /dev/null 2>&1) ]; then
+    echo 'File was not changed' 1>&2
     rm -f "$file.new"
     return 1
   fi
@@ -224,7 +241,8 @@ sub_new()
   shift $(($OPTIND - 1));
 
   trans_start
-  commit 'gi: Add issue' 'gi new mark'
+  date=$(date -R)
+  commit 'gi: Add issue' 'gi new mark' "$date"
   sha=$(git rev-parse HEAD)
   path=$(issue_path_full $sha)
   mkdir -p $path || trans_abort
@@ -236,7 +254,7 @@ sub_new()
     edit $path/description || trans_abort
   fi
   git add $path/description $path/tags || trans_abort
-  commit 'gi: Add issue description' "gi new description $sha"
+  commit 'gi: Add issue description' "gi new description $sha" "$date"
   echo "Added issue $(short_sha $sha)"
 }
 
@@ -298,6 +316,11 @@ Date:	%aD' $isha
     # Description
     echo
     sed 's/^/    /' $path/description
+
+    # Edit History
+    echo
+    printf '%s\n' 'Edit History:'
+    git log --reverse --format="%aD by %an <%ae>" $path/description | fmt | sed 's/^/* /'
 
     # Comments
     test "$comments" || return
@@ -473,6 +496,32 @@ sub_comment()
   echo "Added comment $(short_sha $csha)"
 }
 
+# edit: Edit an issue's description
+usage_edit()
+{
+  cat <<\USAGE_edit_EOF
+gi comment usage: git issue edit <sha>
+USAGE_edit_EOF
+  exit 2
+}
+
+sub_edit()
+{
+  local isha csha path
+
+  test "$1" || usage_edit
+
+  cdissues
+  path=$(issue_path_part $1) || exit
+  isha=$(issue_sha $path)
+
+  trans_start
+  edit $path/description || trans_abort
+  git add $path/description || trans_abort
+  commit 'gi: Edit issue description' "gi edit description $isha"
+  echo "Edited issue $(short_sha $isha)"
+}
+
 # list: Show issues matching a tag {{{1
 usage_list()
 {
@@ -588,7 +637,7 @@ work with an issue
    new        Create a new open issue (with optional -s summary)
    show       Show specified issue (and its comments with -c)
    comment    Add an issue comment
-   edit       Edit the specified issue's summary (not yet implemented)
+   edit       Edit the specified issue's description
    tag        Add (or remove with -r) a tag
    assign     Assign (or reassign) an issue to a person
    attach     Attach (or remove with -r) a file to an issue
@@ -651,8 +700,7 @@ case "$subcommand" in
     sub_watcher "$@"
     ;;
   edit) # Edit the specified issue's summary or comment.
-    echo 'Not implemented yet' 1>&2
-    exit 1
+    sub_edit "$@"
     ;;
   close) # Remove the open tag from the issue, marking it as closed.
     sha="$1"

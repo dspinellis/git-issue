@@ -40,6 +40,7 @@ ok()
 
 fail()
 {
+  failed=1
   message fail $*
 }
 
@@ -107,10 +108,10 @@ start()
 }
 
 echo 'TAP version 13'
+failed=0
 ntest=0
-gi=../git-issue.sh
+gi=$(pwd)/git-issue.sh
 gi_re=$(echo $gi | sed 's/[^0-9A-Za-z]/\\&/g')
-rm -rf testdir
 
 start
 GenFiles="git-issue.sh git-issue.1"
@@ -122,6 +123,10 @@ else
     fail "make sync-docs changed $GenFiles"
     git checkout -- $GenFiles
 fi
+
+TopDir=$(mktemp -d)
+echo "Test artifacts saved in $TopDir"
+cd $TopDir
 
 mkdir testdir
 cd testdir
@@ -136,14 +141,18 @@ try $gi new -s 'First-issue'
 start ; $gi list | try_grep 'First-issue'
 
 # New with editor
-start
+export VISUAL='mv ../issue-desc '
+
+# Empty summary/description should fail
+touch issue-desc
+ntry $gi new
+
 cat <<EOF >issue-desc
 Second issue
 
 Line in description
 EOF
-export VISUAL='mv ../issue-desc '; try $gi new
-export VISUAL=
+try $gi new
 
 issue=$($gi list | awk '/Second issue/{print $1}')
 
@@ -153,6 +162,23 @@ start ; $gi show $issue | try_grep 'Line in description'
 start ; $gi show $issue | try_grep '^Author:'
 start ; $gi show $issue | try_grep '^Tags:[ 	]*open'
 ntry $gi show xyzzy
+
+# Edit
+
+# Unmodified issue should fail
+ntry $gi edit $issue
+
+cat <<EOF >issue-desc
+Second issue
+
+Modified line in description
+EOF
+try $gi edit $issue
+start ; $gi show $issue | try_grep 'Second issue'
+start ; $gi show $issue | try_grep 'Modified line in description'
+start ; $gi show $issue | try_ngrep 'Line in description'
+
+export VISUAL=
 
 # Comment
 start
@@ -215,7 +241,7 @@ start ; $gi show $issue | try_grep '^Watchers:.*alice@example.com'
 start ; $gi show $issue | try_grep '^Tags:.*feature'
 start ; $gi show $issue | try_grep '^Assigned-to:[ 	]joe@example.com'
 start ; $gi show $issue | try_grep 'Second issue'
-start ; $gi show $issue | try_grep 'Line in description'
+start ; $gi show $issue | try_grep 'Modified line in description'
 start ; $gi show $issue | try_grep '^Author:'
 start ; $gi show $issue | try_grep '^Tags:.*closed'
 
@@ -227,5 +253,10 @@ try $gi pull
 $gi git reset --hard >/dev/null # Required, because we pushed to a non-bare repo
 start ; $gi show $issue | try_grep '^Tags:.*cloned'
 
-cd ..
-rm -rf testdir testdir2
+if [ $failed -eq 0 ]; then
+    echo "All tests passed!"
+    exit 0
+else
+    echo "Some tests failed!"
+    exit 1
+fi
