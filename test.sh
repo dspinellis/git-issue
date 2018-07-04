@@ -108,9 +108,8 @@ start()
 
 echo 'TAP version 13'
 ntest=0
-gi=../git-issue.sh
+gi=$(pwd)/git-issue.sh
 gi_re=$(echo $gi | sed 's/[^0-9A-Za-z]/\\&/g')
-rm -rf testdir
 
 start
 GenFiles="git-issue.sh git-issue.1"
@@ -122,6 +121,10 @@ else
     fail "make sync-docs changed $GenFiles"
     git checkout -- $GenFiles
 fi
+
+TopDir=$(mktemp -d)
+echo "Test artifacts saved in $TopDir"
+cd $TopDir
 
 mkdir testdir
 cd testdir
@@ -227,5 +230,3 @@ try $gi pull
 $gi git reset --hard >/dev/null # Required, because we pushed to a non-bare repo
 start ; $gi show $issue | try_grep '^Tags:.*cloned'
 
-cd ..
-rm -rf testdir testdir2
