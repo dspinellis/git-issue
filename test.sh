@@ -141,13 +141,18 @@ try $gi new -s 'First-issue'
 start ; $gi list | try_grep 'First-issue'
 
 # New with editor
-start
+export VISUAL='mv ../issue-desc '
+
+# Empty summary/description should fail
+touch issue-desc
+ntry $gi new
+
 cat <<EOF >issue-desc
 Second issue
 
 Line in description
 EOF
-export VISUAL='mv ../issue-desc '; try $gi new
+try $gi new
 export VISUAL=
 
 issue=$($gi list | awk '/Second issue/{print $1}')
