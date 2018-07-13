@@ -128,7 +128,8 @@ edit()
   cp "$file" "$file.new"
   echo "Opening editor..."
   ${VISUAL:-vi} "$file.new" || return 1
-  sed -i '/^#/d' "$file.new"
+  sed -i .original '/^#/d' "$file.new"
+  rm -f "$file.new.original"
   if [ $(grep -c . "$file.new") -eq 0 ] ; then
     echo 'Empty file' 1>&2
     rm -f "$file.new"
