@@ -74,9 +74,9 @@ replace_section()
       # Set code text with Courier (twice per line)
       s/`/\\fC/;s/`/\\fP/
       s/`/\\fC/;s/`/\\fP/
-      # Set italic text (twice per line)
-      s/_/\\fI/;s/_/\\fP/
-      s/_/\\fI/;s/_/\\fP/
+      # Set italic text (twice per line; not when switched to Courier)
+      /\\fC/!s/_/\\fI/;/\\fC/!s/_/\\fP/
+      /\\fC/!s/_/\\fI/;/\\fC/!s/_/\\fP/
       # Set first-level and second-level bullets
       s/^\* /.IP "" 4\n/
       s/^  \* /.IP "" 8\n/
