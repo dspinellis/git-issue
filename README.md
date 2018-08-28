@@ -112,7 +112,7 @@ The directory contains the following elements.
 * Each issue can have the following elements in its directory.
   * A `description` file with a one-line summary and a description of the issue.
   * A `comments` directory where comments are stored.
-  * An `attachments` directory where issue's attachments are stored.
+  * An `attachments` directory where the issue's attachments are stored.
   * A `tags` file containing the issue's tags, one in each line.
   * A `watchers` file containing the emails of persons to be notified when the issue changes (one per line).
   * An `assignee` file containing the email for the person assigned to the issue.
