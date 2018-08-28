@@ -830,6 +830,9 @@ synchronize with remote repository
    push       Update remote repository with local changes
    pull       Update local repository with remote changes
 
+GitHub integration
+   import     Import/update issues from an existing GitHub repository
+
 help and debug
    help       Display help information about git issue
    log        Output a log of changes made

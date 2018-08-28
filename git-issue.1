@@ -114,6 +114,18 @@ Update remote repository with local changes.
 Update local repository with remote changes.
 .RE
 .PP
+\fBgit issue import\fP
+.RS 4
+Import/update issues from an existing GitHub repository.
+  If the import involves more than a dozen of issues or if the repository
+  is private, set the environment variable \fCGI_CURL_ARGS\fP to an argument
+  that when passed to the \fIcurl\fP program will supply GitHub the appropriate
+  API authentication.
+  For example, run the following command: \fCexport GI_CURL_ARGS='-H "Authorization: token  badf00ddead9bfee8f3c19afc3c97c6db55fcfde"'\fP
+  You can create the authorization token at
+  this URL <https://github.com/settings/tokens/new>.
+.RE
+.PP
 \fBgit issue help\fP
 .RS 4
 Display help information about git issue.
@@ -129,7 +141,7 @@ Output a log of changes made
 Run the specified Git command on the issues repository.
 
 Issues and comments are specified through the SHA hash associated with the
-commit that opened them.
+parent of the commit that opened them.
 
 .SH ENVIRONMENT
 The \fCVISUAL\fP environment variable is used for determining the user's
@@ -147,7 +159,14 @@ A \fC.git\fP directory contains the Git data associated with the issues.
 .IP "" 4
 A \fCconfig\fP file with configuration data.
 .IP "" 4
-A \fCtemplates\fP directory with message templates.
+An \fCimports\fP directory contains details about imported issues.
+.IP "" 8
+Files under \fCimport/github/<user>/<repo>/<number>\fP contain the
+    \fIgit-issue\fP SHA corresponding to an imported GitHub \fInumber\fP issue.
+.IP "" 8
+The file \fCimport/github/<user>/<repo>/checkpoint\fP contains the SHA
+    of the last imported or updated issue.  This can be used for merging
+    future updates.
 .IP "" 4
 An \fCissues\fP directory contains the individual issues.
 .IP "" 4
@@ -167,6 +186,8 @@ A \fCtags\fP file containing the issue's tags, one in each line.
 A \fCwatchers\fP file containing the emails of persons to be notified when the issue changes (one per line).
 .IP "" 8
 An \fCassignee\fP file containing the email for the person assigned to the issue.
+.IP "" 4
+A \fCtemplates\fP directory with message templates.
 
 .SH EXIT STATUS
 The command terminates with a non zero exit code on errors.
