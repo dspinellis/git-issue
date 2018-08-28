@@ -49,7 +49,7 @@ source ${REPO_PATH}/gi-completion.sh
 ```
 
 ### Backward compatibility with the gi command
-For backward compatibility you can also use the original *gi* command,
+For backward compatibility you can also use the original _gi_ command,
 by copying `gi.sh` to someplace in your path.
 In this case you must register the git alias to use the auto completion feature.
 If you have administrative access you can install it with
@@ -91,17 +91,13 @@ You use _git issue_ with the following sub-commands.
 ### synchronize with remote repository
 * `git issue push`: Update remote repository with local changes.
 * `git issue pull`: Update local repository with remote changes.
-### import GitHub issues from an existing GitHub repository
-* `git issue import`: Import (or update) all issues from an existing GitHub
-  repository.
+### GitHub integration
+* `git issue import`: Import/update issues from an existing GitHub repository.
   If the import involves more than a dozen of issues or if the repository
   is private, set the environment variable `GI_CURL_ARGS` to an argument
-  that when passed to the *curl* program will supply GitHub the appropriate
+  that when passed to the _curl_ program will supply GitHub the appropriate
   API authentication.
-  For example, run the following command.
-```
-export GI_CURL_ARGS='-H "Authorization: token  badf00ddead9bfee8f3c19afc3c97c6db55fcfde"'
-```
+  For example, run the following command: `export GI_CURL_ARGS='-H "Authorization: token  badf00ddead9bfee8f3c19afc3c97c6db55fcfde"'`
   You can create the authorization token at
   [this URL](https://github.com/settings/tokens/new).
 ### help and debug
@@ -119,9 +115,9 @@ The directory contains the following elements.
 * A `.git` directory contains the Git data associated with the issues.
 * A `config` file with configuration data.
 * An `imports` directory contains details about imported issues.
-  * Files under `import/github/`*user*`/`*repo*`/`*number* contain the
-    *git-issue* SHA corresponding to an imported GitHub *number* issue.
-  * The file import/github/`*user*`/`*repo*`/checkpoint` contains the SHA
+  * Files under `import/github/<user>/<repo>/<number>` contain the
+    _git-issue_ SHA corresponding to an imported GitHub _number_ issue.
+  * The file `import/github/<user>/<repo>/checkpoint` contains the SHA
     of the last imported or updated issue.  This can be used for merging
     future updates.
 * An `issues` directory contains the individual issues.
