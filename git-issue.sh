@@ -285,7 +285,7 @@ sub_show()
   done
   shift $(($OPTIND - 1));
 
-  test "$1" || usage_show
+  test -n "$1" || usage_show
 
   cdissues
   path=$(issue_path_part $1) || exit
@@ -324,7 +324,7 @@ Date:	%aD' $isha
     git log --reverse --format="%aD by %an <%ae>" $path/description | fmt | sed 's/^/* /'
 
     # Comments
-    test "$comments" || return
+    test -n "$comments" || return
     git log --reverse --grep="^gi comment mark $isha" --format='%H' |
     while read csha ; do
       echo
@@ -348,7 +348,7 @@ USAGE_clone_EOF
 
 sub_clone()
 {
-  test "$1" -a "$2" || usage_clone
+  test -n "$1" -a -n "$2" || usage_clone
   mkdir -p "$2" || error "Unable to create local directory"
   cd "$2"
   git clone "$1" .issues
@@ -368,7 +368,7 @@ sub_assign()
 {
   local isha tag remove path
 
-  test "$1" -a "$2" || usage_assign
+  test -n "$1" -a -n "$2" || usage_assign
 
   cdissues
   path=$(issue_path_part "$1") || exit
@@ -404,7 +404,7 @@ file_add_rm()
   done
   shift $(($OPTIND - 1));
 
-  test "$1" -a "$2" || $usage
+  test -n "$1" -a -n "$2" || $usage
 
   cdissues
   path=$(issue_path_part "$1") || exit
@@ -481,7 +481,7 @@ sub_comment()
 {
   local isha csha path
 
-  test "$1" || usage_comment
+  test -n "$1" || usage_comment
 
   cdissues
   path=$(issue_path_part $1) || exit
@@ -510,7 +510,7 @@ sub_edit()
 {
   local isha csha path
 
-  test "$1" || usage_edit
+  test -n "$1" || usage_edit
 
   cdissues
   path=$(issue_path_part $1) || exit
