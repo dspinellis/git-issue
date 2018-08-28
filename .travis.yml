@@ -1,2 +1,9 @@
+addons:
+  apt:
+    packages:
+      curl
+      jq
+
 language: bash
+
 script: make test

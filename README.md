@@ -91,13 +91,26 @@ You use _git issue_ with the following sub-commands.
 ### synchronize with remote repository
 * `git issue push`: Update remote repository with local changes.
 * `git issue pull`: Update local repository with remote changes.
+### import GitHub issues from an existing GitHub repository
+* `git issue import`: Import (or update) all issues from an existing GitHub
+  repository.
+  If the import involves more than a dozen of issues or if the repository
+  is private, set the environment variable `GI_CURL_ARGS` to an argument
+  that when passed to the *curl* program will supply GitHub the appropriate
+  API authentication.
+  For example, run the following command.
+```
+export GI_CURL_ARGS='-H "Authorization: token  badf00ddead9bfee8f3c19afc3c97c6db55fcfde"'
+```
+  You can create the authorization token at
+  [this URL](https://github.com/settings/tokens/new).
 ### help and debug
 * `git issue help`: Display help information about git issue.
 * `git issue log`: Output a log of changes made
 * `git issue git`: Run the specified Git command on the issues repository.
 
 Issues and comments are specified through the SHA hash associated with the
-commit that opened them.
+parent of the commit that opened them.
 
 ## Internals
 All data are stored under `.issues`, which should be placed under `.gitignore`,
@@ -105,7 +118,12 @@ if it will coexist with another Git-based project.
 The directory contains the following elements.
 * A `.git` directory contains the Git data associated with the issues.
 * A `config` file with configuration data.
-* A `templates` directory with message templates.
+* An `imports` directory contains details about imported issues.
+  * Files under `import/github/`*user*`/`*repo*`/`*number* contain the
+    *git-issue* SHA corresponding to an imported GitHub *number* issue.
+  * The file import/github/`*user*`/`*repo*`/checkpoint` contains the SHA
+    of the last imported or updated issue.  This can be used for merging
+    future updates.
 * An `issues` directory contains the individual issues.
 * Each issue is stored in a directory named `issues/xx/xxxxxxx...`,
     where the x's are the SHA of the issue's initial commit.
@@ -116,6 +134,7 @@ The directory contains the following elements.
   * A `tags` file containing the issue's tags, one in each line.
   * A `watchers` file containing the emails of persons to be notified when the issue changes (one per line).
   * An `assignee` file containing the email for the person assigned to the issue.
+* A `templates` directory with message templates.
 
 ## Contributing
 Contributions are welcomed through pull requests.

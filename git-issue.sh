@@ -45,6 +45,10 @@ cdissues()
 }
 
 # Output the path of an issue given its SHA
+# The scheme used for storing the issues is a two level directory
+# structure where the first level consists of the first two SHA
+# letters
+#
 # issue_path_full <SHA>
 issue_path_full()
 {
@@ -94,26 +98,36 @@ trans_abort()
   git reset $start_sha
   git clean -qfd
   git checkout -- .
+  rm -f gh-header gh-body
   echo 'Operation aborted' 1>&2
   exit 1
 }
 
+# Exit with an error if the specified prerequisite command
+# cannot be executed
+prerequisite_command()
+{
+  if ! $1 -help 2>/dev/null 1>&2 ; then
+    cat <<EOF 1>&2
+The $1 command is not availabe through the configured path.
+Please install it and/or configure your PATH variable.
+Command aborted.
+EOF
+    exit 1
+  fi
+}
+
 # Commit an issue's changes
-# commit <summary> <message>
+# commit <summary> <message> [<date>]
 commit()
 {
-    commit_summary=$1
-    shift
-    commit_message=$1
-    shift
-    if [ "$1" ]; then
-        commit_date=$1
-    else
-        commit_date=$(date -R)
-    fi
-  git commit --allow-empty -q --date="$commit_date" -m "$commit_summary
+  commit_summary=$1
+  shift
+  commit_message=$1
+  shift
+  git commit --allow-empty -q -m "$commit_summary
 
-$commit_message" || trans_abort
+$commit_message" "$@" || trans_abort
 }
 
 # Allow the user to edit the specified file
@@ -209,7 +223,7 @@ EOF
 EOF
   cat >README.md <<\EOF
 This is an distributed issue tracking repository based on Git.
-Visit [gi](https://github.com/dspinellis/gi) for more information.
+Visit [git-issue](https://github.com/dspinellis/git-issue) for more information.
 EOF
   git add config README.md templates/comment templates/description
   commit 'gi: Initialize issues repository' 'gi init'
@@ -242,8 +256,7 @@ sub_new()
   shift $(($OPTIND - 1));
 
   trans_start
-  date=$(date -R)
-  commit 'gi: Add issue' 'gi new mark' "$date"
+  commit 'gi: Add issue' 'gi new mark'
   sha=$(git rev-parse HEAD)
   path=$(issue_path_full $sha)
   mkdir -p $path || trans_abort
@@ -255,7 +268,7 @@ sub_new()
     edit $path/description || trans_abort
   fi
   git add $path/description $path/tags || trans_abort
-  commit 'gi: Add issue description' "gi new description $sha" "$date"
+  commit 'gi: Add issue description' "gi new description $sha"
   echo "Added issue $(short_sha $sha)"
 }
 
@@ -298,20 +311,20 @@ Date:	%aD' $isha
 
     # Tags
     if [ -s $path/tags ] ; then
-      printf '%s' 'Tags:'
+      printf 'Tags:'
       fmt $path/tags | sed 's/^/	/'
     fi
 
     # Watchers
     if [ -s $path/watchers ] ; then
-      printf '%s' 'Watchers:'
+      printf 'Watchers:'
       fmt $path/watchers | sed 's/^/	/'
     fi
 
     # Assignee
     if [ -r $path/assignee ] ; then
-      printf '%s' 'Assigned-to: '
-      cat $path/assignee
+      printf 'Assigned-to:'
+      sed 's/^/	/' $path/assignee
     fi
 
     # Description
@@ -523,6 +536,171 @@ sub_edit()
   echo "Edited issue $(short_sha $isha)"
 }
 
+# import: import issues from GitHub {{{1
+usage_import()
+{
+  cat <<\USAGE_import_EOF
+gi import usage: git issue import provider user repo
+Example: git issue import github torvalds linux
+USAGE_import_EOF
+  exit 2
+}
+
+# Get a page using the GitHub API; abort transaction on error
+# Header is saved in the file gh-header; body in gh-body
+gh_api_get()
+{
+  local url
+
+  url="$1"
+  if ! curl $GI_CURL_ARGS -I -s "$url" >gh-header ; then
+    echo 'GitHub connection failed' 1>&2
+    trans_abort
+  fi
+
+  if grep -q '^Status: 404' gh-header ; then
+    echo "Invalid URL: $url" 1>&2
+    trans_abort
+  fi
+
+  if ! curl $GI_CURL_ARGS -s "$url" >gh-body ; then
+    echo 'GitHub connection failed' 1>&2
+    trans_abort
+  fi
+}
+
+# Import GitHub issues stored in the file gh-body as JSON data
+# gh_import_issues user repo
+gh_import_issues()
+{
+  local user repo
+  local i j issue_number import_file sha path begin_sha
+
+  user="$1"
+  repo="$2"
+
+  prerequisite_command jq
+  prerequisite_command curl
+
+  begin_sha=$(git rev-parse HEAD)
+
+  # For each issue in the gh-body file
+  for i in $(seq 0 $(($(jq '. | length' gh-body) - 1)) ) ; do
+    issue_number=$(jq ".[$i].number" gh-body)
+
+    # See if issue already there
+    import_file="imports/github/$user/$repo/$issue_number"
+    if [ -r "$import_file" ] ; then
+      sha=$(cat "$import_file")
+    else
+      sha=$(git rev-parse HEAD)
+    fi
+
+    path=$(issue_path_full $sha)
+    mkdir -p $path || trans_abort
+
+    # Add issue import number to allow future updates
+    echo $sha >"$import_file"
+
+    # Create tags (in sorted order to avoid gratuitous updates)
+    {
+      jq -r ".[$i].state" gh-body
+      for j in $(seq 0 $(($(jq ".[$i].labels | length" gh-body) - 1)) ) ; do
+	jq -r ".[$i].labels[$j].name" gh-body
+      done
+    } |
+    LC_ALL=C sort >$path/tags || trans_abort
+
+    # Create assignees (in sorted order to avoid gratuitous updates)
+    for j in $(seq 0 $(($(jq ".[$i].assignees | length" gh-body) - 1)) ) ; do
+      jq -r ".[$i].assignees[$j].login" gh-body
+    done |
+    LC_ALL=C sort >$path/assignee || trans_abort
+
+    if [ -s $path/assignee ] ; then
+      git add $path/assignee || trans_abort
+    else
+      rm -f $path/assignee
+    fi
+
+    # Create description
+    {
+      jq -r ".[$i].title" gh-body
+      echo
+      jq -r ".[$i].body" gh-body
+    } >$path/description || trans_abort
+
+    git add $path/description $path/tags imports || trans_abort
+    if ! git diff --quiet HEAD ; then
+      local name
+      name=$(jq -r ".[$i].user.login" gh-body)
+      GIT_AUTHOR_DATE=$(jq -r ".[$i].updated_at" gh-body) \
+	commit "gi: Import issue #$issue_number from GitHub" \
+	"Issue URL: https://github.com/$user/$repo/issues/$issue_number" \
+	--author="$name <$name@users.noreply.github.com>"
+      echo "Imported/updated issue #$issue_number as $(short_sha $sha)"
+    fi
+  done
+
+  # Mark last import SHA, so we can use this for merging 
+  if [ $begin_sha != $(git rev-parse HEAD) ] ; then
+    local checkpoint="imports/github/$user/$repo/checkpoint"
+    git rev-parse HEAD >"$checkpoint"
+    git add "$checkpoint"
+    commit "gi: Import issues from GitHub checkpoint" \
+    "Issues URL: https://github.com/$user/$repo/issues"
+  fi
+}
+
+# Return the next page API URL specified in gh-header
+# Header examples (easy and tricky)
+# Link: <https://api.github.com/repositories/146456308/issues?state=all&per_page=1&page=3>; rel="next", <https://api.github.com/repositories/146456308/issues?state=all&per_page=1&page=3>; rel="last", <https://api.github.com/repositories/146456308/issues?state=all&per_page=1&page=1>; rel="first"
+# Link: <https://api.github.com/repositories/146456308/issues?state=all&per_page=1&page=1>; rel="prev", <https://api.github.com/repositories/146456308/issues?state=all&per_page=1&page=3>; rel="next", <https://api.github.com/repositories/146456308/issues?state=all&per_page=1&page=3>; rel="last", <https://api.github.com/repositories/146456308/issues?state=all&per_page=1&page=1>; rel="first"
+gh_next_page_url()
+{
+  sed -n '
+:again
+# Print "next" link
+# This works only for the first element of the Link header
+s/^Link:.<\([^>]*\)>; rel="next".*/\1/p
+# If substitution worked branch to end of script
+t
+# Remove first element of the Link header and retry
+s/^Link: <[^>]*>; rel="[^"]*", */Link: /
+t again
+' gh-header
+}
+
+# Import issues from specified source (currently github)
+sub_import()
+{
+  local endpoint user repo
+
+  test "$1" = github -a -n "$2" -a -n "$3" || usage_import
+  user="$2"
+  repo="$3"
+
+  cdissues
+
+
+  # Process GitHub issues page by page
+  trans_start
+  mkdir -p "imports/github/$user/$repo"
+  endpoint="https://api.github.com/repos/$user/$repo/issues?state=all"
+  while true ; do
+    gh_api_get "$endpoint"
+    gh_import_issues "$user" "$repo"
+
+    # Return if no more pages
+    if ! grep -q '^Link:.*rel="next"' gh-header ; then
+      break
+    fi
+
+    # Move to next point
+    endpoint=$(gh_next_page_url)
+  done
+}
+
 # list: Show issues matching a tag {{{1
 usage_list()
 {
@@ -674,6 +852,9 @@ case "$subcommand" in
     ;;
   clone) # Clone specified remote directory.
     sub_clone "$@"
+    ;;
+  import) # Import issues from specified source
+    sub_import "$@"
     ;;
   new) # Create a new issue and mark it as open.
     sub_new "$@"
