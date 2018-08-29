@@ -98,7 +98,7 @@ trans_abort()
   git reset $start_sha
   git clean -qfd
   git checkout -- .
-  rm -f gh-header gh-body
+  rm -f gh-issue-header gh-issue-body
   echo 'Operation aborted' 1>&2
   exit 1
 }
@@ -547,29 +547,30 @@ USAGE_import_EOF
 }
 
 # Get a page using the GitHub API; abort transaction on error
-# Header is saved in the file gh-header; body in gh-body
+# Header is saved in the file gh-$prefix-header; body in gh-$prefix-body
 gh_api_get()
 {
-  local url
+  local url prefix
 
   url="$1"
-  if ! curl $GI_CURL_ARGS -I -s "$url" >gh-header ; then
+  prefix="$2"
+  if ! curl $GI_CURL_ARGS -I -s "$url" >gh-$prefix-header ; then
     echo 'GitHub connection failed' 1>&2
     trans_abort
   fi
 
-  if grep -q '^Status: 404' gh-header ; then
+  if grep -q '^Status: 404' gh-$prefix-header ; then
     echo "Invalid URL: $url" 1>&2
     trans_abort
   fi
 
-  if ! curl $GI_CURL_ARGS -s "$url" >gh-body ; then
+  if ! curl $GI_CURL_ARGS -s "$url" >gh-$prefix-body ; then
     echo 'GitHub connection failed' 1>&2
     trans_abort
   fi
 }
 
-# Import GitHub issues stored in the file gh-body as JSON data
+# Import GitHub issues stored in the file gh-issue-body as JSON data
 # gh_import_issues user repo
 gh_import_issues()
 {
@@ -584,9 +585,9 @@ gh_import_issues()
 
   begin_sha=$(git rev-parse HEAD)
 
-  # For each issue in the gh-body file
-  for i in $(seq 0 $(($(jq '. | length' gh-body) - 1)) ) ; do
-    issue_number=$(jq ".[$i].number" gh-body)
+  # For each issue in the gh-issue-body file
+  for i in $(seq 0 $(($(jq '. | length' gh-issue-body) - 1)) ) ; do
+    issue_number=$(jq ".[$i].number" gh-issue-body)
 
     # See if issue already there
     import_dir="imports/github/$user/$repo/$issue_number"
@@ -604,16 +605,16 @@ gh_import_issues()
 
     # Create tags (in sorted order to avoid gratuitous updates)
     {
-      jq -r ".[$i].state" gh-body
-      for j in $(seq 0 $(($(jq ".[$i].labels | length" gh-body) - 1)) ) ; do
-	jq -r ".[$i].labels[$j].name" gh-body
+      jq -r ".[$i].state" gh-issue-body
+      for j in $(seq 0 $(($(jq ".[$i].labels | length" gh-issue-body) - 1)) ) ; do
+	jq -r ".[$i].labels[$j].name" gh-issue-body
       done
     } |
     LC_ALL=C sort >$path/tags || trans_abort
 
     # Create assignees (in sorted order to avoid gratuitous updates)
-    for j in $(seq 0 $(($(jq ".[$i].assignees | length" gh-body) - 1)) ) ; do
-      jq -r ".[$i].assignees[$j].login" gh-body
+    for j in $(seq 0 $(($(jq ".[$i].assignees | length" gh-issue-body) - 1)) ) ; do
+      jq -r ".[$i].assignees[$j].login" gh-issue-body
     done |
     LC_ALL=C sort >$path/assignee || trans_abort
 
@@ -625,16 +626,16 @@ gh_import_issues()
 
     # Create description
     {
-      jq -r ".[$i].title" gh-body
+      jq -r ".[$i].title" gh-issue-body
       echo
-      jq -r ".[$i].body" gh-body
+      jq -r ".[$i].body" gh-issue-body
     } >$path/description || trans_abort
 
     git add $path/description $path/tags imports || trans_abort
     if ! git diff --quiet HEAD ; then
       local name
-      name=$(jq -r ".[$i].user.login" gh-body)
-      GIT_AUTHOR_DATE=$(jq -r ".[$i].updated_at" gh-body) \
+      name=$(jq -r ".[$i].user.login" gh-issue-body)
+      GIT_AUTHOR_DATE=$(jq -r ".[$i].updated_at" gh-issue-body) \
 	commit "gi: Import issue #$issue_number from GitHub" \
 	"Issue URL: https://github.com/$user/$repo/issues/$issue_number" \
 	--author="$name <$name@users.noreply.github.com>"
@@ -652,7 +653,7 @@ gh_import_issues()
   fi
 }
 
-# Return the next page API URL specified in gh-header
+# Return the next page API URL specified in the header with the specified prefix
 # Header examples (easy and tricky)
 # Link: <https://api.github.com/repositories/146456308/issues?state=all&per_page=1&page=3>; rel="next", <https://api.github.com/repositories/146456308/issues?state=all&per_page=1&page=3>; rel="last", <https://api.github.com/repositories/146456308/issues?state=all&per_page=1&page=1>; rel="first"
 # Link: <https://api.github.com/repositories/146456308/issues?state=all&per_page=1&page=1>; rel="prev", <https://api.github.com/repositories/146456308/issues?state=all&per_page=1&page=3>; rel="next", <https://api.github.com/repositories/146456308/issues?state=all&per_page=1&page=3>; rel="last", <https://api.github.com/repositories/146456308/issues?state=all&per_page=1&page=1>; rel="first"
@@ -668,7 +669,7 @@ t
 # Remove first element of the Link header and retry
 s/^Link: <[^>]*>; rel="[^"]*", */Link: /
 t again
-' gh-header
+' gh-$1-header
 }
 
 # Import issues from specified source (currently github)
@@ -688,16 +689,16 @@ sub_import()
   mkdir -p "imports/github/$user/$repo"
   endpoint="https://api.github.com/repos/$user/$repo/issues?state=all"
   while true ; do
-    gh_api_get "$endpoint"
+    gh_api_get "$endpoint" issue
     gh_import_issues "$user" "$repo"
 
     # Return if no more pages
-    if ! grep -q '^Link:.*rel="next"' gh-header ; then
+    if ! grep -q '^Link:.*rel="next"' gh-issue-header ; then
       break
     fi
 
     # Move to next point
-    endpoint=$(gh_next_page_url)
+    endpoint=$(gh_next_page_url gh-issue-header)
   done
 }
 
