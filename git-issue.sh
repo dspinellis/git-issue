@@ -562,8 +562,8 @@ gh_api_get()
     trans_abort
   fi
 
-  if grep -q '^Status: 404' gh-$prefix-header ; then
-    echo "Invalid URL: $url" 1>&2
+  if ! grep -q '^Status: 200' gh-$prefix-header ; then
+    echo "GitHub API communication failure; URL: $url" 1>&2
     trans_abort
   fi
 
