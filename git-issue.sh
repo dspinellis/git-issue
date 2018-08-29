@@ -599,6 +599,7 @@ gh_import_issues()
 
     path=$(issue_path_full $sha)
     mkdir -p $path || trans_abort
+    mkdir -p $import_dir || trans_abort
 
     # Add issue import number to allow future updates
     echo $sha >"$import_dir/sha"
@@ -641,6 +642,7 @@ gh_import_issues()
 	--author="$name <$name@users.noreply.github.com>"
       echo "Imported/updated issue #$issue_number as $(short_sha $sha)"
     fi
+
   done
 
   # Mark last import SHA, so we can use this for merging 
