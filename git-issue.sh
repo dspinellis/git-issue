@@ -557,18 +557,15 @@ gh_api_get()
 
   url="$1"
   prefix="$2"
-  if ! curl $GI_CURL_ARGS -A "$USER_AGENT" -I -s "$url" >gh-$prefix-header ; then
+
+  if ! curl "$GI_CURL_ARGS" -A "$USER_AGENT" -s \
+    -o gh-$prefix-body -D gh-$prefix-header "$url" ; then
     echo 'GitHub connection failed' 1>&2
     trans_abort
   fi
 
   if ! grep -q '^Status: 200' gh-$prefix-header ; then
     echo "GitHub API communication failure; URL: $url" 1>&2
-    trans_abort
-  fi
-
-  if ! curl $GI_CURL_ARGS -A "$USER_AGENT" -s "$url" >gh-$prefix-body ; then
-    echo 'GitHub connection failed' 1>&2
     trans_abort
   fi
 }
@@ -601,7 +598,6 @@ gh_import_comments()
       import_dir="imports/github/$user/$repo/$issue_number/comments"
       if [ -r "$import_dir/$comment_id" ] ; then
 	csha=$(cat "$import_dir/$comment_id")
-	echo "Comment already here with SHA $csha"
       else
 	GIT_AUTHOR_DATE=$(jq -r ".[$i].updated_at" gh-comments-body) \
 	  commit 'gi: Add comment' "gi comment mark $isha" \
