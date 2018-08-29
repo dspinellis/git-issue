@@ -161,8 +161,12 @@ A \fCconfig\fP file with configuration data.
 .IP "" 4
 An \fCimports\fP directory contains details about imported issues.
 .IP "" 8
-Files under \fCimport/github/<user>/<repo>/<number>\fP contain the
+The \fCsha\fP file under \fCimport/github/<user>/<repo>/<number>\fP contains the
     \fIgit-issue\fP SHA corresponding to an imported GitHub \fInumber\fP issue.
+.IP "" 8
+The \fCsha\fP file under \fCimport/github/<user>/<repo>/<number>/comments/<number>\fP
+    contains the \fIgit-issue\fP SHA corresponding to an imported GitHub
+    \fInumber\fP comment.
 .IP "" 8
 The file \fCimport/github/<user>/<repo>/checkpoint\fP contains the SHA
     of the last imported or updated issue.  This can be used for merging
@@ -177,7 +181,8 @@ Each issue can have the following elements in its directory.
 .IP "" 8
 A \fCdescription\fP file with a one-line summary and a description of the issue.
 .IP "" 8
-A \fCcomments\fP directory where comments are stored.
+A \fCcomments\fP directory where comments are stored, each with the SHA of
+    its parent commit.
 .IP "" 8
 An \fCattachments\fP directory where the issue's attachments are stored.
 .IP "" 8
