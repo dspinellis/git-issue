@@ -599,6 +599,7 @@ gh_import_comments()
       if [ -r "$import_dir/$comment_id" ] ; then
 	csha=$(cat "$import_dir/$comment_id")
       else
+	name=$(jq -r ".[$i].user.login" gh-comments-body)
 	GIT_AUTHOR_DATE=$(jq -r ".[$i].updated_at" gh-comments-body) \
 	  commit 'gi: Add comment' "gi comment mark $isha" \
 	  --author="$name <$name@users.noreply.github.com>"
