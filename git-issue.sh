@@ -650,9 +650,6 @@ gh_import_issues()
   user="$1"
   repo="$2"
 
-  prerequisite_command jq
-  prerequisite_command curl
-
   begin_sha=$(git rev-parse HEAD)
 
   # For each issue in the gh-issue-body file
@@ -757,6 +754,8 @@ sub_import()
 
   cdissues
 
+  prerequisite_command jq
+  prerequisite_command curl
 
   # Process GitHub issues page by page
   trans_start
