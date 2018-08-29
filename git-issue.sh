@@ -101,7 +101,7 @@ trans_abort()
   git reset $start_sha
   git clean -qfd
   git checkout -- .
-  rm -f gh-issue-header gh-issue-body
+  rm -f gh-issue-header gh-issue-body gh-comments-header gh-comments-body
   echo 'Operation aborted' 1>&2
   exit 1
 }
@@ -774,6 +774,7 @@ sub_import()
     # Move to next point
     endpoint=$(gh_next_page_url gh-issue-header)
   done
+  rm -f gh-issue-header gh-issue-body gh-comments-header gh-comments-body
 }
 
 # list: Show issues matching a tag {{{1
