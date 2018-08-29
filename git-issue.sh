@@ -18,6 +18,9 @@
 # along with git-issue.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+# User agent string
+USER_AGENT=https://github.com/dspinellis/git-issue/tree/bad
+
 # Exit after displaying the specified error
 error()
 {
@@ -554,7 +557,7 @@ gh_api_get()
 
   url="$1"
   prefix="$2"
-  if ! curl $GI_CURL_ARGS -I -s "$url" >gh-$prefix-header ; then
+  if ! curl $GI_CURL_ARGS -A "$USER_AGENT" -I -s "$url" >gh-$prefix-header ; then
     echo 'GitHub connection failed' 1>&2
     trans_abort
   fi
@@ -564,7 +567,7 @@ gh_api_get()
     trans_abort
   fi
 
-  if ! curl $GI_CURL_ARGS -s "$url" >gh-$prefix-body ; then
+  if ! curl $GI_CURL_ARGS -A "$USER_AGENT" -s "$url" >gh-$prefix-body ; then
     echo 'GitHub connection failed' 1>&2
     trans_abort
   fi
