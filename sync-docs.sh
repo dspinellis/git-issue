@@ -49,8 +49,12 @@ MAN_PAGE=git-issue.1
   }' README.md
   sed -n '/^USAGE_EOF/,$p' $SCRIPT_NAME
 } |
-# Update user agent version
-sed "/^USER_AGENT/s/\/tree.*/\/tree\/$(git rev-parse --short HEAD)/" >newgi.sh
+if [ "$1" = "--no-user-agent" ] ; then
+  cat
+else
+  # Update user agent version
+  sed "/^USER_AGENT/s/\/tree.*/\/tree\/$(git rev-parse --short HEAD)/"
+fi >newgi.sh
 mv newgi.sh $SCRIPT_NAME
 chmod +x git-issue.sh
 

@@ -115,7 +115,7 @@ gi_re=$(echo $gi | sed 's/[^0-9A-Za-z]/\\&/g')
 
 start
 GenFiles="git-issue.sh git-issue.1"
-make sync-docs
+sh sync-docs.sh --no-user-agent
 Status=$(git status --porcelain -- $GenFiles)
 if [ -z "$Status" ]; then
     ok "make sync-docs left $GenFiles as committed"
