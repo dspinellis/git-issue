@@ -570,6 +570,76 @@ gh_api_get()
   fi
 }
 
+# Import GitHub comments for the specified issue
+# gh_import_comments  <user> <repo> <issue_number> <issue_sha>
+gh_import_comments()
+{
+  local user repo issue_number isha
+  local i endpoint comment_id import_dir csha
+
+  user="$1"
+  shift
+  repo="$1"
+  shift
+  issue_number="$1"
+  shift
+  isha="$1"
+  shift
+
+  endpoint="https://api.github.com/repos/$user/$repo/issues/$issue_number/comments"
+  while true ; do
+    gh_api_get "$endpoint" comments
+
+    # For each comment in the gh-comments-body file
+    for i in $(seq 0 $(($(jq '. | length' gh-comments-body) - 1)) ) ; do
+      comment_id=$(jq ".[$i].id" gh-comments-body)
+
+      # See if comment already there
+      import_dir="imports/github/$user/$repo/$issue_number/comments"
+      if [ -r "$import_dir/$comment_id" ] ; then
+	csha=$(cat "$import_dir/$comment_id")
+	echo "Comment already here with SHA $csha"
+      else
+	GIT_AUTHOR_DATE=$(jq -r ".[$i].updated_at" gh-comments-body) \
+	  commit 'gi: Add comment' "gi comment mark $isha" \
+	  --author="$name <$name@users.noreply.github.com>"
+	csha=$(git rev-parse HEAD)
+      fi
+
+      path=$(issue_path_full $isha)/comments
+      mkdir -p $path || trans_abort
+      mkdir -p $import_dir || trans_abort
+
+
+      # Add issue import number to allow future updates
+      echo $csha >"$import_dir/$comment_id"
+
+      # Create comment body
+      jq -r ".[$i].body" gh-comments-body >$path/$csha || trans_abort
+
+      git add $path/$csha $import_dir/$comment_id || trans_abort
+      if ! git diff --quiet HEAD ; then
+	local name html_url
+	name=$(jq -r ".[$i].user.login" gh-comments-body)
+	html_url=$(jq -r ".[$i].html_url" gh-comments-body)
+	GIT_AUTHOR_DATE=$(jq -r ".[$i].updated_at" gh-comments-body) \
+	  commit 'gi: Import comment message' "gi comment message $isha $csha
+Comment URL: $html_url" \
+	  --author="$name <$name@users.noreply.github.com>"
+	echo "Imported/updated issue #$issue_number comment $comment_id as $(short_sha $csha)"
+      fi
+    done # For all comments on page
+
+    # Return if no more pages
+    if ! grep -q '^Link:.*rel="next"' gh-comments-header ; then
+      break
+    fi
+
+    # Move to next point
+    endpoint=$(gh_next_page_url gh-comments-header)
+  done
+}
+
 # Import GitHub issues stored in the file gh-issue-body as JSON data
 # gh_import_issues user repo
 gh_import_issues()
@@ -643,6 +713,8 @@ gh_import_issues()
       echo "Imported/updated issue #$issue_number as $(short_sha $sha)"
     fi
 
+    # Import issue comments
+    gh_import_comments "$user" "$repo" "$issue_number" $sha
   done
 
   # Mark last import SHA, so we can use this for merging 
