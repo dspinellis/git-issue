@@ -27,7 +27,7 @@ MAN_PAGE=git-issue.1
 {
   sed -n '1,/^The following commands are available:/p' $SCRIPT_NAME
   # Keep lines from `### start ` to `git issue git`
-  sed -n '/^### start/,/^\* `git issue git`/ {
+  sed -n '/^### Start/,/^\* `git issue git`/ {
     # Only keep listed commands or subheaders
     /^\* \|^### /!d
     # Format headers by eliminating all preceding space

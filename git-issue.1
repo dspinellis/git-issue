@@ -106,24 +106,24 @@ List open issues (or all with \fC-a\fP); supports tags
 .PP
 \fBgit issue push\fP
 .RS 4
-Update remote repository with local changes.
+Update remote Git repository with local changes.
 .RE
 .PP
 \fBgit issue pull\fP
 .RS 4
-Update local repository with remote changes.
+Update local Git repository with remote changes.
 .RE
 .PP
 \fBgit issue import\fP
 .RS 4
-Import/update issues from an existing GitHub repository.
+Import/update GitHub issues from the specified project.
   If the import involves more than a dozen of issues or if the repository
   is private, set the environment variable \fCGI_CURL_ARGS\fP to an argument
   that when passed to the \fIcurl\fP program will supply GitHub the appropriate
   API authentication.
   For example, run the following command: \fCexport GI_CURL_ARGS='-H "Authorization: token  badf00ddead9bfee8f3c19afc3c97c6db55fcfde"'\fP
-  You can create the authorization token at
-  this URL <https://github.com/settings/tokens/new>.
+  You can create the authorization token through
+  GitHub settings <https://github.com/settings/tokens/new>.
 .RE
 .PP
 \fBgit issue help\fP

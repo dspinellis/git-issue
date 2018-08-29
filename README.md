@@ -69,11 +69,11 @@ its operation, and (please) update this file.
 ## Use
 You use _git issue_ with the following sub-commands.
 
-### start an issue repository
+### Start an issue repository
 * `git issue clone`: Clone the specified remote repository.
 * `git issue init`: Create a new issues repository in the current directory.
   The `-e` option uses an existing Git project repository.
-### work with an issue
+### Work with an issue
 * `git issue new`: Create a new open issue (with optional `-s` summary).
 * `git issue show`: Show specified issue (and its comments with `-c`).
 * `git issue comment`: Add an issue comment.
@@ -86,21 +86,20 @@ You use _git issue_ with the following sub-commands.
 * `git issue attach`: Attach (or remove with `-r`) a file to an issue.
 * `git issue watcher`: Add (or remove with `-r`) an issue watcher.
 * `git issue close`: Remove the `open` tag, add the closed tag
-### show multiple issues
+### Show multiple issues
 * `git issue list`: List open issues (or all with `-a`); supports tags
-### synchronize with remote repository
-* `git issue push`: Update remote repository with local changes.
-* `git issue pull`: Update local repository with remote changes.
-### GitHub integration
-* `git issue import`: Import/update issues from an existing GitHub repository.
+### Synchronize with remote repositories
+* `git issue push`: Update remote Git repository with local changes.
+* `git issue pull`: Update local Git repository with remote changes.
+* `git issue import`: Import/update GitHub issues from the specified project.
   If the import involves more than a dozen of issues or if the repository
   is private, set the environment variable `GI_CURL_ARGS` to an argument
   that when passed to the _curl_ program will supply GitHub the appropriate
   API authentication.
   For example, run the following command: `export GI_CURL_ARGS='-H "Authorization: token  badf00ddead9bfee8f3c19afc3c97c6db55fcfde"'`
-  You can create the authorization token at
-  [this URL](https://github.com/settings/tokens/new).
-### help and debug
+  You can create the authorization token through
+  [GitHub settings](https://github.com/settings/tokens/new).
+### Help and debug
 * `git issue help`: Display help information about git issue.
 * `git issue log`: Output a log of changes made
 * `git issue git`: Run the specified Git command on the issues repository.

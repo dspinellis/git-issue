@@ -808,11 +808,11 @@ usage: git issue <command> [<args>]
 
 The following commands are available:
 
-start an issue repository
+Start an issue repository
    clone      Clone the specified remote repository
    init       Create a new issues repository in the current directory
 
-work with an issue
+Work with an issue
    new        Create a new open issue (with optional -s summary)
    show       Show specified issue (and its comments with -c)
    comment    Add an issue comment
@@ -823,17 +823,15 @@ work with an issue
    watcher    Add (or remove with -r) an issue watcher
    close      Remove the open tag, add the closed tag
 
-show multiple issues
+Show multiple issues
    list       List open issues (or all with -a); supports tags
 
-synchronize with remote repository
-   push       Update remote repository with local changes
-   pull       Update local repository with remote changes
+Synchronize with remote repositories
+   push       Update remote Git repository with local changes
+   pull       Update local Git repository with remote changes
+   import     Import/update GitHub issues from the specified project
 
-GitHub integration
-   import     Import/update issues from an existing GitHub repository
-
-help and debug
+Help and debug
    help       Display help information about git issue
    log        Output a log of changes made
    git        Run the specified Git command on the issues repository
