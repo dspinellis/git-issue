@@ -574,7 +574,7 @@ gh_api_get()
 gh_import_issues()
 {
   local user repo
-  local i j issue_number import_file sha path begin_sha
+  local i j issue_number import_dir sha path begin_sha
 
   user="$1"
   repo="$2"
@@ -589,9 +589,9 @@ gh_import_issues()
     issue_number=$(jq ".[$i].number" gh-body)
 
     # See if issue already there
-    import_file="imports/github/$user/$repo/$issue_number"
-    if [ -r "$import_file" ] ; then
-      sha=$(cat "$import_file")
+    import_dir="imports/github/$user/$repo/$issue_number"
+    if [ -d "$import_dir" ] ; then
+      sha=$(cat "$import_dir/sha")
     else
       sha=$(git rev-parse HEAD)
     fi
@@ -600,7 +600,7 @@ gh_import_issues()
     mkdir -p $path || trans_abort
 
     # Add issue import number to allow future updates
-    echo $sha >"$import_file"
+    echo $sha >"$import_dir/sha"
 
     # Create tags (in sorted order to avoid gratuitous updates)
     {
