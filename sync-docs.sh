@@ -92,7 +92,7 @@ replace_section()
     }' README.md
 
     # Output the rest of the man page
-    sed -n "1,/^\\.SH $man_section/d;{/^\\.SH /,/xyzzy/p}" $MAN_PAGE
+    sed -n "1,/^\\.SH $man_section/d;{/^\\.SH /,/xyzzy/p;}" $MAN_PAGE
   } >man-$$.1
   mv man-$$.1 $MAN_PAGE
 }
