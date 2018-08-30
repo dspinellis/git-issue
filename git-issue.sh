@@ -637,7 +637,7 @@ Comment URL: $html_url" \
     fi
 
     # Move to next point
-    endpoint=$(gh_next_page_url gh-comments-header)
+    endpoint=$(gh_next_page_url comments)
   done
 }
 
@@ -769,7 +769,7 @@ sub_import()
     fi
 
     # Move to next point
-    endpoint=$(gh_next_page_url gh-issue-header)
+    endpoint=$(gh_next_page_url issue)
   done
 
   rm -f gh-issue-header gh-issue-body gh-comments-header gh-comments-body
