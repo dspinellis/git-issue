@@ -429,7 +429,7 @@ file_add_rm()
   touch $path/$file || error "Unable to modify $file file"
   for entry in "$@" ; do
     if [ "$remove" ] ; then
-      grep -v "^$entry$" $path/$file >$path/$file.new
+      fgrep -vx "$entry" $path/$file >$path/$file.new
       if cmp $path/$file $path/$file.new >/dev/null 2>&1 ; then
 	echo "No such $name entry: $entry" 1>&2
 	rm $path/$file.new
@@ -441,7 +441,7 @@ file_add_rm()
       commit "gi: Remove $name" "gi $name remove $entry"
       echo "Removed $name $entry"
     else
-      if grep "^$entry$" $path/$file >/dev/null ; then
+      if fgrep -x "$entry" $path/$file >/dev/null ; then
 	echo "Entry $entry already exists" 1>&2
 	exit 1
       fi
@@ -567,7 +567,7 @@ gh_api_get()
   if ! grep -q '^Status: 200' gh-$prefix-header ; then
     echo 'GitHub API communication failure' 1>&2
     echo "URL: $url" 1>&2
-    if grep -q '^Status: 4..' gh-$prefix-header ; then
+    if grep -q '^Status: 4' gh-$prefix-header ; then
       jq -r '.message' gh-$prefix-body 1>&2
     fi
     trans_abort
@@ -822,7 +822,7 @@ sub_list()
   if [ "$all" ] ; then
     cat
   else
-    xargs grep -l "^$tag$"
+    xargs fgrep -lx "$tag"
   fi |
   while read tagpath ; do
     path=$(expr $tagpath : '\(.*\)/tags')
