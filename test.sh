@@ -111,15 +111,17 @@ start()
   testname="$@"
 }
 
+TopDir=$(mktemp -d)
+{
+  jq --version
+  curl --version
+  echo "Test artifacts saved in $TopDir"
+} 1>&2
+
 echo 'TAP version 13'
 ntest=0
 gi=$(pwd)/git-issue.sh
 gi_re=$(echo $gi | sed 's/[^0-9A-Za-z]/\\&/g')
-
-TopDir=$(mktemp -d)
-jq --version
-curl --version
-echo "Test artifacts saved in $TopDir"
 
 start
 GenFiles="git-issue.sh git-issue.1"
