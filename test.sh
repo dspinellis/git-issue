@@ -85,11 +85,14 @@ ntry()
 try_grep()
 {
   test -z "$testname" && echo "Test $ntest: grep $@" >>$TopDir/error.log
+  tee input |
   grep "$@" >/dev/null 2>&1
   if [ $? = 0 ] ; then
     ok "grep $@"
   else
     fail "grep $@"
+    echo 'Input:' >>$TopDir/error.log
+    cat input >>$TopDir/error.log
   fi
 }
 
@@ -98,11 +101,14 @@ try_grep()
 try_ngrep()
 {
   test -z "$testname" && echo "Test $ntest: ! grep $@" >>$TopDir/error.log
+  tee input |
   grep "$@" >/dev/null 2>&1
   if [ $? != 0 ] ; then
     ok "not grep $1"
   else
     fail "not grep $1"
+    echo 'Input:' >>$TopDir/error.log
+    cat input >>$TopDir/error.log
   fi
 }
 
