@@ -121,10 +121,10 @@ TopDir=$(mktemp -d)
   echo "Test artifacts saved in $TopDir"
 } 1>&2
 
-# Setup GitHub authentication token for Travis CI
+# Setup GitHub authentication token for Travis CI for curl version >= 7.55
 # The GH_TOKEN environment variable with the secret token is specified in
 # https://travis-ci.org/dspinellis/git-issue/settings
-if [ -n "$GH_TOKEN" ] ; then
+if [ -n "$GH_TOKEN" ] &&  curl --version | awk '/curl/{exit $2 >= "7.55" ? 0 : 1}' ; then
   echo "Authorization: token $GH_TOKEN" >$HOME/.token
   export GI_CURL_ARGS="-H @$HOME/.token"
   echo "Set GI_CURL_ARGS to $GI_CURL_ARGS using GH_TOKEN"
