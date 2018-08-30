@@ -241,8 +241,17 @@ start ; $gi show -c $issue | try_grep 'comment second line'
 
 # Assign
 try $gi assign $issue joe@example.com
-try $gi assign $issue joe@example.com
+ntry $gi assign $issue joe@example.com
 start ; $gi show $issue | header_continuation | try_grep '^Assigned-to:[ 	]joe@example.com'
+try $gi assign $issue jane@example.com
+start ; $gi show $issue | header_continuation | try_grep '^Assigned-to:.*jane@example.com'
+start ; $gi show $issue | header_continuation | try_grep '^Assigned-to:.*joe@example.com'
+try $gi assign -r $issue joe@example.com
+start ; $gi show $issue | header_continuation | try_ngrep '^Assigned-to:.*joe@example.com'
+ntry $gi assign -r $issue joe@example.com
+try $gi assign -r $issue jane@example.com
+start ; $gi show $issue | header_continuation | try_ngrep '^Assigned-to:.*jane@example.com'
+try $gi assign $issue joe@example.com
 
 # Watchers
 try $gi watcher $issue jane@example.com
@@ -288,7 +297,7 @@ cd testdir2
 git clone ../testdir/.issues/ 2>/dev/null
 start ; $gi show $issue | header_continuation | try_grep '^Watchers:.*alice@example.com'
 start ; $gi show $issue | header_continuation | try_grep '^Tags:.*feature'
-start ; $gi show $issue | header_continuation | try_grep '^Assigned-to:[ 	]joe@example.com'
+start ; $gi show $issue | header_continuation | try_grep '^Assigned-to:.*joe@example.com'
 start ; $gi show $issue | try_grep 'Second issue'
 start ; $gi show $issue | try_grep 'Modified line in description'
 start ; $gi show $issue | try_grep '^Author:'

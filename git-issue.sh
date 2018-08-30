@@ -19,7 +19,7 @@
 #
 
 # User agent string
-USER_AGENT=https://github.com/dspinellis/git-issue/tree/b1b19e4
+USER_AGENT=https://github.com/dspinellis/git-issue/tree/e32b91b
 
 # Exit after displaying the specified error
 error()
@@ -375,25 +375,15 @@ sub_clone()
 usage_assign()
 {
   cat <<\USAGE_tag_EOF
-gi assign usage: git issue assign <sha> email
+gi assign usage: git issue assign [-r] <sha> <email> ...
+-r	Remove the specified assignee
 USAGE_tag_EOF
   exit 2
 }
 
 sub_assign()
 {
-  local isha tag remove path
-
-  test -n "$1" -a -n "$2" || usage_assign
-
-  cdissues
-  path=$(issue_path_part "$1") || exit
-  isha=$(issue_sha $path)
-  printf "%s\n" "$2" >$path/assignee || error 'Unable to modify assignee file'
-  trans_start
-  git add $path/assignee || trans_abort
-  commit 'gi: Assign issue' "gi assign $2"
-  echo "Assigned to $2"
+  file_add_rm assignee assignee "$@"
 }
 
 # Generic file add/remove entry {{{1
@@ -906,7 +896,7 @@ Work with an issue
    comment    Add an issue comment
    edit       Edit the specified issue's description
    tag        Add (or remove with -r) a tag
-   assign     Assign (or reassign) an issue to a person
+   assign     Assign (or remove -r) an issue to a person
    attach     Attach (or remove with -r) a file to an issue
    watcher    Add (or remove with -r) an issue watcher
    close      Remove the open tag, add the closed tag

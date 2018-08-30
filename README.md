@@ -79,7 +79,7 @@ You use _git issue_ with the following sub-commands.
 * `git issue comment`: Add an issue comment.
 * `git issue edit`: Edit the specified issue's description
 * `git issue tag`: Add (or remove with `-r`) a tag.
-* `git issue assign`: Assign (or reassign) an issue to a person.
+* `git issue assign`: Assign (or remove `-r`) an issue to a person.
   The person is specified with his/her email address.
   The form `@name` or `name@` can be used as a shortcut, provided it
   uniquely identifies an existing assignee or committer.
