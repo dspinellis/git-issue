@@ -738,7 +738,7 @@ t again
 # Import issues from specified source (currently github)
 sub_import()
 {
-  local endpoint user repo
+  local endpoint user repo begin_sha
 
   test "$1" = github -a -n "$2" -a -n "$3" || usage_import
   user="$2"
@@ -749,7 +749,7 @@ sub_import()
   prerequisite_command jq
   prerequisite_command curl
 
-  BEGIN_SHA=$(git rev-parse HEAD)
+  begin_sha=$(git rev-parse HEAD)
 
   # Process GitHub issues page by page
   trans_start
@@ -771,7 +771,7 @@ sub_import()
   rm -f gh-issue-header gh-issue-body gh-comments-header gh-comments-body
 
   # Mark last import SHA, so we can use this for merging 
-  if [ $BEGIN_SHA != $(git rev-parse HEAD) ] ; then
+  if [ $begin_sha != $(git rev-parse HEAD) ] ; then
     local checkpoint="imports/github/$user/$repo/checkpoint"
     git rev-parse HEAD >"$checkpoint"
     git add "$checkpoint"
