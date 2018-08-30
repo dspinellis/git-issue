@@ -141,7 +141,8 @@ Output a log of changes made
 Run the specified Git command on the issues repository.
 
 Issues and comments are specified through the SHA hash associated with the
-parent of the commit that opened them.
+parent of the commit that opened them, which is specifically crafted for
+that element and can be used to derive its date and author.
 
 .SH ENVIRONMENT
 The \fCVISUAL\fP environment variable is used for determining the user's
@@ -165,7 +166,7 @@ The \fCsha\fP file under \fCimport/github/<user>/<repo>/<number>\fP contains the
     \fIgit-issue\fP SHA corresponding to an imported GitHub \fInumber\fP issue.
 .IP "" 8
 The \fCsha\fP file under \fCimport/github/<user>/<repo>/<number>/comments/<number>\fP
-    contains the \fIgit-issue\fP SHA corresponding to an imported GitHub
+    contains the \fIgit-issue\fP comment SHA corresponding to an imported GitHub
     \fInumber\fP comment.
 .IP "" 8
 The file \fCimport/github/<user>/<repo>/checkpoint\fP contains the SHA
@@ -182,7 +183,8 @@ Each issue can have the following elements in its directory.
 A \fCdescription\fP file with a one-line summary and a description of the issue.
 .IP "" 8
 A \fCcomments\fP directory where comments are stored, each with the SHA of
-    its parent commit.
+    a commit containing the text \fCgi comment mark\fP
+    \fIissue SHA\fP.
 .IP "" 8
 An \fCattachments\fP directory where the issue's attachments are stored.
 .IP "" 8
