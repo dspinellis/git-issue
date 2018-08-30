@@ -565,7 +565,11 @@ gh_api_get()
   fi
 
   if ! grep -q '^Status: 200' gh-$prefix-header ; then
-    echo "GitHub API communication failure; URL: $url" 1>&2
+    echo 'GitHub API communication failure' 1>&2
+    echo "URL: $url" 1>&2
+    if grep -q '^Status: 4..' gh-$prefix-header ; then
+      jq -r '.message' gh-$prefix-body 1>&2
+    fi
     trans_abort
   fi
 }
