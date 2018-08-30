@@ -126,7 +126,7 @@ TopDir=$(mktemp -d)
 # https://travis-ci.org/dspinellis/git-issue/settings
 if [ -n "$GH_TOKEN" ] ; then
   echo "Authorization: token $GH_TOKEN" >$HOME/.token
-  export GI_CURL_ARGS="-H @$HOME/.token"
+  export GI_CURL_ARGS="-H $HOME/.token"
 fi
 
 echo 'TAP version 13'
