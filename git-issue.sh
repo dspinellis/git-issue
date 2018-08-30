@@ -426,6 +426,7 @@ file_add_rm()
 	exit 1
       fi
       mv $path/$file.new $path/$file
+
       trans_start
       git add $path/$file || trans_abort
       commit "gi: Remove $name" "gi $name remove $entry"
@@ -435,7 +436,11 @@ file_add_rm()
 	echo "Entry $entry already exists" 1>&2
 	exit 1
       fi
-      printf "%s\n" "$entry" >>$path/$file
+      # Add entry in sorted order to avoid gratuitous updates when importing
+      printf "%s\n" "$entry" |
+      LC_ALL=C sort -m - $path/$file >$path/$file.new
+      mv $path/$file.new $path/$file
+
       trans_start
       git add $path/$file || trans_abort
       commit "gi: Add $name" "gi $name add $entry"
