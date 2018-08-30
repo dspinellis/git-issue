@@ -645,7 +645,7 @@ Comment URL: $html_url" \
 gh_import_issues()
 {
   local user repo
-  local i j issue_number import_dir sha path
+  local i j issue_number import_dir sha path name
 
   user="$1"
   repo="$2"
@@ -659,6 +659,10 @@ gh_import_issues()
     if [ -d "$import_dir" ] ; then
       sha=$(cat "$import_dir/sha")
     else
+      name=$(jq -r ".[$i].user.login" gh-issue-body)
+      GIT_AUTHOR_DATE=$(jq -r ".[$i].updated_at" gh-issue-body) \
+      commit 'gi: Add issue' 'gi new mark' \
+	--author="$name <$name@users.noreply.github.com>"
       sha=$(git rev-parse HEAD)
     fi
 
@@ -699,8 +703,7 @@ gh_import_issues()
 
     git add $path/description $path/tags imports || trans_abort
     if ! git diff --quiet HEAD ; then
-      local name
-      name=$(jq -r ".[$i].user.login" gh-issue-body)
+      name=${name:-$(jq -r ".[$i].user.login" gh-issue-body)}
       GIT_AUTHOR_DATE=$(jq -r ".[$i].updated_at" gh-issue-body) \
 	commit "gi: Import issue #$issue_number from GitHub" \
 	"Issue URL: https://github.com/$user/$repo/issues/$issue_number" \
@@ -711,7 +714,6 @@ gh_import_issues()
     # Import issue comments
     gh_import_comments "$user" "$repo" "$issue_number" $sha
   done
-
 }
 
 # Return the next page API URL specified in the header with the specified prefix
