@@ -558,7 +558,7 @@ gh_api_get()
   url="$1"
   prefix="$2"
 
-  if ! curl "$GI_CURL_ARGS" -A "$USER_AGENT" -s \
+  if ! curl $GI_CURL_ARGS -A "$USER_AGENT" -s \
     -o gh-$prefix-body -D gh-$prefix-header "$url" ; then
     echo 'GitHub connection failed' 1>&2
     trans_abort
