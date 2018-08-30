@@ -615,7 +615,9 @@ gh_import_comments()
       echo $csha >"$import_dir/$comment_id"
 
       # Create comment body
-      jq -r ".[$i].body" gh-comments-body >$path/$csha || trans_abort
+      jq -r ".[$i].body" gh-comments-body >/dev/null || trans_abort
+      jq -r ".[$i].body" gh-comments-body |
+      tr -d \\r >$path/$csha
 
       git add $path/$csha $import_dir/$comment_id || trans_abort
       if ! git diff --quiet HEAD ; then
@@ -695,11 +697,14 @@ gh_import_issues()
     fi
 
     # Create description
+    jq -r ".[$i].title" gh-issue-body >/dev/null || trans_abort
+    jq -r ".[$i].body" gh-issue-body >/dev/null || trans_abort
     {
       jq -r ".[$i].title" gh-issue-body
       echo
       jq -r ".[$i].body" gh-issue-body
-    } >$path/description || trans_abort
+    } |
+    tr -d \\r >$path/description
 
     git add $path/description $path/tags imports || trans_abort
     if ! git diff --quiet HEAD ; then
