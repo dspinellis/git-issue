@@ -645,12 +645,10 @@ Comment URL: $html_url" \
 gh_import_issues()
 {
   local user repo
-  local i j issue_number import_dir sha path begin_sha
+  local i j issue_number import_dir sha path
 
   user="$1"
   repo="$2"
-
-  begin_sha=$(git rev-parse HEAD)
 
   # For each issue in the gh-issue-body file
   for i in $(seq 0 $(($(jq '. | length' gh-issue-body) - 1)) ) ; do
@@ -714,14 +712,6 @@ gh_import_issues()
     gh_import_comments "$user" "$repo" "$issue_number" $sha
   done
 
-  # Mark last import SHA, so we can use this for merging 
-  if [ $begin_sha != $(git rev-parse HEAD) ] ; then
-    local checkpoint="imports/github/$user/$repo/checkpoint"
-    git rev-parse HEAD >"$checkpoint"
-    git add "$checkpoint"
-    commit "gi: Import issues from GitHub checkpoint" \
-    "Issues URL: https://github.com/$user/$repo/issues"
-  fi
 }
 
 # Return the next page API URL specified in the header with the specified prefix
@@ -757,6 +747,8 @@ sub_import()
   prerequisite_command jq
   prerequisite_command curl
 
+  BEGIN_SHA=$(git rev-parse HEAD)
+
   # Process GitHub issues page by page
   trans_start
   mkdir -p "imports/github/$user/$repo"
@@ -773,7 +765,17 @@ sub_import()
     # Move to next point
     endpoint=$(gh_next_page_url gh-issue-header)
   done
+
   rm -f gh-issue-header gh-issue-body gh-comments-header gh-comments-body
+
+  # Mark last import SHA, so we can use this for merging 
+  if [ $BEGIN_SHA != $(git rev-parse HEAD) ] ; then
+    local checkpoint="imports/github/$user/$repo/checkpoint"
+    git rev-parse HEAD >"$checkpoint"
+    git add "$checkpoint"
+    commit "gi: Import issues from GitHub checkpoint" \
+    "Issues URL: https://github.com/$user/$repo/issues"
+  fi
 }
 
 # list: Show issues matching a tag {{{1
