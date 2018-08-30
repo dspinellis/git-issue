@@ -118,6 +118,14 @@ TopDir=$(mktemp -d)
   echo "Test artifacts saved in $TopDir"
 } 1>&2
 
+# Setup GitHub authentication token for Travis CI
+# The GH_TOKEN environment variable with the secret token is specified in
+# https://travis-ci.org/dspinellis/git-issue/settings
+if [ -n "$GH_TOKEN" ] ; then
+  echo "Authorization: token $GH_TOKEN" >$HOME/.token
+  export GI_CURL_ARGS="-H $HOME/.token"
+fi
+
 echo 'TAP version 13'
 ntest=0
 gi=$(pwd)/git-issue.sh
@@ -267,30 +275,34 @@ try $gi pull
 $gi show $issue | try_grep modified-upstream
 cd ../testdir
 
-# Import
-try $gi import github dspinellis git-issue-test-issues
-start ; $gi list | try_grep 'An open issue on GitHub with a description and comments'
-# Closed issues
-start ; $gi list | try_grep -v 'A closed issue on GitHub without description'
-start ; $gi list -a | try_grep 'A closed issue on GitHub without description'
-# Description and comments
-issue=$($gi list | awk '/An open issue on GitHub with a description and comments/ {print $1}')
-start ; $gi show $issue | try_grep '^ *line 1$'
-start ; $gi show $issue | try_grep '^ *line 2$'
-start ; $gi show $issue | try_grep 'Line 3 with special characters "'\''<>|\$'
-start ; $gi show -c $issue | try_grep '^ *comment 1 line 1$'
-start ; $gi show -c $issue | try_grep '^ *comment 1 line 2$'
-start ; $gi show -c $issue | try_grep '^ *comment 2$'
-start ; $gi show -c $issue | try_grep '^ *comment 4$'
-# Assignees and tags
-issue=$($gi list | awk '/An open issue on GitHub with assignees and tags/ {print $1}')
-start ; $gi show $issue | try_grep 'good first issue'
-start ; $gi show $issue | try_grep 'Assigned-to:[ 	]*dspinellis'
-# Import should be idempotent
-before=$(cd .issues ; git rev-parse --short HEAD)
-try $gi import github dspinellis git-issue-test-issues
-after=$(cd .issues ; git rev-parse --short HEAD)
-try test $before = $after
+if [ -z "$GI_CURL_ARGS" ] ; then
+  echo "Skipping import tests due to lack of GitHub authentication token."
+else
+  # Import
+  try $gi import github dspinellis git-issue-test-issues
+  start ; $gi list | try_grep 'An open issue on GitHub with a description and comments'
+  # Closed issues
+  start ; $gi list | try_grep -v 'A closed issue on GitHub without description'
+  start ; $gi list -a | try_grep 'A closed issue on GitHub without description'
+  # Description and comments
+  issue=$($gi list | awk '/An open issue on GitHub with a description and comments/ {print $1}')
+  start ; $gi show $issue | try_grep '^ *line 1$'
+  start ; $gi show $issue | try_grep '^ *line 2$'
+  start ; $gi show $issue | try_grep 'Line 3 with special characters "'\''<>|\$'
+  start ; $gi show -c $issue | try_grep '^ *comment 1 line 1$'
+  start ; $gi show -c $issue | try_grep '^ *comment 1 line 2$'
+  start ; $gi show -c $issue | try_grep '^ *comment 2$'
+  start ; $gi show -c $issue | try_grep '^ *comment 4$'
+  # Assignees and tags
+  issue=$($gi list | awk '/An open issue on GitHub with assignees and tags/ {print $1}')
+  start ; $gi show $issue | try_grep 'good first issue'
+  start ; $gi show $issue | try_grep 'Assigned-to:[ 	]*dspinellis'
+  # Import should be idempotent
+  before=$(cd .issues ; git rev-parse --short HEAD)
+  try $gi import github dspinellis git-issue-test-issues
+  after=$(cd .issues ; git rev-parse --short HEAD)
+  try test $before = $after
+fi
 
 if ! [ -r $TopDir/failure ]; then
   echo "All tests passed!"
@@ -298,6 +310,7 @@ if ! [ -r $TopDir/failure ]; then
 else
   echo "Some test(s) failed: $(cat $TopDir/failure)"
   if [ -n "$TRAVIS_OS_NAME " ] ; then
+    echo 'Error output follows' 1>&2
     cat $TopDir/error.log 1>&2
   else
     echo "Error output is in $TopDir/error.log"
