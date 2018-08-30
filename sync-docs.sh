@@ -31,7 +31,8 @@ MAN_PAGE=git-issue.1
     # Only keep listed commands or subheaders
     /^\* \|^### /!d
     # Format headers by eliminating all preceding space
-    s/^### \(.*\)/\n\1/g
+    s/^### \(.*\)/\
+\1/g
     # Remove repetitive git issue
     s/git issue //g
     # Remove code markup
@@ -84,9 +85,12 @@ replace_section()
       /\\fC/!s/_/\\fI/;/\\fC/!s/_/\\fP/
       /\\fC/!s/_/\\fI/;/\\fC/!s/_/\\fP/
       # Set first-level and second-level bullets
-      s/^\* /.IP "" 4\n/
-      s/^  \* /.IP "" 8\n/
-      s/^    \* /.IP "" 12\n/
+      s/^\* /.IP "" 4\
+/
+      s/^  \* /.IP "" 8\
+/
+      s/^    \* /.IP "" 12\
+/
       s/\[\([^]]*\)\](\([^)]*\))/\1 <\2>/
       p
     }' README.md
@@ -99,6 +103,16 @@ replace_section()
 
 # Update subcommands, implementation, and examples in the manual page
 # from the README file
-replace_section 'GIT ISSUE COMMANDS' 'Use' 's/^\* `\([^`]*\)`: /.RE\n.PP\n\\fB\1\\fP\n.RS 4\n/'
+replace_section 'GIT ISSUE COMMANDS' 'Use' 's/^\* `\([^`]*\)`: /.RE\
+.PP\
+\\fB\1\\fP\
+.RS 4\
+/'
 replace_section FILES 'Internals'
-replace_section EXAMPLES 'Example session' '/```/d;/^###/N;s/^### \(.*\)\n/.ft P\n.fi\n.PP\n\1\n.ft C\n.nf/'
+replace_section EXAMPLES 'Example session' '/```/d;/^###/N;s/^### \(.*\)\
+/.ft P\
+.fi\
+.PP\
+\1\
+.ft C\
+.nf/'
