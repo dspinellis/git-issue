@@ -47,8 +47,11 @@ fail()
 # Test specified command, which should succeed
 try()
 {
+  local exit_code
+
   ntest=$(expr $ntest + 1)
   $* >/dev/null 2>&1
+  exit_code=$?
   cd .issues
   if git status | grep 'not staged' >/dev/null ; then
     fail staging $*
@@ -57,7 +60,7 @@ try()
   fi
   cd ..
   start
-  if [ $? = 0 ] ; then
+  if [ $exit_code = 0 ] ; then
     ok $*
   else
     fail $*
