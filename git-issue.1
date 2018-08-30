@@ -121,7 +121,7 @@ Import/update GitHub issues from the specified project.
   is private, set the environment variable \fCGI_CURL_ARGS\fP to an argument
   that when passed to the \fIcurl\fP program will supply GitHub the appropriate
   API authentication.
-  For example, run the following command: \fCexport GI_CURL_ARGS='-H "Authorization: token  badf00ddead9bfee8f3c19afc3c97c6db55fcfde"'\fP
+  For example, run the following command: \fCecho "Authorization: token  badf00ddead9bfee8f3c19afc3c97c6db55fcfde" >$HOME/.token; export GI_CURL_ARGS='-H @$HOME/.token'\fP
   You can create the authorization token through
   GitHub settings <https://github.com/settings/tokens/new>.
 .RE
