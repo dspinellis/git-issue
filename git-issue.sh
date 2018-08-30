@@ -315,7 +315,7 @@ Date:	%aD' $isha
     # Tags
     if [ -s $path/tags ] ; then
       printf 'Tags:'
-      fmt $path/tags | sed 's/^/	/'
+      sed 's/^/	/' $path/tags
     fi
 
     # Watchers
