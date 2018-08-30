@@ -127,6 +127,7 @@ TopDir=$(mktemp -d)
 if [ -n "$GH_TOKEN" ] ; then
   echo "Authorization: token $GH_TOKEN" >$HOME/.token
   export GI_CURL_ARGS="-H @$HOME/.token"
+  echo "Set GI_CURL_ARGS to $GI_CURL_ARGS using GH_TOKEN"
 fi
 
 echo 'TAP version 13'
