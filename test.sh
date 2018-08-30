@@ -50,7 +50,8 @@ try()
   local exit_code
 
   ntest=$(expr $ntest + 1)
-  $* >/dev/null 2>&1
+  echo "Test $ntest: $*" >>$TopDir/error.log 
+  $* >/dev/null 2>>$TopDir/error.log 
   exit_code=$?
   cd .issues
   if git status | grep 'not staged' >/dev/null ; then
@@ -294,5 +295,10 @@ if ! [ -r $TopDir/failure ]; then
   exit 0
 else
   echo "Some test(s) failed: $(cat $TopDir/failure)"
+  if [ -n "$TRAVIS_OS_NAME " ] ; then
+    cat $TopDir/error.log 1>&2
+  else
+    echo "Error output is in $TopDir/error.log"
+  fi
   exit 1
 fi
