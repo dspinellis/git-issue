@@ -84,6 +84,7 @@ ntry()
 # Does not increment ntest, because it is executed as a separate process
 try_grep()
 {
+  test -z "$testname" && echo "Test $ntest: grep $@" >>$TopDir/error.log
   grep "$@" >/dev/null 2>&1
   if [ $? = 0 ] ; then
     ok "grep $@"
@@ -96,7 +97,8 @@ try_grep()
 # Does not increment ntest, because it is executed as a separate process
 try_ngrep()
 {
-  grep "$1" >/dev/null 2>&1
+  test -z "$testname" && echo "Test $ntest: ! grep $@" >>$TopDir/error.log
+  grep "$@" >/dev/null 2>&1
   if [ $? != 0 ] ; then
     ok "not grep $1"
   else
@@ -109,6 +111,7 @@ start()
 {
   ntest=$(expr $ntest + 1)
   testname="$@"
+  test -n "$testname" && echo "Test $ntest: $*" >>$TopDir/error.log
 }
 
 TopDir=$(mktemp -d)
@@ -123,7 +126,7 @@ TopDir=$(mktemp -d)
 # https://travis-ci.org/dspinellis/git-issue/settings
 if [ -n "$GH_TOKEN" ] ; then
   echo "Authorization: token $GH_TOKEN" >$HOME/.token
-  export GI_CURL_ARGS="-H $HOME/.token"
+  export GI_CURL_ARGS="-H @$HOME/.token"
 fi
 
 echo 'TAP version 13'
@@ -131,7 +134,7 @@ ntest=0
 gi=$(pwd)/git-issue.sh
 gi_re=$(echo $gi | sed 's/[^0-9A-Za-z]/\\&/g')
 
-start
+start sync-docs
 GenFiles="git-issue.sh git-issue.1"
 sh sync-docs.sh --no-user-agent
 Status=$(git status --porcelain -- $GenFiles)
@@ -139,6 +142,7 @@ if [ -z "$Status" ]; then
     ok "make sync-docs left $GenFiles as committed"
 else
     fail "make sync-docs changed $GenFiles"
+    git diff -- $GenFiles >>$TopDir/error.log
     git checkout -- $GenFiles
 fi
 
