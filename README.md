@@ -105,7 +105,8 @@ You use _git issue_ with the following sub-commands.
 * `git issue git`: Run the specified Git command on the issues repository.
 
 Issues and comments are specified through the SHA hash associated with the
-parent of the commit that opened them.
+parent of the commit that opened them, which is specifically crafted for
+that element and can be used to derive its date and author.
 
 ## Internals
 All data are stored under `.issues`, which should be placed under `.gitignore`,
