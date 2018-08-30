@@ -342,7 +342,7 @@ if ! [ -r $TopDir/failure ]; then
   exit 0
 else
   echo "Some test(s) failed: $(cat $TopDir/failure)"
-  if [ -n "$TRAVIS_OS_NAME " ] ; then
+  if [ -n "$TRAVIS_OS_NAME" ] ; then
     echo 'Error output follows' 1>&2
     cat $TopDir/error.log 1>&2
   else
