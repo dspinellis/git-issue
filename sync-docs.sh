@@ -27,11 +27,11 @@ MAN_PAGE=git-issue.1
 {
   sed -n '1,/^The following commands are available:/p' $SCRIPT_NAME
   # Keep lines from `### start ` to `git issue git`
-  sed -n '/^### Start/,/^\* `git issue git`/ {
+  sed -E -n '/^### Start/,/^\* `git issue git`/ {
     # Only keep listed commands or subheaders
-    /^\* \|^### /!d
+    /^\* |^### /!d
     # Format headers by eliminating all preceding space
-    s/^### \(.*\)/\
+    s/^### (.*)/\
 \1/g
     # Remove repetitive git issue
     s/git issue //g
@@ -40,14 +40,14 @@ MAN_PAGE=git-issue.1
     # Remove fullstops
     s/\.//g
     # Format commands, depending on length
-    s/^\* \([^:]\{3\}\): /   \1        /g
-    s/^\* \([^:]\{4\}\): /   \1       /g
-    s/^\* \([^:]\{5\}\): /   \1      /g
-    s/^\* \([^:]\{6\}\): /   \1     /g
-    s/^\* \([^:]\{7\}\): /   \1    /g
+    s/^\* ([^:]{3}): /   \1        /g
+    s/^\* ([^:]{4}): /   \1       /g
+    s/^\* ([^:]{5}): /   \1      /g
+    s/^\* ([^:]{6}): /   \1     /g
+    s/^\* ([^:]{7}): /   \1    /g
 
     p
-  }' README.md
+  }' README.md | tee foo
   sed -n '/^USAGE_EOF/,$p' $SCRIPT_NAME
 } |
 if [ "$1" = "--no-user-agent" ] ; then
@@ -109,10 +109,8 @@ replace_section 'GIT ISSUE COMMANDS' 'Use' 's/^\* `\([^`]*\)`: /.RE\
 .RS 4\
 /'
 replace_section FILES 'Internals'
-replace_section EXAMPLES 'Example session' '/```/d;/^###/N;s/^### \(.*\)\
-/.ft P\
+replace_section EXAMPLES 'Example session' '/```/d;/^###/N;s/^### \(.*\)/.ft P\
 .fi\
 .PP\
-\1\
-.ft C\
+\1.ft C\
 .nf/'
