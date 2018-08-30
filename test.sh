@@ -253,6 +253,10 @@ try $gi pull
 $gi git reset --hard >/dev/null # Required, because we pushed to a non-bare repo
 start ; $gi show $issue | try_grep '^Tags:.*cloned'
 
+# Import
+try $gi import github dspinellis git-issue-test-issues
+start ; $gi list | try_grep 'An open issue on GitHub with a description'
+
 if [ $failed -eq 0 ]; then
     echo "All tests passed!"
     exit 0
