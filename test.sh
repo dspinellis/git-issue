@@ -344,7 +344,8 @@ else
   # Assignees and tags
   issue=$($gi list | awk '/An open issue on GitHub with assignees and tags/ {print $1}')
   start ; $gi show $issue | try_grep 'good first issue'
-  start ; $gi show $issue | header_continuation | try_grep 'Assigned-to:[ 	]*dspinellis'
+  start ; $gi show $issue | header_continuation | try_grep 'Assigned-to:.*dspinellis'
+  start ; $gi show $issue | header_continuation | try_grep 'Assigned-to:.*louridas'
   # Import should be idempotent
   before=$(cd .issues ; git rev-parse --short HEAD)
   try $gi import github dspinellis git-issue-test-issues
