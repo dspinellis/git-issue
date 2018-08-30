@@ -96,7 +96,7 @@ You use _git issue_ with the following sub-commands.
   is private, set the environment variable `GI_CURL_ARGS` to an argument
   that when passed to the _curl_ program will supply GitHub the appropriate
   API authentication.
-  For example, run the following command: `export GI_CURL_ARGS='-H "Authorization: token  badf00ddead9bfee8f3c19afc3c97c6db55fcfde"'`
+  For example, run the following command: `echo "Authorization: token  badf00ddead9bfee8f3c19afc3c97c6db55fcfde" >$HOME/.token; export GI_CURL_ARGS='-H @$HOME/.token'`
   You can create the authorization token through
   [GitHub settings](https://github.com/settings/tokens/new).
 ### Help and debug
