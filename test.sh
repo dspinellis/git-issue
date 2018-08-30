@@ -252,9 +252,15 @@ start ; $gi show $issue | try_grep '^Tags:.*closed'
 try $gi tag $issue cloned
 try $gi push
 cd ../testdir
-try $gi pull
 $gi git reset --hard >/dev/null # Required, because we pushed to a non-bare repo
 start ; $gi show $issue | try_grep '^Tags:.*cloned'
+
+# Pull
+try $gi tag $issue modified-upstream
+cd ../testdir2
+try $gi pull
+$gi show $issue | try_grep modified-upstream
+cd ../testdir
 
 # Import
 try $gi import github dspinellis git-issue-test-issues
