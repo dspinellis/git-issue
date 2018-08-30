@@ -40,7 +40,7 @@ ok()
 
 fail()
 {
-  failed=1
+  printf "$ntest " >>$TopDir/failure
   message fail $*
 }
 
@@ -80,11 +80,11 @@ ntry()
 # Does not increment ntest, because it is executed as a separate process
 try_grep()
 {
-  grep "$1" >/dev/null 2>&1
+  grep "$@" >/dev/null 2>&1
   if [ $? = 0 ] ; then
-    ok "grep $1"
+    ok "grep $@"
   else
-    fail "grep $1"
+    fail "grep $@"
   fi
 }
 
@@ -108,10 +108,12 @@ start()
 }
 
 echo 'TAP version 13'
-failed=0
 ntest=0
 gi=$(pwd)/git-issue.sh
 gi_re=$(echo $gi | sed 's/[^0-9A-Za-z]/\\&/g')
+
+TopDir=$(mktemp -d)
+echo "Test artifacts saved in $TopDir"
 
 start
 GenFiles="git-issue.sh git-issue.1"
@@ -124,8 +126,6 @@ else
     git checkout -- $GenFiles
 fi
 
-TopDir=$(mktemp -d)
-echo "Test artifacts saved in $TopDir"
 cd $TopDir
 
 mkdir testdir
@@ -255,12 +255,33 @@ start ; $gi show $issue | try_grep '^Tags:.*cloned'
 
 # Import
 try $gi import github dspinellis git-issue-test-issues
-start ; $gi list | try_grep 'An open issue on GitHub with a description'
+start ; $gi list | try_grep 'An open issue on GitHub with a description and comments'
+# Closed issues
+start ; $gi list | try_grep -v 'A closed issue on GitHub without description'
+start ; $gi list -a | try_grep 'A closed issue on GitHub without description'
+# Description and comments
+issue=$($gi list | awk '/An open issue on GitHub with a description and comments/ {print $1}')
+start ; $gi show $issue | try_grep '^ *line 1$'
+start ; $gi show $issue | try_grep '^ *line 2$'
+start ; $gi show $issue | try_grep 'Line 3 with special characters "'\''<>|\$'
+start ; $gi show -c $issue | try_grep '^ *comment 1 line 1$'
+start ; $gi show -c $issue | try_grep '^ *comment 1 line 2$'
+start ; $gi show -c $issue | try_grep '^ *comment 2$'
+start ; $gi show -c $issue | try_grep '^ *comment 4$'
+# Assignees and tags
+issue=$($gi list | awk '/An open issue on GitHub with assignees and tags/ {print $1}')
+start ; $gi show $issue | try_grep 'good first issue'
+start ; $gi show $issue | try_grep 'Assigned-to:[ 	]*dspinellis'
+# Import should be idempotent
+before=$(cd .issues ; git rev-parse --short HEAD)
+try $gi import github dspinellis git-issue-test-issues
+after=$(cd .issues ; git rev-parse --short HEAD)
+try test $before = $after
 
-if [ $failed -eq 0 ]; then
-    echo "All tests passed!"
-    exit 0
+if ! [ -r $TopDir/failure ]; then
+  echo "All tests passed!"
+  exit 0
 else
-    echo "Some tests failed!"
-    exit 1
+  echo "Some test(s) failed: $(cat $TopDir/failure)"
+  exit 1
 fi
