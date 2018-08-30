@@ -116,6 +116,8 @@ gi=$(pwd)/git-issue.sh
 gi_re=$(echo $gi | sed 's/[^0-9A-Za-z]/\\&/g')
 
 TopDir=$(mktemp -d)
+jq --version
+curl --version
 echo "Test artifacts saved in $TopDir"
 
 start
