@@ -122,8 +122,7 @@ sed -n '
 /^[^ 	]/ {
   # Print previous hold space
   x
-  s/\
-//g
+  s/\n//g
   /^./p
   x
   # Keep in hold space
@@ -137,7 +136,7 @@ sed -n '
 $ {
   # Print previous hold space
   x
-  s/\n/@/g
+  s/\n/ /g
   /^./p
 }
 '
