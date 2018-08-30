@@ -114,6 +114,35 @@ start()
   test -n "$testname" && echo "Test $ntest: $*" >>$TopDir/error.log
 }
 
+# Fold header continuation lines
+header_continuation()
+{
+sed -n '
+# Header
+/^[^ 	]/ {
+  # Print previous hold space
+  x
+  s/\
+//g
+  /^./p
+  x
+  # Keep in hold space
+  h
+}
+# Continuation
+/^[ 	]/ {
+  # Append to hold space
+  H
+}
+$ {
+  # Print previous hold space
+  x
+  s/\n/@/g
+  /^./p
+}
+'
+}
+
 TopDir=$(mktemp -d)
 {
   jq --version
@@ -181,7 +210,7 @@ issue=$($gi list | awk '/Second issue/{print $1}')
 start ; $gi show $issue | try_grep 'Second issue'
 start ; $gi show $issue | try_grep 'Line in description'
 start ; $gi show $issue | try_grep '^Author:'
-start ; $gi show $issue | try_grep '^Tags:[ 	]*open'
+start ; $gi show $issue | header_continuation | try_grep '^Tags:[ 	]*open'
 ntry $gi show xyzzy
 
 # Edit
@@ -214,22 +243,22 @@ start ; $gi show -c $issue | try_grep 'comment second line'
 # Assign
 try $gi assign $issue joe@example.com
 try $gi assign $issue joe@example.com
-start ; $gi show $issue | try_grep '^Assigned-to:[ 	]joe@example.com'
+start ; $gi show $issue | header_continuation | try_grep '^Assigned-to:[ 	]joe@example.com'
 
 # Watchers
 try $gi watcher $issue jane@example.com
-start ; $gi show $issue | try_grep '^Watchers:[ 	]jane@example.com'
+start ; $gi show $issue | header_continuation | try_grep '^Watchers:[ 	]jane@example.com'
 try $gi watcher $issue alice@example.com
 ntry $gi watcher $issue alice@example.com
-start ; $gi show $issue | try_grep '^Watchers:.*jane@example.com'
-start ; $gi show $issue | try_grep '^Watchers:.*alice@example.com'
+start ; $gi show $issue | header_continuation | try_grep '^Watchers:.*jane@example.com'
+start ; $gi show $issue | header_continuation | try_grep '^Watchers:.*alice@example.com'
 try $gi watcher -r $issue alice@example.com
-start ; $gi show $issue | try_ngrep '^Watchers:.*alice@example.com'
+start ; $gi show $issue | header_continuation | try_ngrep '^Watchers:.*alice@example.com'
 try $gi watcher $issue alice@example.com
 
 # Tags (most also tested through watchers)
 try $gi tag $issue feature
-start ; $gi show $issue | try_grep '^Tags:.*feature'
+start ; $gi show $issue | header_continuation | try_grep '^Tags:.*feature'
 ntry $gi tag $issue feature
 
 # List by tag
@@ -258,20 +287,20 @@ rm -rf testdir2
 mkdir testdir2
 cd testdir2
 git clone ../testdir/.issues/ 2>/dev/null
-start ; $gi show $issue | try_grep '^Watchers:.*alice@example.com'
-start ; $gi show $issue | try_grep '^Tags:.*feature'
-start ; $gi show $issue | try_grep '^Assigned-to:[ 	]joe@example.com'
+start ; $gi show $issue | header_continuation | try_grep '^Watchers:.*alice@example.com'
+start ; $gi show $issue | header_continuation | try_grep '^Tags:.*feature'
+start ; $gi show $issue | header_continuation | try_grep '^Assigned-to:[ 	]joe@example.com'
 start ; $gi show $issue | try_grep 'Second issue'
 start ; $gi show $issue | try_grep 'Modified line in description'
 start ; $gi show $issue | try_grep '^Author:'
-start ; $gi show $issue | try_grep '^Tags:.*closed'
+start ; $gi show $issue | header_continuation | try_grep '^Tags:.*closed'
 
 # Push and pull
 try $gi tag $issue cloned
 try $gi push
 cd ../testdir
 $gi git reset --hard >/dev/null # Required, because we pushed to a non-bare repo
-start ; $gi show $issue | try_grep '^Tags:.*cloned'
+start ; $gi show $issue | header_continuation | try_grep '^Tags:.*cloned'
 
 # Pull
 try $gi tag $issue modified-upstream
@@ -301,7 +330,7 @@ else
   # Assignees and tags
   issue=$($gi list | awk '/An open issue on GitHub with assignees and tags/ {print $1}')
   start ; $gi show $issue | try_grep 'good first issue'
-  start ; $gi show $issue | try_grep 'Assigned-to:[ 	]*dspinellis'
+  start ; $gi show $issue | header_continuation | try_grep 'Assigned-to:[ 	]*dspinellis'
   # Import should be idempotent
   before=$(cd .issues ; git rev-parse --short HEAD)
   try $gi import github dspinellis git-issue-test-issues
