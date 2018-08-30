@@ -117,7 +117,7 @@ The directory contains the following elements.
   * The `sha` file under `import/github/<user>/<repo>/<number>` contains the
     _git-issue_ SHA corresponding to an imported GitHub _number_ issue.
   * The `sha` file under `import/github/<user>/<repo>/<number>/comments/<number>`
-    contains the _git-issue_ SHA corresponding to an imported GitHub
+    contains the _git-issue_ comment SHA corresponding to an imported GitHub
     _number_ comment.
   * The file `import/github/<user>/<repo>/checkpoint` contains the SHA
     of the last imported or updated issue.  This can be used for merging
@@ -128,7 +128,8 @@ The directory contains the following elements.
 * Each issue can have the following elements in its directory.
   * A `description` file with a one-line summary and a description of the issue.
   * A `comments` directory where comments are stored, each with the SHA of
-    its parent commit.
+    a commit containing the text `gi comment mark`
+    _issue SHA_.
   * An `attachments` directory where the issue's attachments are stored.
   * A `tags` file containing the issue's tags, one in each line.
   * A `watchers` file containing the emails of persons to be notified when the issue changes (one per line).
