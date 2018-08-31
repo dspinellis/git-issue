@@ -646,7 +646,7 @@ Comment URL: $html_url" \
 gh_import_issues()
 {
   local user repo
-  local i j issue_number import_dir sha path name
+  local i issue_number import_dir sha path name
 
   user="$1"
   repo="$2"
@@ -677,16 +677,12 @@ gh_import_issues()
     # Create tags (in sorted order to avoid gratuitous updates)
     {
       jq -r ".[$i].state" gh-issue-body
-      for j in $(seq 0 $(($(jq ".[$i].labels | length" gh-issue-body) - 1)) ) ; do
-	jq -r ".[$i].labels[$j].name" gh-issue-body
-      done
+      jq -r ".[$i].labels[] | .name" gh-issue-body
     } |
     LC_ALL=C sort >$path/tags || trans_abort
 
     # Create assignees (in sorted order to avoid gratuitous updates)
-    for j in $(seq 0 $(($(jq ".[$i].assignees | length" gh-issue-body) - 1)) ) ; do
-      jq -r ".[$i].assignees[$j].login" gh-issue-body
-    done |
+    jq -r ".[$i].assignees[] | .login" gh-issue-body |
     LC_ALL=C sort >$path/assignee || trans_abort
 
     if [ -s $path/assignee ] ; then
