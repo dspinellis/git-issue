@@ -171,14 +171,18 @@ gi_re=$(echo $gi | sed 's/[^0-9A-Za-z]/\\&/g')
 
 start sync-docs
 GenFiles="git-issue.sh git-issue.1"
-sh sync-docs.sh --no-user-agent
-Status=$(git status --porcelain -- $GenFiles)
-if [ -z "$Status" ]; then
-    ok "make sync-docs left $GenFiles as committed"
+if ! git diff --quiet HEAD ; then
+  fail "Uncommitted files sync-docs test skipped and pending"
 else
-    fail "make sync-docs changed $GenFiles"
-    git diff -- $GenFiles >>$TopDir/error.log
-    git checkout -- $GenFiles
+  sh sync-docs.sh --no-user-agent
+  Status=$(git status --porcelain -- $GenFiles)
+  if [ -z "$Status" ]; then
+      ok "make sync-docs left $GenFiles as committed"
+  else
+      fail "make sync-docs changed $GenFiles"
+      git diff -- $GenFiles >>$TopDir/error.log
+      git checkout -- $GenFiles
+  fi
 fi
 
 cd $TopDir
@@ -258,6 +262,17 @@ ntry $gi assign -r $issue joe@example.com
 try $gi assign -r $issue jane@example.com
 start ; $gi show $issue | header_continuation | try_ngrep '^Assigned-to:.*jane@example.com'
 try $gi assign $issue joe@example.com
+
+# Milestone
+try $gi milestone $issue ver2
+start ; $gi show $issue | try_grep '^Milestone:[ 	]ver2'
+try $gi milestone $issue ver2
+try $gi milestone $issue ver3
+start ; $gi show $issue | try_grep '^Milestone:[ 	]ver3'
+start ; $gi show $issue | try_ngrep ver2
+ntry $gi milestone -r $issue foo
+try $gi milestone -r $issue
+start ; $gi show $issue | try_ngrep ver3
 
 # Watchers
 try $gi watcher $issue jane@example.com

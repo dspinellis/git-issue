@@ -19,7 +19,7 @@
 #
 
 # User agent string
-USER_AGENT=https://github.com/dspinellis/git-issue/tree/e32b91b
+USER_AGENT=https://github.com/dspinellis/git-issue/tree/8b43921
 
 # Exit after displaying the specified error
 error()
@@ -312,6 +312,12 @@ sub_show()
     git show --no-patch --format='Author:	%an <%ae>
 Date:	%aD' $isha
 
+    # Milestone
+    if [ -s $path/milestone ] ; then
+      printf 'Milestone: '
+      cat $path/milestone
+    fi
+
     # Tags
     if [ -s $path/tags ] ; then
       printf 'Tags:'
@@ -371,7 +377,61 @@ sub_clone()
   echo "Cloned $1 into $2"
 }
 
-# assign: assign (or reassign) an issue to a person {{{1
+# milestone: set an issue's milestone {{{1
+usage_milestone()
+{
+  cat <<\USAGE_tag_EOF
+gi milestone usage: git issue milestone <sha> <milestone>
+	git issue milestone -r <sha>
+-r	Remove the issue's milestone
+USAGE_tag_EOF
+  exit 2
+}
+
+sub_milestone()
+{
+  local isha tag remove path milestone
+
+  while getopts r flag ; do
+    case $flag in
+    r)
+      remove=1
+      ;;
+    ?)
+      usage_milestone
+      ;;
+    esac
+  done
+  shift $(($OPTIND - 1));
+
+  test -n "$1" -a -n "$2$remove" || usage_milestone
+  test -n "$remove" -a -n "$2" && usage_milestone
+
+  milestone="$2"
+
+  cdissues
+  path=$(issue_path_part "$1") || exit
+  shift
+  isha=$(issue_sha $path)
+  if [ "$remove" ] ; then
+    test -r $path/milestone || error "No milestone set"
+    milestone=$(cat $path/milestone)
+    trans_start
+    git rm $path/milestone >/dev/null || trans_abort
+    commit "gi: Remove milestone" "gi milestone remove $milestone"
+    echo "Removed milestone $milestone"
+  else
+    touch $path/milestone || error "Unable to modify milestone file"
+    printf "%s\n" "$milestone" >$path/milestone
+    trans_start
+    git add $path/milestone || trans_abort
+    commit "gi: Add milestone" "gi milestone add $milestone"
+    echo "Added milestone $milestone"
+  fi
+}
+
+
+# assign: assign an issue to a person or remove assignment {{{1
 usage_assign()
 {
   cat <<\USAGE_tag_EOF
@@ -897,6 +957,7 @@ Work with an issue
    comment    Add an issue comment
    edit       Edit the specified issue's description
    tag        Add (or remove with -r) a tag
+* milestone: Specify (or remove with -r) the issue's milestone
    assign     Assign (or remove -r) an issue to a person
    attach     Attach (or remove with -r) a file to an issue
    watcher    Add (or remove with -r) an issue watcher
@@ -974,6 +1035,9 @@ case "$subcommand" in
     ;;
   log) # Output log of changes made.
     sub_log "$@"
+    ;;
+  milestone) # Add (or remove with -r) a milestone
+    sub_milestone "$@"
     ;;
   push) # Update remote repository with local changes.
     cdissues
