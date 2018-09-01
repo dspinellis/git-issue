@@ -2,14 +2,14 @@
 
 # git-issue
 
-This is a minimalist distributed issue management system based on Git.
+This is a minimalist decentralized issue management system based on Git.
 It has the following advantages over other systems.
 
 * **No backend, no dependencies:**
   You can install and use _git issue_ with a single shell script.
   There's no need for a server or a database back-end, and the corresponding
   problems and requirements for their administration.
-* **Distributed asynchronous management:**
+* **Decentralized asynchronous management:**
   Anyone can add, comment, and edit issues without requiring online access
   to a centralized server.
   There's no need for online connectivity; you can pull and push issues
