@@ -149,7 +149,7 @@ and usage examples, are automatically inserted into the script and its
 documentation from the `README.md` file using the `sync-docs.sh` command.
 
 ## Example session
-You can view a video of the session on [YouTube](https://youtu.be/zrPM5kNQcKU).
+You can view a video of the session on [YouTube](https://youtu.be/9aKHTjtTbFs).
 
 ### Initialize issue repository
 
