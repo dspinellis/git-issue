@@ -363,6 +363,8 @@ else
   start ; $gi show $issue | try_grep 'good first issue'
   start ; $gi show $issue | header_continuation | try_grep 'Assigned-to:.*dspinellis'
   start ; $gi show $issue | header_continuation | try_grep 'Assigned-to:.*louridas'
+  # Milestone
+  try $gi list ver3
   # Import should be idempotent
   before=$(cd .issues ; git rev-parse --short HEAD)
   try $gi import github dspinellis git-issue-test-issues

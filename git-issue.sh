@@ -751,6 +751,16 @@ gh_import_issues()
       rm -f $path/assignee
     fi
 
+    # Obtain milestone
+    if [ "$(jq '.[$i].milestone' gh-issue-body)" = null ] ; then
+      if [ -r $path/milestone ] ; then
+	git rm $path/milestone || trans_abort
+      fi
+    else
+      jq -r ".[$i].milestone" gh-issue-body >$path/milestone || trans_abort
+      git add $path/milestone || trans_abort
+    fi
+
     # Create description
     jq -r ".[$i].title" gh-issue-body >/dev/null || trans_abort
     jq -r ".[$i].body" gh-issue-body >/dev/null || trans_abort
