@@ -19,7 +19,7 @@
 #
 
 # User agent string
-USER_AGENT=https://github.com/dspinellis/git-issue/tree/379909a
+USER_AGENT=https://github.com/dspinellis/git-issue/tree/c0ef92b
 
 # Exit after displaying the specified error
 error()
@@ -844,7 +844,7 @@ sub_import()
 usage_list()
 {
   cat <<\USAGE_list_EOF
-gi new usage: git issue list [-a] [tag]
+gi new usage: git issue list [-a] [tag|milestone]
 USAGE_list_EOF
   exit 2
 }
@@ -869,20 +869,30 @@ sub_list()
   : ${tag:=open}
   cdissues
   test -d issues || exit 0
-  find issues -type f -name tags |
+  find issues -type f -name tags -o -name milestone |
   if [ "$all" ] ; then
     cat
   else
     xargs fgrep -lx "$tag"
   fi |
-  while read tagpath ; do
-    path=$(expr $tagpath : '\(.*\)/tags')
-    id=$(echo $tagpath | sed 's/issues\/\(..\)\/\(.....\).*/\1\2/')
+  # Convert list of tag or milestone file paths into the corresponding
+  # directory and issue id
+  sed 's/^\(.*\)\/[^\/]*$/\1/;s/\(issues\/\(..\)\/\(.....\).*\)/\1 \2\3/' |
+  sort -u |
+  while read path id ; do
     printf '%s' "$id "
     head -1 $path/description
   done |
   sort -k 2 |
+  tee results |
   pager
+
+  # Error checking
+  if ! [ -s results ] ; then
+    echo 'No matching issues found' 1>&2
+    exit 1
+  fi
+  rm -f results
 }
 
 # log: Show log of issue changes {{{1
@@ -957,14 +967,14 @@ Work with an issue
    comment    Add an issue comment
    edit       Edit the specified issue's description
    tag        Add (or remove with -r) a tag
-* milestone: Specify (or remove with -r) the issue's milestone
+   milestone  Specify (or remove with -r) the issue's milestone
    assign     Assign (or remove -r) an issue to a person
    attach     Attach (or remove with -r) a file to an issue
    watcher    Add (or remove with -r) an issue watcher
    close      Remove the open tag, add the closed tag
 
 Show multiple issues
-   list       List open issues (or all with -a); supports tags
+   list       List open issues (or all with -a)
 
 Synchronize with remote repositories
    push       Update remote Git repository with local changes

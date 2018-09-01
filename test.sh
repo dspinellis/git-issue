@@ -264,7 +264,9 @@ start ; $gi show $issue | header_continuation | try_ngrep '^Assigned-to:.*jane@e
 try $gi assign $issue joe@example.com
 
 # Milestone
+ntry $gi list ver2
 try $gi milestone $issue ver2
+start ; $gi list ver2 | try_grep "$issue"
 start ; $gi show $issue | try_grep '^Milestone:[ 	]ver2'
 try $gi milestone $issue ver2
 try $gi milestone $issue ver3
@@ -295,7 +297,7 @@ start ; $gi list feature | try_grep 'Second issue'
 start ; $gi list open | try_grep 'First-issue'
 start ; $gi list feature | try_ngrep 'First-issue'
 try $gi tag -r $issue feature
-start ; $gi list feature | try_ngrep 'Second issue'
+start ; $gi list feature 2>/dev/null | try_ngrep 'Second issue'
 try $gi tag $issue feature
 
 # close
