@@ -1,14 +1,21 @@
-$ git clone git@github.com:dspinellis/gi.git
-Cloning into 'gi'...
+$ git clone git@github.com:dspinellis/git-issue.git
+Cloning into 'git-issue'...
 remote: Counting objects: 75, done.
 remote: Compressing objects: 100% (39/39), done.
 remote: Total 75 (delta 42), reused 69 (delta 36), pack-reused 0
 Receiving objects: 100% (75/75), 29.52 KiB | 0 bytes/s, done.
 Resolving deltas: 100% (42/42), done.
 Checking connectivity... done.
-$ sudo install gi/gi.sh /usr/local/bin # Install
+$ cd git-issue
+$ sudo make install # Install
+mkdir -p "/usr/local/share/man/man1"
+mkdir -p "/usr/local/bin"
+install git-issue.sh "/usr/local/bin"/git-issue
+install -m 644 git-issue.1 "/usr/local/share/man/man1"/
+mkdir -p /usr/local/etc/bash_completion.d
+install -m 644 gi-completion.sh /usr/local/etc/bash_completion.d/git-issue
 $ git issue init # Initialize issue repository
-Initialized empty Issues repository in /home/dds/src/gi/.issues
+Initialized empty Issues repository in /home/dds/src/git-issue/.issues
 $ git issue new -s 'New issue entered from the command line'
 Added issue e6a95c9
 $ git issue new # Create a new issue (opens editor window)
@@ -110,4 +117,41 @@ $ git issue list # List open issues
 7dfa5b7 An issue entered from the editor
 abc9adc Issue added on another host
 e6a95c9 New issue entered from the command line
+
+
+$ # GitHub import functionality
+$ mkdir github-project
+$ cd github-project/
+$ git issue init
+Initialized empty issues repository in /home/dds/github-project/.issues
+$ git issue import github dspinellis git-issue-test-issues # Import GitHub issues
+Imported/updated issue #3 as 0a27c66
+Imported/updated issue #2 as feb2a2c
+Imported/updated issue #2 comment 416631296 as f7de92c
+Imported/updated issue #2 comment 416631349 as 03acf84
+Imported/updated issue #2 comment 417048301 as 0cd48ed
+Imported/updated issue #2 comment 417049466 as 325a581
+Imported/updated issue #1 as bbe144d
+$ git issue list
+feb2a2c An open issue on GitHub with a description and comments
+0a27c66 An open issue on GitHub with assignees and tags
+$ git issue show 0a27c66
+issue 0a27c6633f492e42bb2a24e6ae458482a4690a55
+Author: dspinellis <dspinellis@users.noreply.github.com>
+Date:   Thu, 30 Aug 2018 20:59:59 +0000
+Tags:   bug
+        duplicate
+        enhancement
+        good first issue
+        open
+Assigned-to:    dspinellis
+        louridas
+
+    An open issue on GitHub with assignees and tags
+
+    Description
+
+Edit History:
+* Thu, 30 Aug 2018 20:59:59 +0000 by dspinellis
+* <dspinellis@users.noreply.github.com>
 $ 
