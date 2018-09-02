@@ -441,6 +441,45 @@ e6a95c9 New issue entered from the command line
 .ft P
 .fi
 .PP
+Import issues from GitHub
+.ft C
+.nf
+$ git issue import github dspinellis git-issue-test-issues # Import GitHub issues
+Imported/updated issue #3 as 0a27c66
+Imported/updated issue #2 as feb2a2c
+Imported/updated issue #2 comment 416631296 as f7de92c
+Imported/updated issue #2 comment 416631349 as 03acf84
+Imported/updated issue #2 comment 417048301 as 0cd48ed
+Imported/updated issue #2 comment 417049466 as 325a581
+Imported/updated issue #1 as bbe144d
+$ git issue list
+feb2a2c An open issue on GitHub with a description and comments
+0a27c66 An open issue on GitHub with assignees and tags
+$ git issue show 0a27c66
+issue 0a27c6633f492e42bb2a24e6ae458482a4690a55
+Author: dspinellis <dspinellis@users.noreply.github.com>
+Date:   Thu, 30 Aug 2018 20:59:59 +0000
+Tags:   bug
+        duplicate
+        enhancement
+        good first issue
+        open
+Assigned-to:    dspinellis
+        louridas
+
+    An open issue on GitHub with assignees and tags
+
+    Description
+
+Edit History:
+.IP "" 4
+Thu, 30 Aug 2018 20:59:59 +0000 by dspinellis
+.IP "" 4
+<dspinellis@users.noreply.github.com>
+
+.ft P
+.fi
+.PP
 Sub-command auto-completion
 .ft C
 .nf

@@ -19,7 +19,7 @@
 #
 
 # User agent string
-USER_AGENT=https://github.com/dspinellis/git-issue/tree/c0ef92b
+USER_AGENT=https://github.com/dspinellis/git-issue/tree/ba82a93
 
 # Exit after displaying the specified error
 error()
