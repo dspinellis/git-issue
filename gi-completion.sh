@@ -42,7 +42,7 @@ _gi_autocomplete_subcommand_argument()
       # list all issues
       list_args="-a"
       ;;
-    edit | close)
+    edit | close | milestone)
       # list only open issues
       list_args=""
       ;;
