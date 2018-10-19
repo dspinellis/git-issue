@@ -19,6 +19,7 @@
 #
 
 # Autocompletes the gi subcommand sequence.
+# Arguments: the current word
 _gi_autocomplete_subcommand()
 {
   local IFS=$'\n' command_regex="git issue\s([^:]*):.*"
@@ -33,11 +34,10 @@ _gi_autocomplete_subcommand()
 }
 
 # Autocompletes the gi subcommands' argument sequence.
+# Arguments: the subcommand, the current word
 _gi_autocomplete_subcommand_argument()
 {
-  local list_args subcommand=${COMP_WORDS[COMP_CWORD-1]}
-
-  case $subcommand in
+  case $1 in
     show | comment | tag | assign | attach | watcher)
       # list all issues
       list_args="-a"
@@ -55,7 +55,7 @@ _gi_autocomplete_subcommand_argument()
 
   while read -r line; do
     desc=($(echo $line | sed 's/ /\n/'))
-    cmd=$(compgen -W "${desc[0]}" -- "$1")
+    cmd=$(compgen -W "${desc[0]}" -- "$2")
 
     if [ -n "$cmd" ]; then
       # Store the matching issues along with their description
@@ -94,7 +94,17 @@ _gi_autocomplete()
     if [ "$COMP_CWORD" -eq "$baseidx" ]; then
         _gi_autocomplete_subcommand $word
     else
-        _gi_autocomplete_subcommand_argument $word
+        local subcmd="${COMP_WORDS[$baseidx]}"
+        local prev_word="${COMP_WORDS[COMP_CWORD-1]}"
+        # completion is only implemented directly after a subcommand or after a
+        # subcommand's flag, that is at maximum two positions further
+        local max_pos=$(( "$baseidx" + "2" ))
+
+        # stop completion if we already passed the hash argument
+        [ "$COMP_CWORD" -gt "$max_pos" ] && return
+        [ "$COMP_CWORD" -eq "$max_pos" ] && [[ $prev_word != -* ]] && return
+
+        _gi_autocomplete_subcommand_argument $subcmd $word
     fi 
   else
     __git_wrap__gitk_main
