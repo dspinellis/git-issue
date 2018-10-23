@@ -22,7 +22,7 @@
 # Arguments: the current word
 _gi_autocomplete_subcommand()
 {
-  local IFS=$'\n' command_regex="git issue\s([^:]*):.*"
+  local IFS=$'\n' command_regex="^\s{3}([a-z]+)\s.*"
 
   # parse help information for sub commands
   while read -r line; do
