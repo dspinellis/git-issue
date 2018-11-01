@@ -150,7 +150,7 @@ $ {
 
 TopDir=$(mktemp -d)
 {
-  jq --version
+  jq --version || exit 1
   curl --version
   echo "Test artifacts saved in $TopDir"
 } 1>&2
