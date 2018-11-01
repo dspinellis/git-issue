@@ -752,12 +752,12 @@ gh_import_issues()
     fi
 
     # Obtain milestone
-    if [ $(jq ".[$i].milestone" gh-issue-body) = null ] ; then
+    if [ "$(jq ".[$i].milestone" gh-issue-body)" = null ] ; then
       if [ -r $path/milestone ] ; then
 	git rm $path/milestone || trans_abort
       fi
     else
-      jq -r ".[$i].milestone" gh-issue-body >$path/milestone || trans_abort
+      jq -r ".[$i].milestone.title" gh-issue-body >$path/milestone || trans_abort
       git add $path/milestone || trans_abort
     fi
 
