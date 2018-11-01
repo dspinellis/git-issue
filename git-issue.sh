@@ -152,7 +152,7 @@ edit()
     rm -f "$file.new"
     return 1
   fi
-  if [ $(diff "$file" "$file.new" > /dev/null 2>&1) ]; then
+  if diff -q "$file" "$file.new" >/dev/null 2>&1; then
     echo 'File was not changed' 1>&2
     rm -f "$file.new"
     return 1
