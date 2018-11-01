@@ -145,8 +145,8 @@ edit()
   cp "$file" "$file.new"
   echo "Opening editor..."
   ${VISUAL:-vi} "$file.new" || return 1
-  sed -i.original '/^#/d' "$file.new"
-  rm -f "$file.new.original"
+  grep -v '^#' "$file.new" >"$file.uncommented"
+  mv "$file.uncommented" "$file.new"
   if ! test -s "$file.new" ; then
     echo 'Empty file' 1>&2
     rm -f "$file.new"
