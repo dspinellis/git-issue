@@ -112,7 +112,7 @@ prerequisite_command()
 {
   if ! $1 -help 2>/dev/null 1>&2 ; then
     cat <<EOF 1>&2
-The $1 command is not availabe through the configured path.
+The $1 command is not available through the configured path.
 Please install it and/or configure your PATH variable.
 Command aborted.
 EOF
