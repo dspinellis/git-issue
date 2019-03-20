@@ -300,6 +300,23 @@ try $gi tag -r $issue feature
 start ; $gi list feature 2>/dev/null | try_ngrep 'Second issue'
 try $gi tag $issue feature
 
+
+# Long list
+start ; $gi list -l oneline feature | try_grep 'Second issue'
+start ; $gi list -l oneline feature | try_ngrep 'First-issue'
+start ; $gi list -l "Tags:%T" | try_grep 'feature'
+try $gi milestone $issue ver2
+start ; $gi list -l full | try_grep 'ver2'
+try $gi milestone -r $issue
+
+# Long list ordering
+
+ntry $gi list -l short -o "%iA"
+start ; $gi list -l oneline -o "%D" | head -n 1 | try_grep 'First-issue'
+start ; $gi list -l oneline -o "%D" -r | head -n 1 | try_grep 'Second issue'
+start ; $gi list -l short -o "%T" | head -n 4 | try_grep 'feature'
+
+
 # close
 try $gi close $issue
 start ; $gi list | try_ngrep 'Second issue'

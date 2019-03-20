@@ -19,7 +19,7 @@
 #
 
 # User agent string
-USER_AGENT=https://github.com/dspinellis/git-issue/tree/f5958b6
+USER_AGENT=https://github.com/dspinellis/git-issue/tree/a43f457
 
 # Exit after displaying the specified error
 error()
@@ -855,26 +855,98 @@ usage_list()
 {
   cat <<\USAGE_list_EOF
 gi new usage: git issue list [-a] [tag|milestone]
+              git issue list [-a] -l formatstring [-o sort_field] [-r] [tag|milestone]
 USAGE_list_EOF
   exit 2
 }
 
+# helper function for long listing format, each call proccesses a single issue
+shortshow()
+{
+
+  local date milestone assignee tags description
+
+  # Date
+  date=$(git show --no-patch --format='%ai' $id)
+
+  # Milestone
+  if [ -s "$path/milestone" ] ; then
+    # Escape sed special chars before passing them 
+    milestone=$(fmt "$path/milestone"|sed -e 's/[\/&]/\\&/g') 
+  fi
+
+  # Assignee
+  if [ -r "$path/assignee" ] ; then
+    assignee=$(fmt "$path/assignee"|sed -e 's/[\/&]/\\&/g')
+  fi
+
+  # Tags
+  if [ -s "$path/tags" ] ; then
+    tags=$(fmt "$path/tags"|sed -e 's/[\/&]/\\&/g')
+  fi
+
+  # Description
+  description=$(head -n 1 "$path/description"|sed -e 's/[\/&]/\\&/g')
+
+  # Print the field to sort by first, and remove it after sorting 
+  (echo "$sortfield"$'\002'"$formatstring") | 
+
+  sed -e s/%n/$'\001'/g \
+  -e s/%i/"$id"/g \
+  -e s/%c/"$date"/g \
+  -e s/%M/"$milestone"/g \
+  -e s/%A/"$assignee"/g \
+  -e s/%T/"$tags"/g \
+  -e s/%D/"$description"/g | 
+  tr "\n" '\001'
+  echo
+
+}
+
+
 sub_list()
 {
-  local all tag path id
+  local all tag path id sortrev preset
 
-  while getopts a flag ; do
-    case $flag in
+  while getopts al:o:r flag ; do
+    case "$flag" in
     a)
       all=1
+      ;;
+    l)
+      long=1
+      formatstring="$OPTARG"
+      ;;
+    o)
+      sortfield=$OPTARG
+      if [ -z "$sortfield" ] ; then
+        usage_list
+      fi
+      if ! expr "$sortfield" : '^%[icMATD]$' > /dev/null ; then
+        usage_list
+      fi
+      ;;
+    r)
+      sortrev="-r"
       ;;
     ?)
       usage_list
       ;;
     esac
   done
-  shift $(($OPTIND - 1));
 
+  case "$formatstring" in
+    oneline)
+      formatstring='ID: %i  Date: %c  Date: %T  Desc: %D'
+      ;;
+    short)
+      formatstring='ID: %i%nDate: %c%nTags: %T%nDescription: %D'
+      ;;
+    full)
+      formatstring='ID: %i%nDate: %c%nAssignees: %A%nMilestone: %M%nTags: %T%nDescription: %D'
+      ;;
+  esac
+  shift $(($OPTIND - 1));
   tag="$1"
   : ${tag:=open}
   cdissues
@@ -889,11 +961,21 @@ sub_list()
   # directory and issue id
   sed 's/^\(.*\)\/[^\/]*$/\1/;s/\(issues\/\(..\)\/\(.....\).*\)/\1 \2\3/' |
   sort -u |
-  while read path id ; do
-    printf '%s' "$id "
-    head -1 $path/description
-  done |
-  sort -k 2 |
+  if [ "$long" ] ; then
+   
+    while read path id ; do
+      shortshow
+    done |
+    sort $sortrev |
+    sed 's/^.*\x02//' |
+    tr '\001' "\n"
+  else
+    while read path id ; do
+      printf '%s' "$id "
+      head -1 "$path/description"
+    done |
+    sort -k 2
+  fi |
   tee results |
   pager
 
@@ -985,6 +1067,7 @@ Work with an issue
 
 Show multiple issues
    list       List open issues (or all with -a)
+* list -l formatstring: This will list issues in the specified format, given as an argument to -l
 
 Synchronize with remote repositories
    push       Update remote Git repository with local changes
