@@ -67,7 +67,8 @@ run the `test.sh` script to verify
 its operation, and (please) update this file.
 
 ### Requirements
-`git-issue` requires the `jq` and `curl` utilities.
+`git-issue` requires the *jq* and *curl* utilities.
+For running the tests *shellcheck* is also required.
 
 ## Use
 You use _git issue_ with the following sub-commands.

@@ -1,6 +1,14 @@
 #!/bin/sh
+# shellcheck disable=SC1004,SC2039
 #
-# (C) Copyright 2016-2018 Diomidis Spinellis
+# Shellcheck ignore list:
+#  - SC1004: This backslash+linefeed is literal. Break outside single quotes
+#    if you just want to break the line.
+#    Rationale: Required to continue sed(1) lines
+#  - SC2039: In POSIX sh, 'local' is undefined.
+#    Rationale: Local makes for better code and works on many modern shells
+#
+# (C) Copyright 2016-2019 Diomidis Spinellis
 #
 # This file is part of git-issue, the Git-based issue management system.
 #
@@ -27,6 +35,7 @@ MAN_PAGE=git-issue.1
 {
   sed -n '1,/^The following commands are available:/p' $SCRIPT_NAME
   # Keep lines from `### start ` to `git issue git`
+  # shellcheck disable=SC2016
   sed -E -n '/^### Start/,/^\* `git issue git`/ {
     # Only keep listed commands or subheaders
     /^\* |^### /!d
@@ -56,7 +65,7 @@ if [ "$1" = "--no-user-agent" ] ; then
   cat
 else
   # Update user agent version
-  sed "/^USER_AGENT/s/\/tree.*/\/tree\/$(git rev-parse --short HEAD)/"
+  sed '/^USER_AGENT/s/\/tree.*/\/tree\/'"$(git rev-parse --short HEAD)/"
 fi >newgi.sh
 mv newgi.sh $SCRIPT_NAME
 chmod +x git-issue.sh
@@ -75,6 +84,7 @@ replace_section()
 
     # Output specified section from README
     echo '.\" Auto-generated content from README.md; do not edit this section'
+    # shellcheck disable=SC2016
     sed -n "/^## $md_section/,/^## / {
       $command"'
       # Remove section titles
@@ -105,12 +115,14 @@ replace_section()
 
 # Update subcommands, implementation, and examples in the manual page
 # from the README file
+# shellcheck disable=SC2016
 replace_section 'GIT ISSUE COMMANDS' 'Use' 's/^\* `\([^`]*\)`: /.RE\
 .PP\
 \\fB\1\\fP\
 .RS 4\
 /'
 replace_section FILES 'Internals'
+# shellcheck disable=SC2016
 replace_section EXAMPLES 'Example session' '/```/d;/^###/N;s/^### \(.*\)/.ft P\
 .fi\
 .PP\

@@ -3,6 +3,10 @@ addons:
     packages:
       curl
       jq
+  homebrew:
+    packages:
+      - shellcheck
+      - jq
 
 language: bash
 
@@ -11,6 +15,3 @@ script: make test
 os:
   - linux
   - osx
-
-install:
-  - if [ $TRAVIS_OS_NAME = osx ]; then brew install jq ; fi

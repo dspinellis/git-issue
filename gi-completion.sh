@@ -1,6 +1,11 @@
-#!/bin/sh
+#!/usr/bin/env bash
+# shellcheck disable=SC2207
 #
-# (C) Copyright 2018 Diomidis Spinellis
+# Shellcheck ignore list:
+#  - SC2207: Prefer mapfile or read -a to split command output (or quote to avoid splitting).
+#  Rationale: Required for compgen idiomatic use
+#
+# (C) Copyright 2018, 2019 Diomidis Spinellis
 #
 # This file is part of gi, the Git-based issue management system.
 #
@@ -22,7 +27,7 @@
 # Arguments: the current word
 _gi_autocomplete_subcommand()
 {
-  local IFS=$'\n' command_regex="^\s{3}([a-z]+)\s.*"
+  local IFS=$'\n' command_regex='^\s{3}([a-z]+)\s.*'
 
   # parse help information for sub commands
   while read -r line; do
@@ -54,7 +59,10 @@ _gi_autocomplete_subcommand_argument()
   local IFS=$'\n' desc sha cmd gi_list
 
   while read -r line; do
-    desc=($(echo $line | sed 's/ /\n/'))
+    # shellcheck disable=SC2001
+    # SC2001: See if you can use ${variable//search/replace} instead.
+    # Rationale: Can't, because it doesn't handle \n
+    desc=($(echo "$line" | sed 's/ /\n/'))
     cmd=$(compgen -W "${desc[0]}" -- "$2")
 
     if [ -n "$cmd" ]; then
@@ -65,7 +73,7 @@ _gi_autocomplete_subcommand_argument()
 
   if [[ ${#gi_list[@]} == 1 ]]; then
     # If only one match, autocomplete the sha without the description
-    sha=$(echo ${gi_list[0]/%\ */})
+    sha="${gi_list[0]/%\ */}"
     COMPREPLY+=($(compgen -W "$sha"))
   else
     # Display the whole sha list along with the descriptions
@@ -92,7 +100,7 @@ _gi_autocomplete()
 
   if [ "$COMP_CWORD" -ge "$baseidx" ]; then
     if [ "$COMP_CWORD" -eq "$baseidx" ]; then
-        _gi_autocomplete_subcommand $word
+        _gi_autocomplete_subcommand "$word"
     else
         local subcmd="${COMP_WORDS[$baseidx]}"
         local prev_word="${COMP_WORDS[COMP_CWORD-1]}"
@@ -104,14 +112,14 @@ _gi_autocomplete()
         [ "$COMP_CWORD" -gt "$max_pos" ] && return
         [ "$COMP_CWORD" -eq "$max_pos" ] && [[ $prev_word != -* ]] && return
 
-        _gi_autocomplete_subcommand_argument $subcmd $word
+        _gi_autocomplete_subcommand_argument "$subcmd" "$word"
     fi 
   else
     __git_wrap__gitk_main
   fi
 }
 
-function _git_issue() {
+_git_issue() {
   _gi_autocomplete
 }
 

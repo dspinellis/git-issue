@@ -18,6 +18,7 @@ sync-docs:
 	./sync-docs.sh
 
 test:
+	shellcheck *.sh
 	./test.sh
 
 uninstall:

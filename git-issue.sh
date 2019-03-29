@@ -1,6 +1,11 @@
 #!/bin/sh
+# shellcheck disable=SC2039
 #
-# (C) Copyright 2016-2018 Diomidis Spinellis
+# Shellcheck ignore list:
+#  - SC2039: In POSIX sh, 'local' is undefined.
+#    Rationale: Local makes for better code and works on many modern shells
+#
+# (C) Copyright 2016-2019 Diomidis Spinellis
 #
 # This file is part of git-issue, the Git-based issue management system.
 #
@@ -40,7 +45,7 @@ cdissues()
 {
   while : ; do
     cd .issues 2>/dev/null && return
-    if [ $(filesysid .) = $(filesysid /) ] ; then
+    if [ "$(filesysid .)" = "$(filesysid /)" ] ; then
       error 'Not an issues repository (or any of the parent directories)'
     fi
     cd ..
@@ -58,7 +63,7 @@ issue_path_full()
   local sha
 
   sha="$1"
-  echo issues/$(expr $sha : '\(..\)')/$(expr $sha : '..\(.*\)'$)
+  echo issues/"$(expr "$sha" : '\(..\)')/$(expr "$sha" : '..\(.*\)'$)"
 }
 
 # Output the path of an issue given its (possibly partial) SHA
@@ -71,9 +76,9 @@ issue_path_part()
 
   sha="$1"
   partial=$(issue_path_full "$sha")
-  path=$(echo ${partial}*)
+  path=$(echo "${partial}"*)
   test -d "$path" || error "Unknown or ambigious issue specification $sha"
-  echo $path
+  echo "$path"
 }
 
 # Given an issue path return its SHA
@@ -98,7 +103,7 @@ trans_start()
 # Abort an issue transaction and exit with an error
 trans_abort()
 {
-  git reset $start_sha
+  git reset "$start_sha"
   git clean -qfd
   git checkout -- .
   rm -f gh-issue-header gh-issue-body gh-comments-header gh-comments-body
@@ -190,7 +195,7 @@ sub_init()
       ;;
     esac
   done
-  shift $(($OPTIND - 1));
+  shift $((OPTIND - 1));
 
   test -d .issues && error 'An .issues directory is already present'
   mkdir .issues || error 'Unable to create .issues directory'
@@ -256,23 +261,23 @@ sub_new()
       ;;
     esac
   done
-  shift $(($OPTIND - 1));
+  shift $((OPTIND - 1));
 
   trans_start
   commit 'gi: Add issue' 'gi new mark'
   sha=$(git rev-parse HEAD)
-  path=$(issue_path_full $sha)
-  mkdir -p $path || trans_abort
-  echo open >$path/tags || trans_abort
+  path=$(issue_path_full "$sha")
+  mkdir -p "$path" || trans_abort
+  echo open >"$path/tags" || trans_abort
   if [ "$summary" ] ; then
-    echo "$summary" >$path/description || trans_abort
+    echo "$summary" >"$path/description" || trans_abort
   else
-    cp templates/description $path/description || trans_abort
-    edit $path/description || trans_abort
+    cp templates/description "$path/description" || trans_abort
+    edit "$path/description" || trans_abort
   fi
-  git add $path/description $path/tags || trans_abort
+  git add "$path/description" "$path/tags" || trans_abort
   commit 'gi: Add issue description' "gi new description $sha"
-  echo "Added issue $(short_sha $sha)"
+  echo "Added issue $(short_sha "$sha")"
 }
 
 # show: Show the specified issue {{{1
@@ -299,62 +304,62 @@ sub_show()
       ;;
     esac
   done
-  shift $(($OPTIND - 1));
+  shift $((OPTIND - 1));
 
   test -n "$1" || usage_show
 
   cdissues
-  path=$(issue_path_part $1) || exit
-  isha=$(issue_sha $path)
+  path=$(issue_path_part "$1") || exit
+  isha=$(issue_sha "$path")
   {
     # SHA, author, date
     echo "issue $isha"
     git show --no-patch --format='Author:	%an <%ae>
-Date:	%aD' $isha
+Date:	%aD' "$isha"
 
     # Milestone
-    if [ -s $path/milestone ] ; then
+    if [ -s "$path/milestone" ] ; then
       printf 'Milestone: '
-      cat $path/milestone
+      cat "$path/milestone"
     fi
 
     # Tags
-    if [ -s $path/tags ] ; then
+    if [ -s "$path/tags" ] ; then
       printf 'Tags:'
-      sed 's/^/	/' $path/tags
+      sed 's/^/	/' "$path/tags"
     fi
 
     # Watchers
-    if [ -s $path/watchers ] ; then
+    if [ -s "$path/watchers" ] ; then
       printf 'Watchers:'
-      fmt $path/watchers | sed 's/^/	/'
+      fmt "$path/watchers" | sed 's/^/	/'
     fi
 
     # Assignee
-    if [ -r $path/assignee ] ; then
+    if [ -r "$path/assignee" ] ; then
       printf 'Assigned-to:'
-      sed 's/^/	/' $path/assignee
+      sed 's/^/	/' "$path/assignee"
     fi
 
     # Description
     echo
-    sed 's/^/    /' $path/description
+    sed 's/^/    /' "$path/description"
 
     # Edit History
     echo
     printf '%s\n' 'Edit History:'
-    git log --reverse --format="%aD by %an <%ae>" $path/description | fmt | sed 's/^/* /'
+    git log --reverse --format="%aD by %an <%ae>" "$path/description" | fmt | sed 's/^/* /'
 
     # Comments
     test -n "$comments" || return
     git log --reverse --grep="^gi comment mark $isha" --format='%H' |
-    while read csha ; do
+    while read -r csha ; do
       echo
       echo "comment $csha"
       git show --no-patch --format='Author:	%an <%ae>
 Date:	%aD
-' $csha
-      sed 's/^/    /' $path/comments/$csha
+' "$csha"
+      sed 's/^/    /' "$path/comments/$csha"
     done
   } | pager
 }
@@ -372,7 +377,7 @@ sub_clone()
 {
   test -n "$1" -a -n "$2" || usage_clone
   mkdir -p "$2" || error "Unable to create local directory"
-  cd "$2"
+  cd "$2" || error "Unable to change into local directory"
   git clone "$1" .issues
   echo "Cloned $1 into $2"
 }
@@ -402,7 +407,7 @@ sub_milestone()
       ;;
     esac
   done
-  shift $(($OPTIND - 1));
+  shift $((OPTIND - 1));
 
   test -n "$1" -a -n "$2$remove" || usage_milestone
   test -n "$remove" -a -n "$2" && usage_milestone
@@ -412,19 +417,19 @@ sub_milestone()
   cdissues
   path=$(issue_path_part "$1") || exit
   shift
-  isha=$(issue_sha $path)
+  isha=$(issue_sha "$path")
   if [ "$remove" ] ; then
-    test -r $path/milestone || error "No milestone set"
-    milestone=$(cat $path/milestone)
+    test -r "$path/milestone" || error "No milestone set"
+    milestone=$(cat "$path/milestone")
     trans_start
-    git rm $path/milestone >/dev/null || trans_abort
+    git rm "$path/milestone" >/dev/null || trans_abort
     commit "gi: Remove milestone" "gi milestone remove $milestone"
     echo "Removed milestone $milestone"
   else
-    touch $path/milestone || error "Unable to modify milestone file"
-    printf "%s\n" "$milestone" >$path/milestone
+    touch "$path/milestone" || error "Unable to modify milestone file"
+    printf '%s\n' "$milestone" >"$path/milestone"
     trans_start
-    git add $path/milestone || trans_abort
+    git add "$path/milestone" || trans_abort
     commit "gi: Add milestone" "gi milestone add $milestone"
     echo "Added milestone $milestone"
   fi
@@ -468,41 +473,41 @@ file_add_rm()
       ;;
     esac
   done
-  shift $(($OPTIND - 1));
+  shift $((OPTIND - 1));
 
   test -n "$1" -a -n "$2" || $usage
 
   cdissues
   path=$(issue_path_part "$1") || exit
   shift
-  isha=$(issue_sha $path)
-  touch $path/$file || error "Unable to modify $file file"
+  isha=$(issue_sha "$path")
+  touch "$path/$file" || error "Unable to modify $file file"
   for entry in "$@" ; do
     if [ "$remove" ] ; then
-      fgrep -vx "$entry" $path/$file >$path/$file.new
-      if cmp $path/$file $path/$file.new >/dev/null 2>&1 ; then
+      grep -Fvx "$entry" "$path/$file" >"$path/$file.new"
+      if cmp "$path/$file" "$path/$file.new" >/dev/null 2>&1 ; then
 	echo "No such $name entry: $entry" 1>&2
-	rm $path/$file.new
+	rm "$path/$file.new"
 	exit 1
       fi
-      mv $path/$file.new $path/$file
+      mv "$path/$file.new" "$path/$file"
 
       trans_start
-      git add $path/$file || trans_abort
+      git add "$path/$file" || trans_abort
       commit "gi: Remove $name" "gi $name remove $entry"
       echo "Removed $name $entry"
     else
-      if fgrep -x "$entry" $path/$file >/dev/null ; then
+      if grep -Fx "$entry" "$path/$file" >/dev/null ; then
 	echo "Entry $entry already exists" 1>&2
 	exit 1
       fi
       # Add entry in sorted order to avoid gratuitous updates when importing
-      printf "%s\n" "$entry" |
-      LC_ALL=C sort -m - $path/$file >$path/$file.new
-      mv $path/$file.new $path/$file
+      printf '%s\n' "$entry" |
+      LC_ALL=C sort -m - "$path/$file" >"$path/$file.new"
+      mv "$path/$file.new" "$path/$file"
 
       trans_start
-      git add $path/$file || trans_abort
+      git add "$path/$file" || trans_abort
       commit "gi: Add $name" "gi $name add $entry"
       echo "Added $name $entry"
     fi
@@ -555,17 +560,17 @@ sub_comment()
   test -n "$1" || usage_comment
 
   cdissues
-  path=$(issue_path_part $1) || exit
-  isha=$(issue_sha $path)
-  mkdir -p $path/comments || error "Unable to create comments directory"
+  path=$(issue_path_part "$1") || exit
+  isha=$(issue_sha "$path")
+  mkdir -p "$path/comments" || error "Unable to create comments directory"
   trans_start
   commit 'gi: Add comment' "gi comment mark $isha"
   csha=$(git rev-parse HEAD)
-  cp templates/comment $path/comments/$csha || trans_abort
-  edit $path/comments/$csha || trans_abort
-  git add $path/comments/$csha || trans_abort
+  cp templates/comment "$path/comments/$csha" || trans_abort
+  edit "$path/comments/$csha" || trans_abort
+  git add "$path/comments/$csha" || trans_abort
   commit 'gi: Add comment message' "gi comment message $isha $csha"
-  echo "Added comment $(short_sha $csha)"
+  echo "Added comment $(short_sha "$csha")"
 }
 
 # edit: Edit an issue's description
@@ -584,14 +589,14 @@ sub_edit()
   test -n "$1" || usage_edit
 
   cdissues
-  path=$(issue_path_part $1) || exit
-  isha=$(issue_sha $path)
+  path=$(issue_path_part "$1") || exit
+  isha=$(issue_sha "$path")
 
   trans_start
-  edit $path/description || trans_abort
-  git add $path/description || trans_abort
+  edit "$path/description" || trans_abort
+  git add "$path/description" || trans_abort
   commit 'gi: Edit issue description' "gi edit description $isha"
-  echo "Edited issue $(short_sha $isha)"
+  echo "Edited issue $(short_sha "$isha")"
 }
 
 # import: import issues from GitHub {{{1
@@ -613,17 +618,20 @@ gh_api_get()
   url="$1"
   prefix="$2"
 
+  # shellcheck disable=SC2086
+  # SC2086: Double quote to prevent globbing and word splitting.
+  # Rationale: GI_CURL_ARGS indeed require splitting
   if ! curl $GI_CURL_ARGS -A "$USER_AGENT" -s \
-    -o gh-$prefix-body -D gh-$prefix-header "$url" ; then
+    -o "gh-$prefix-body" -D "gh-$prefix-header" "$url" ; then
     echo 'GitHub connection failed' 1>&2
     trans_abort
   fi
 
-  if ! grep -q '^Status: 200' gh-$prefix-header ; then
+  if ! grep -q '^Status: 200' "gh-$prefix-header" ; then
     echo 'GitHub API communication failure' 1>&2
     echo "URL: $url" 1>&2
-    if grep -q '^Status: 4' gh-$prefix-header ; then
-      jq -r '.message' gh-$prefix-body 1>&2
+    if grep -q '^Status: 4' "gh-$prefix-header" ; then
+      jq -r '.message' "gh-$prefix-body" 1>&2
     fi
     trans_abort
   fi
@@ -665,20 +673,20 @@ gh_import_comments()
 	csha=$(git rev-parse HEAD)
       fi
 
-      path=$(issue_path_full $isha)/comments
-      mkdir -p $path || trans_abort
-      mkdir -p $import_dir || trans_abort
+      path=$(issue_path_full "$isha")/comments
+      mkdir -p "$path" || trans_abort
+      mkdir -p "$import_dir" || trans_abort
 
 
       # Add issue import number to allow future updates
-      echo $csha >"$import_dir/$comment_id"
+      echo "$csha" >"$import_dir/$comment_id"
 
       # Create comment body
       jq -r ".[$i].body" gh-comments-body >/dev/null || trans_abort
       jq -r ".[$i].body" gh-comments-body |
-      tr -d \\r >$path/$csha
+      tr -d \\r >"$path/$csha"
 
-      git add $path/$csha $import_dir/$comment_id || trans_abort
+      git add "$path/$csha" "$import_dir/$comment_id" || trans_abort
       if ! git diff --quiet HEAD ; then
 	local name html_url
 	name=$(jq -r ".[$i].user.login" gh-comments-body)
@@ -687,7 +695,7 @@ gh_import_comments()
 	  commit 'gi: Import comment message' "gi comment message $isha $csha
 Comment URL: $html_url" \
 	  --author="$name <$name@users.noreply.github.com>"
-	echo "Imported/updated issue #$issue_number comment $comment_id as $(short_sha $csha)"
+	echo "Imported/updated issue #$issue_number comment $comment_id as $(short_sha "$csha")"
       fi
     done # For all comments on page
 
@@ -727,38 +735,38 @@ gh_import_issues()
       sha=$(git rev-parse HEAD)
     fi
 
-    path=$(issue_path_full $sha)
-    mkdir -p $path || trans_abort
-    mkdir -p $import_dir || trans_abort
+    path=$(issue_path_full "$sha")
+    mkdir -p "$path" || trans_abort
+    mkdir -p "$import_dir" || trans_abort
 
     # Add issue import number to allow future updates
-    echo $sha >"$import_dir/sha"
+    echo "$sha" >"$import_dir/sha"
 
     # Create tags (in sorted order to avoid gratuitous updates)
     {
       jq -r ".[$i].state" gh-issue-body
       jq -r ".[$i].labels[] | .name" gh-issue-body
     } |
-    LC_ALL=C sort >$path/tags || trans_abort
+    LC_ALL=C sort >"$path/tags" || trans_abort
 
     # Create assignees (in sorted order to avoid gratuitous updates)
     jq -r ".[$i].assignees[] | .login" gh-issue-body |
-    LC_ALL=C sort >$path/assignee || trans_abort
+    LC_ALL=C sort >"$path/assignee" || trans_abort
 
-    if [ -s $path/assignee ] ; then
-      git add $path/assignee || trans_abort
+    if [ -s "$path/assignee" ] ; then
+      git add "$path/assignee" || trans_abort
     else
-      rm -f $path/assignee
+      rm -f "$path/assignee"
     fi
 
     # Obtain milestone
     if [ "$(jq ".[$i].milestone" gh-issue-body)" = null ] ; then
-      if [ -r $path/milestone ] ; then
-	git rm $path/milestone || trans_abort
+      if [ -r "$path/milestone" ] ; then
+	git rm "$path/milestone" || trans_abort
       fi
     else
-      jq -r ".[$i].milestone.title" gh-issue-body >$path/milestone || trans_abort
-      git add $path/milestone || trans_abort
+      jq -r ".[$i].milestone.title" gh-issue-body >"$path/milestone" || trans_abort
+      git add "$path/milestone" || trans_abort
     fi
 
     # Create description
@@ -769,20 +777,20 @@ gh_import_issues()
       echo
       jq -r ".[$i].body" gh-issue-body
     } |
-    tr -d \\r >$path/description
+    tr -d \\r >"$path/description"
 
-    git add $path/description $path/tags imports || trans_abort
+    git add "$path/description" "$path/tags" imports || trans_abort
     if ! git diff --quiet HEAD ; then
       name=${name:-$(jq -r ".[$i].user.login" gh-issue-body)}
       GIT_AUTHOR_DATE=$(jq -r ".[$i].updated_at" gh-issue-body) \
 	commit "gi: Import issue #$issue_number from GitHub" \
 	"Issue URL: https://github.com/$user/$repo/issues/$issue_number" \
 	--author="$name <$name@users.noreply.github.com>"
-      echo "Imported/updated issue #$issue_number as $(short_sha $sha)"
+      echo "Imported/updated issue #$issue_number as $(short_sha "$sha")"
     fi
 
     # Import issue comments
-    gh_import_comments "$user" "$repo" "$issue_number" $sha
+    gh_import_comments "$user" "$repo" "$issue_number" "$sha"
   done
 }
 
@@ -802,7 +810,7 @@ t
 # Remove first element of the Link header and retry
 s/^Link: <[^>]*>; rel="[^"]*", */Link: /
 t again
-' gh-$1-header
+' gh-"$1"-header
 }
 
 # Import issues from specified source (currently github)
@@ -841,7 +849,7 @@ sub_import()
   rm -f gh-issue-header gh-issue-body gh-comments-header gh-comments-body
 
   # Mark last import SHA, so we can use this for merging 
-  if [ $begin_sha != $(git rev-parse HEAD) ] ; then
+  if [ "$begin_sha" != "$(git rev-parse HEAD)" ] ; then
     local checkpoint="imports/github/$user/$repo/checkpoint"
     git rev-parse HEAD >"$checkpoint"
     git add "$checkpoint"
@@ -867,7 +875,7 @@ shortshow()
   local date milestone assignee tags description
 
   # Date
-  date=$(git show --no-patch --format='%ai' $id)
+  date=$(git show --no-patch --format='%ai' "$id")
 
   # Milestone
   if [ -s "$path/milestone" ] ; then
@@ -898,7 +906,7 @@ shortshow()
   -e s/%A/"$assignee"/g \
   -e s/%T/"$tags"/g \
   -e s/%D/"$description"/g | 
-  tr "\n" '\001'
+  tr '\n' '\001'
   echo
 
 }
@@ -906,7 +914,7 @@ shortshow()
 
 sub_list()
 {
-  local all tag path id sortrev preset
+  local all tag path id sortrev
 
   while getopts al:o:r flag ; do
     case "$flag" in
@@ -946,31 +954,31 @@ sub_list()
       formatstring='ID: %i%nDate: %c%nAssignees: %A%nMilestone: %M%nTags: %T%nDescription: %D'
       ;;
   esac
-  shift $(($OPTIND - 1));
+  shift $((OPTIND - 1));
   tag="$1"
-  : ${tag:=open}
+  : "${tag:=open}"
   cdissues
   test -d issues || exit 0
   find issues -type f -name tags -o -name milestone |
   if [ "$all" ] ; then
     cat
   else
-    xargs fgrep -lx "$tag"
+    xargs grep -Flx "$tag"
   fi |
   # Convert list of tag or milestone file paths into the corresponding
   # directory and issue id
   sed 's/^\(.*\)\/[^\/]*$/\1/;s/\(issues\/\(..\)\/\(.....\).*\)/\1 \2\3/' |
   sort -u |
   if [ "$long" ] ; then
-   
-    while read path id ; do
+
+    while read -r path id ; do
       shortshow
     done |
     sort $sortrev |
     sed 's/^.*\x02//' |
-    tr '\001' "\n"
+    tr '\001' '\n'
   else
-    while read path id ; do
+    while read -r path id ; do
       printf '%s' "$id "
       head -1 "$path/description"
     done |
@@ -998,8 +1006,6 @@ USAGE_log_EOF
 
 sub_log()
 {
-  local grep_arg
-
   while getopts I: flag ; do
     case $flag in
     I)
@@ -1010,7 +1016,7 @@ sub_log()
       ;;
     esac
   done
-  shift $(($OPTIND - 1));
+  shift $((OPTIND - 1));
 
   cdissues
   if [ "$sha" ] ; then
