@@ -110,6 +110,25 @@ List open issues (or all with \fC-a\fP).
    An optional argument can show issues matching a tags or milestone.
 .RE
 .PP
+\fBgit issue list -l formatstring\fP
+.RS 4
+This will list issues in the specified format, given as an argument to \fC-l\fP.
+   The following escape sequences can be used:
+   
+   - \fC%n\fP : newline
+   - \fC%i\fP : issue ID
+   - \fC%c\fP : creation date
+   - \fC%M\fP : Milestone
+   - \fC%A\fP : Assignee(s)
+   - \fC%T\fP : Tags
+   - \fC%D\fP : Description(first line)
+
+   If the format string is one of: (\fConeline\fP, \fCshort\fP or `full`) it will interpreted as the corresponding preset.
+   
+   Optionally, one of the above given with \fC-o\fP will order based on this field(reverse order with \fC-r\fP).
+   
+.RE
+.PP
 \fBgit issue push\fP
 .RS 4
 Update remote Git repository with local changes.
