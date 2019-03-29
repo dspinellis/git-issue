@@ -66,6 +66,9 @@ If you're running _git issue* on another system,
 run the `test.sh` script to verify
 its operation, and (please) update this file.
 
+### Requirements
+`git-issue` requires the `jq` and `curl` utilities.
+
 ## Use
 You use _git issue_ with the following sub-commands.
 
@@ -90,6 +93,21 @@ You use _git issue_ with the following sub-commands.
 ### Show multiple issues
 * `git issue list`: List open issues (or all with `-a`).
    An optional argument can show issues matching a tags or milestone.
+* `git issue list -l formatstring`: This will list issues in the specified format, given as an argument to `-l`.
+   The following escape sequences can be used:
+   
+   - `%n` : newline
+   - `%i` : issue ID
+   - `%c` : creation date
+   - `%M` : Milestone
+   - `%A` : Assignee(s)
+   - `%T` : Tags
+   - `%D` : Description(first line)
+
+   If the format string is one of: (`oneline`, `short` or `full`) it will interpreted as the corresponding preset.
+   
+   Optionally, one of the above given with `-o` will order based on this field(reverse order with `-r`).
+   
 ### Synchronize with remote repositories
 * `git issue push`: Update remote Git repository with local changes.
 * `git issue pull`: Update local Git repository with remote changes.
@@ -401,6 +419,7 @@ e6a95c9 - New issue entered from the command line
   It requires Python and offers a GUI.
 * [Bugs Everywhere](http://www.bugseverywhere.org/), also written in Python, supports many version control backends and offers a web interface.
 * [bug](https://github.com/driusan/bug), inspired by Bugs Everywhere, written in Go, supports git and hg
+* [git-bug](https://github.com/MichaelMure/git-bug), again written in Go, is a distributed bug tracker embedded in git.
 * [git-appraise](https://github.com/google/git-appraise) is a distributed
   code review system for Git repos based again on Git.
 * [Fossil](http://fossil-scm.org/) is a distributed version control software that also supports issue tracking and a wiki. It runs as a single executable.
