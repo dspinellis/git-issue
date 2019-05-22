@@ -323,6 +323,13 @@ Date:	%aD' "$isha"
       cat "$path/milestone"
     fi
 
+    # Weight
+    if [ -s "$path/weight" ] ; then
+      printf 'Weight: '
+      cat "$path/weight"
+    fi
+
+
     # Tags
     if [ -s "$path/tags" ] ; then
       printf 'Tags:'
@@ -432,6 +439,61 @@ sub_milestone()
     git add "$path/milestone" || trans_abort
     commit "gi: Add milestone" "gi milestone add $milestone"
     echo "Added milestone $milestone"
+  fi
+}
+
+# weight: set an issue's weight {{{1
+usage_weight()
+{
+  cat <<\USAGE_tag_EOF
+gi weight usage: git issue weight <sha> <weight>
+	git issue weight -r <sha>
+-r	Remove the issue's weight
+USAGE_tag_EOF
+  exit 2
+}
+
+sub_weight()
+{
+  local isha tag remove path weight
+
+  while getopts r flag ; do
+    case $flag in
+    r)
+      remove=1
+      ;;
+    ?)
+      usage_weight
+      ;;
+    esac
+  done
+  shift $((OPTIND - 1));
+
+  test -n "$1" -a -n "$2$remove" || usage_weight
+  test -n "$remove" -a -n "$2" && usage_weight
+  weight="$2"
+  if ! [ "$remove" ] ; then
+    expr "$weight" : '[0-9]*$' > /dev/null || usage_weight
+  fi
+
+  cdissues
+  path=$(issue_path_part "$1") || exit
+  shift
+  isha=$(issue_sha "$path")
+  if [ "$remove" ] ; then
+    test -r "$path/weight" || error "No weight set"
+    weight=$(cat "$path/weight")
+    trans_start
+    git rm "$path/weight" >/dev/null || trans_abort
+    commit "gi: Remove weight" "gi weight remove $weight"
+    echo "Removed weight $weight"
+  else
+    touch "$path/weight" || error "Unable to modify weight file"
+    printf '%s\n' "$weight" >"$path/weight"
+    trans_start
+    git add "$path/weight" || trans_abort
+    commit "gi: Add weight" "gi weight add $weight"
+    echo "Added weight $weight"
   fi
 }
 
@@ -872,7 +934,7 @@ USAGE_list_EOF
 shortshow()
 {
 
-  local date milestone assignee tags description
+  local date milestone weight assignee tags description
 
   # Date
   date=$(git show --no-patch --format='%ai' "$id")
@@ -882,6 +944,13 @@ shortshow()
     # Escape sed special chars before passing them 
     milestone=$(fmt "$path/milestone"|sed -e 's/[\/&]/\\&/g') 
   fi
+
+  # Weight
+  if [ -s "$path/weight" ] ; then
+    # Escape sed special chars before passing them 
+    weight=$(fmt "$path/weight") 
+  fi
+
 
   # Assignee
   if [ -r "$path/assignee" ] ; then
@@ -903,6 +972,7 @@ shortshow()
   -e s/%i/"$id"/g \
   -e s/%c/"$date"/g \
   -e s/%M/"$milestone"/g \
+  -e s/%w/"$weight"/g \
   -e s/%A/"$assignee"/g \
   -e s/%T/"$tags"/g \
   -e s/%D/"$description"/g | 
@@ -930,7 +1000,7 @@ sub_list()
       if [ -z "$sortfield" ] ; then
         usage_list
       fi
-      if ! expr "$sortfield" : '^%[icMATD]$' > /dev/null ; then
+      if ! expr "$sortfield" : '^%[icwMATD]$' > /dev/null ; then
         usage_list
       fi
       ;;
@@ -951,7 +1021,7 @@ sub_list()
       formatstring='ID: %i%nDate: %c%nTags: %T%nDescription: %D'
       ;;
     full)
-      formatstring='ID: %i%nDate: %c%nAssignees: %A%nMilestone: %M%nTags: %T%nDescription: %D'
+      formatstring='ID: %i%nDate: %c%nAssignees: %A%nMilestone: %M%nWeight: %w%nTags: %T%nDescription: %D'
       ;;
   esac
   shift $((OPTIND - 1));
@@ -1147,6 +1217,9 @@ case "$subcommand" in
     ;;
   milestone) # Add (or remove with -r) a milestone
     sub_milestone "$@"
+    ;;
+  weight) # Add (or remove with -r) a weight
+    sub_weight "$@"
     ;;
   push) # Update remote repository with local changes.
     cdissues

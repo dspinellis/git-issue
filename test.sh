@@ -1,10 +1,12 @@
 #!/bin/sh
-# shellcheck disable=SC2039,SC2164
+# shellcheck disable=SC2039,SC2164,SC2103
 #
 # Shellcheck ignore list:
 #  - SC2039: In POSIX sh, 'local' is undefined.
 #    Rationale: Local makes for better code and works on many modern shells
 #  - SC2164: Use cd ... || exit in case cd fails.
+#    Rationale: We run this after creating the directory
+#  - SC2164: Use a ( subshell ) to avoid having to cd back.
 #    Rationale: We run this after creating the directory
 #
 #
@@ -278,6 +280,14 @@ start ; "$gi" show "$issue" | try_ngrep ver2
 ntry "$gi" milestone -r "$issue" foo
 try "$gi" milestone -r "$issue"
 start ; "$gi" show "$issue" | try_ngrep ver3
+
+# Weight
+ntry "$gi" weight "$issue" l33t
+ntry "$gi" weight -r "$issue"
+try "$gi" weight "$issue" 1337
+start ; "$gi" show "$issue" | try_grep 1337
+try "$gi" weight -r "$issue"
+start ; "$gi" show "$issue" | try_ngrep 1337
 
 # Watchers
 try "$gi" watcher "$issue" jane@example.com
