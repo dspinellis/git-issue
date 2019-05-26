@@ -31,7 +31,7 @@
 SCRIPT_NAME=git-issue.sh
 MAN_PAGE=git-issue.1
 
-# Update usage information in the script based on README.md
+# Update usage information in the script based on README.real.md
 {
   sed -n '1,/^The following commands are available:/p' $SCRIPT_NAME
   # Keep lines from `### start ` to `git issue git`
@@ -58,7 +58,7 @@ MAN_PAGE=git-issue.1
     s/^\* ([^:]{9}): /   \1  /g
 
     p
-  }' README.md | tee foo
+  }' README.real.md | tee foo
   sed -n '/^USAGE_EOF/,$p' $SCRIPT_NAME
 } |
 if [ "$1" = "--no-user-agent" ] ; then
@@ -83,7 +83,7 @@ replace_section()
     sed -n "1,/^\\.SH $man_section/p" $MAN_PAGE
 
     # Output specified section from README
-    echo '.\" Auto-generated content from README.md; do not edit this section'
+    echo '.\" Auto-generated content from README.real.md; do not edit this section'
     # shellcheck disable=SC2016
     sed -n "/^## $md_section/,/^## / {
       $command"'
@@ -105,7 +105,7 @@ replace_section()
 /
       s/\[\([^]]*\)\](\([^)]*\))/\1 <\2>/
       p
-    }' README.md
+    }' README.real.md
 
     # Output the rest of the man page
     sed -n "1,/^\\.SH $man_section/d;{/^\\.SH /,/xyzzy/p;}" $MAN_PAGE
