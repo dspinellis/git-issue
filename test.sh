@@ -289,6 +289,17 @@ start ; "$gi" show "$issue" | try_grep 1337
 try "$gi" weight -r "$issue"
 start ; "$gi" show "$issue" | try_ngrep 1337
 
+# Due Date
+ntry "$gi" duedate "$issue" someday
+ntry "$gi" duedate -r "$issue"
+ntry "$gi" duedate -r "$issue" someday
+start ; "$gi" duedate "$issue" yesterday | try_grep Warning
+try "$gi" duedate "$issue" tomorrow
+start ; "$gi" show "$issue" | try_grep "$(date --date=tomorrow --rfc-3339=date)"
+try "$gi" duedate -r "$issue"
+start ; "$gi" show "$issue" | try_ngrep 'Due Date'
+
+
 # Watchers
 try "$gi" watcher "$issue" jane@example.com
 start ; "$gi" show "$issue" | header_continuation | try_grep '^Watchers:[ 	]jane@example.com'

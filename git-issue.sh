@@ -292,7 +292,7 @@ USAGE_show_EOF
 
 sub_show()
 {
-  local isha path comments
+  local isha path comments rawdate
 
   while getopts c flag ; do
     case $flag in
@@ -316,6 +316,15 @@ sub_show()
     echo "issue $isha"
     git show --no-patch --format='Author:	%an <%ae>
 Date:	%aD' "$isha"
+
+    # Due Date
+    if [ -s "$path/duedate" ] ; then
+      printf 'Due Date: '
+      #Print date in rfc-3339 for consistency with git show
+      rawdate=$(cat "$path/duedate")
+      date --date="$rawdate" --rfc-3339=seconds
+    fi
+
 
     # Milestone
     if [ -s "$path/milestone" ] ; then
@@ -496,6 +505,64 @@ sub_weight()
     echo "Added weight $weight"
   fi
 }
+
+# duedate: set an issue's weight {{{1
+usage_duedate()
+{
+  cat <<\USAGE_tag_EOF
+gi duedate usage: git issue duedate <sha> <duedate>
+	git issue duedate -r <sha>
+<duedate> date in format accepted by `date`
+-r	Remove the issue's duedate
+USAGE_tag_EOF
+  exit 2
+}
+
+sub_duedate()
+{
+  local isha tag remove path duedate
+
+  while getopts r flag ; do
+    case $flag in
+    r)
+      remove=1
+      ;;
+    ?)
+      usage_duedate
+      ;;
+    esac
+  done
+  shift $((OPTIND - 1));
+
+  test -n "$1" -a -n "$2$remove" || usage_duedate
+  test -n "$remove" -a -n "$2" && usage_duedate
+  #date is stored in the ISO-8601 format
+  duedate=$(date --date="$2" --iso-8601=seconds --utc) || usage_duedate
+  if ! [ "$remove" ] ; then
+    expr "$duedate" '>' "$(date --date='now' --iso-8601=seconds --utc)" > /dev/null || printf "Warning: duedate is in the past\n"
+  fi
+
+  cdissues
+  path=$(issue_path_part "$1") || exit
+  shift
+  isha=$(issue_sha "$path")
+  if [ "$remove" ] ; then
+    test -r "$path/duedate" || error "No duedate set"
+    duedate=$(cat "$path/duedate")
+    trans_start
+    git rm "$path/duedate" >/dev/null || trans_abort
+    commit "gi: Remove duedate" "gi duedate remove $duedate"
+    echo "Removed duedate $duedate"
+  else
+    touch "$path/duedate" || error "Unable to modify duedate file"
+    printf '%s\n' "$duedate" >"$path/duedate"
+    trans_start
+    git add "$path/duedate" || trans_abort
+    commit "gi: Add duedate" "gi duedate add $duedate"
+    echo "Added duedate $duedate"
+  fi
+}
+
 
 
 # assign: assign an issue to a person or remove assignment {{{1
@@ -934,7 +1001,7 @@ USAGE_list_EOF
 shortshow()
 {
 
-  local date milestone weight assignee tags description
+  local date duedate rawdate milestone weight assignee tags description
 
   # Date
   date=$(git show --no-patch --format='%ai' "$id")
@@ -947,10 +1014,15 @@ shortshow()
 
   # Weight
   if [ -s "$path/weight" ] ; then
-    # Escape sed special chars before passing them 
     weight=$(fmt "$path/weight") 
   fi
 
+  # Due Date
+  if [ -s "$path/duedate" ] ; then
+    rawdate=$(fmt "$path/duedate") 
+    #Print it in rfc-3339 for consistency with git show format
+    duedate=$(date --date="$rawdate" --rfc-3339=seconds)
+  fi
 
   # Assignee
   if [ -r "$path/assignee" ] ; then
@@ -971,6 +1043,7 @@ shortshow()
   sed -e s/%n/$'\001'/g \
   -e s/%i/"$id"/g \
   -e s/%c/"$date"/g \
+  -e s/%d/"$duedate"/g \
   -e s/%M/"$milestone"/g \
   -e s/%w/"$weight"/g \
   -e s/%A/"$assignee"/g \
@@ -1000,7 +1073,7 @@ sub_list()
       if [ -z "$sortfield" ] ; then
         usage_list
       fi
-      if ! expr "$sortfield" : '^%[icwMATD]$' > /dev/null ; then
+      if ! expr "$sortfield" : '^%[icdwMATD]$' > /dev/null ; then
         usage_list
       fi
       ;;
@@ -1018,10 +1091,10 @@ sub_list()
       formatstring='ID: %i  Date: %c  Date: %T  Desc: %D'
       ;;
     short)
-      formatstring='ID: %i%nDate: %c%nTags: %T%nDescription: %D'
+      formatstring='ID: %i%nDate: %c%nDue Date: %d%nTags: %T%nDescription: %D'
       ;;
     full)
-      formatstring='ID: %i%nDate: %c%nAssignees: %A%nMilestone: %M%nWeight: %w%nTags: %T%nDescription: %D'
+      formatstring='ID: %i%nDate: %c%nDue Date: %d%nAssignees: %A%nMilestone: %M%nWeight: %w%nTags: %T%nDescription: %D'
       ;;
   esac
   shift $((OPTIND - 1));
@@ -1217,6 +1290,9 @@ case "$subcommand" in
     ;;
   milestone) # Add (or remove with -r) a milestone
     sub_milestone "$@"
+    ;;
+   duedate) # Add (or remove with -r) a duedate
+    sub_duedate "$@"
     ;;
   weight) # Add (or remove with -r) a weight
     sub_weight "$@"
