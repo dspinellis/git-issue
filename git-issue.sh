@@ -325,6 +325,21 @@ Date:	%aD' "$isha"
       date --date="$rawdate" --rfc-3339=seconds
     fi
 
+    # Time estimate
+    if [ -s "$path/timeestimate" ] ; then
+      printf 'Time Estimated: '
+      #Print time in human readable format
+      rawest=$(cat "$path/timeestimate")
+      eval "echo $(date -ud "@$rawest" +'$((%s/3600/24)) days %H hours %M minutes %S seconds')"
+    fi
+
+    # Time spent
+    if [ -s "$path/timespent" ] ; then
+      printf 'Time Spent: '
+      #Print time in human readable format
+      rawest=$(cat "$path/timespent")
+      eval "echo $(date -ud "@$rawest" +'$((%s/3600/24)) days %H hours %M minutes %S seconds')"
+    fi
 
     # Milestone
     if [ -s "$path/milestone" ] ; then
@@ -560,6 +575,122 @@ sub_duedate()
     git add "$path/duedate" || trans_abort
     commit "gi: Add duedate" "gi duedate add $duedate"
     echo "Added duedate $duedate"
+  fi
+}
+
+# timespent: set time spent on an issue {{{1
+usage_timespent()
+{
+  cat <<\USAGE_tag_EOF
+gi timespent usage: git issue timespent <sha> <timespent>
+	git issue timespent -r <sha>
+<timespent> time interval in format accepted by `date`
+-r	Remove the issue's timespent
+USAGE_tag_EOF
+  exit 2
+}
+
+sub_timespent()
+{
+  local isha tag remove path timespent
+
+  while getopts r flag ; do
+    case $flag in
+    r)
+      remove=1
+      ;;
+    ?)
+      usage_timespent
+      ;;
+    esac
+  done
+  shift $((OPTIND - 1));
+
+  test -n "$1" -a -n "$2$remove" || usage_timespent
+  test -n "$remove" -a -n "$2" && usage_timespent
+  #timespent is stored in seconds
+  timespent=$(date --date="1970-1-1 +$2" --utc +%s)|| usage_timespent
+  if ! [ "$remove" ] ; then
+    #check for negative time interval
+   expr "$timespent" : '-' > /dev/null && usage_timespent
+  fi
+
+  cdissues
+  path=$(issue_path_part "$1") || exit
+  shift
+  isha=$(issue_sha "$path")
+  if [ "$remove" ] ; then
+    test -r "$path/timespent" || error "No timespent set"
+    timespent=$(cat "$path/timespent")
+    trans_start
+    git rm "$path/timespent" >/dev/null || trans_abort
+    commit "gi: Remove timespent" "gi timespent remove $timespent"
+    echo "Removed timespent $timespent"
+  else
+    touch "$path/timespent" || error "Unable to modify timespent file"
+    printf '%s\n' "$timespent" >"$path/timespent"
+    trans_start
+    git add "$path/timespent" || trans_abort
+    commit "gi: Add timespent" "gi timespent add $timespent"
+    echo "Added timespent $timespent"
+  fi
+}
+
+# timeestimate: set time spent on an issue {{{1
+usage_timeestimate()
+{
+  cat <<\USAGE_tag_EOF
+gi timeestimate usage: git issue timeestimate <sha> <timeestimate>
+	git issue timeestimate -r <sha>
+<timeestimate> time interval in format accepted by `date`
+-r	Remove the issue's time estimate
+USAGE_tag_EOF
+  exit 2
+}
+
+sub_timeestimate()
+{
+  local isha tag remove path timeestimate
+
+  while getopts r flag ; do
+    case $flag in
+    r)
+      remove=1
+      ;;
+    ?)
+      usage_timeestimate
+      ;;
+    esac
+  done
+  shift $((OPTIND - 1));
+
+  test -n "$1" -a -n "$2$remove" || usage_timespent
+  test -n "$remove" -a -n "$2" && usage_timespent
+  #timeestimate is stored in seconds
+  timeestimate=$(date --date="1970-1-1 +$2" --utc +%s)|| usage_timespent
+  if ! [ "$remove" ] ; then
+    #check for negative time interval
+   expr "$timeestimate" : '-' > /dev/null && usage_timespent
+  fi
+
+  cdissues
+  path=$(issue_path_part "$1") || exit
+  shift
+  isha=$(issue_sha "$path")
+  if [ "$remove" ] ; then
+    test -r "$path/timeestimate" || error "No timeestimate set"
+    timeestimate=$(cat "$path/timeestimate")
+    trans_start
+    git rm "$path/timeestimate" >/dev/null || trans_abort
+    commit "gi: Remove timeestimate" "gi timeestimate remove $timeestimate"
+    echo "Removed timeestimate $timeestimate"
+  else
+    touch "$path/timeestimate" || error "Unable to modify timeestimate file"
+    printf '%s\n' "$timeestimate" >"$path/timeestimate"
+    trans_start
+    git add "$path/timeestimate" || trans_abort
+    commit "gi: Add timeestimate" "gi timeestimate add $timeestimate"
+    echo "Added timeestimate $timeestimate"
   fi
 }
 
@@ -1001,7 +1132,7 @@ USAGE_list_EOF
 shortshow()
 {
 
-  local date duedate rawdate milestone weight assignee tags description
+  local date duedate rawdate milestone weight assignee tags description rawest timeestimate rawspent timespent
 
   # Date
   date=$(git show --no-patch --format='%ai' "$id")
@@ -1024,6 +1155,18 @@ shortshow()
     duedate=$(date --date="$rawdate" --rfc-3339=seconds)
   fi
 
+  # Time Estimate
+  if [ -s "$path/timeestimate" ] ; then
+      rawest=$(cat "$path/timespent")
+      timeestimate=$(eval "echo $(date -ud "@$rawest" +'$((%s/3600/24)) days %H hours %M minutes %S seconds')")
+  fi
+
+  # Time Spent
+  if [ -s "$path/timespent" ] ; then
+      rawspent=$(cat "$path/timespent")
+      timespent=$(eval "echo $(date -ud "@$rawspent" +'$((%s/3600/24)) days %H hours %M minutes %S seconds')")
+  fi
+
   # Assignee
   if [ -r "$path/assignee" ] ; then
     assignee=$(fmt "$path/assignee"|sed -e 's/[\/&]/\\&/g')
@@ -1044,6 +1187,8 @@ shortshow()
   -e s/%i/"$id"/g \
   -e s/%c/"$date"/g \
   -e s/%d/"$duedate"/g \
+  -e s/%e/"$timeestimate"/g \
+  -e s/%s/"$timespent"/g \
   -e s/%M/"$milestone"/g \
   -e s/%w/"$weight"/g \
   -e s/%A/"$assignee"/g \
@@ -1073,7 +1218,7 @@ sub_list()
       if [ -z "$sortfield" ] ; then
         usage_list
       fi
-      if ! expr "$sortfield" : '^%[icdwMATD]$' > /dev/null ; then
+      if ! expr "$sortfield" : '^%[icdeswMATD]$' > /dev/null ; then
         usage_list
       fi
       ;;
@@ -1094,7 +1239,7 @@ sub_list()
       formatstring='ID: %i%nDate: %c%nDue Date: %d%nTags: %T%nDescription: %D'
       ;;
     full)
-      formatstring='ID: %i%nDate: %c%nDue Date: %d%nAssignees: %A%nMilestone: %M%nWeight: %w%nTags: %T%nDescription: %D'
+      formatstring='ID: %i%nDate: %c%nDue Date: %d%nTime Spent/Time Estimate: %s/%e%nAssignees: %A%nMilestone: %M%nWeight: %w%nTags: %T%nDescription: %D'
       ;;
   esac
   shift $((OPTIND - 1));
@@ -1294,6 +1439,12 @@ case "$subcommand" in
    duedate) # Add (or remove with -r) a duedate
     sub_duedate "$@"
     ;;
+   timespent) # Add (or remove with -r) the time spent
+    sub_timespent "$@"
+    ;; 
+   timeestimate) # Add (or remove with -r) the time estimate
+    sub_timeestimate "$@"
+    ;; 
   weight) # Add (or remove with -r) a weight
     sub_weight "$@"
     ;;
