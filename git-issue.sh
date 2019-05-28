@@ -292,7 +292,7 @@ USAGE_show_EOF
 
 sub_show()
 {
-  local isha path comments rawdate
+  local isha path comments rawdate rawest rawspent
 
   while getopts c flag ; do
     case $flag in
@@ -326,19 +326,29 @@ Date:	%aD' "$isha"
     fi
 
     # Time estimate
-    if [ -s "$path/timeestimate" ] ; then
-      printf 'Time Estimated: '
-      #Print time in human readable format
+    if [ -s "$path/timeestimate" ] && [ -s "$path/timespent" ] ; then
+      printf 'Time Spent/Time Estimated: '
       rawest=$(cat "$path/timeestimate")
-      eval "echo $(date -ud "@$rawest" +'$((%s/3600/24)) days %H hours %M minutes %S seconds')"
-    fi
-
-    # Time spent
-    if [ -s "$path/timespent" ] ; then
+      rawspent=$(cat "$path/timespent")
+      # shellcheck disable=SC2016
+      # SC2016: Expressions don't expand is single quotes, use double quotes for that
+      # Rationale: We don't want expansion
+      eval "echo -n $(date -ud "@$rawspent" +'$((%s/3600/24)) days %H hours %M min %S sec')"
+      printf '/'
+      # shellcheck disable=SC2016
+      eval "echo $(date -ud "@$rawest" +'$((%s/3600/24)) days %H hours %M min %S sec')"
+    elif [ -s "$path/timespent" ] ; then
       printf 'Time Spent: '
       #Print time in human readable format
-      rawest=$(cat "$path/timespent")
-      eval "echo $(date -ud "@$rawest" +'$((%s/3600/24)) days %H hours %M minutes %S seconds')"
+      rawspent=$(cat "$path/timespent")
+      # shellcheck disable=SC2016
+      eval "echo $(date -ud "@$rawspent" +'$((%s/3600/24)) days %H hours %M min %S sec')"
+    elif [ -s "$path/timeestimate" ] ; then
+      printf 'Time Estimate: '
+      #Print time in human readable format
+      rawest=$(cat "$path/timeestimate")
+      # shellcheck disable=SC2016
+      eval "echo $(date -ud "@$rawest" +'$((%s/3600/24)) days %H hours %M min %S sec')"
     fi
 
     # Milestone
@@ -1157,14 +1167,24 @@ shortshow()
 
   # Time Estimate
   if [ -s "$path/timeestimate" ] ; then
-      rawest=$(cat "$path/timespent")
-      timeestimate=$(eval "echo $(date -ud "@$rawest" +'$((%s/3600/24)) days %H hours %M minutes %S seconds')")
+    rawest=$(cat "$path/timeestimate")
+    # shellcheck disable=SC2016
+    # SC2016: Expressions don't expand is single quotes, use double quotes for that
+    # Rationale: We don't want expansion
+    timeestimate=$(eval "echo $(date -ud "@$rawest" +'$((%s/3600/24)) days %H hours %M minutes %S seconds')")
+  else
+    timeestimate='-'
   fi
 
   # Time Spent
   if [ -s "$path/timespent" ] ; then
-      rawspent=$(cat "$path/timespent")
-      timespent=$(eval "echo $(date -ud "@$rawspent" +'$((%s/3600/24)) days %H hours %M minutes %S seconds')")
+    rawspent=$(cat "$path/timespent")
+    # shellcheck disable=SC2016
+    # SC2016: Expressions don't expand is single quotes, use double quotes for that
+    # Rationale: We don't want expansion
+    timespent=$(eval "echo $(date -ud "@$rawspent" +'$((%s/3600/24)) days %H hours %M minutes %S seconds')")
+  else
+    timespent='-'
   fi
 
   # Assignee

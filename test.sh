@@ -299,6 +299,19 @@ start ; "$gi" show "$issue" | try_grep "$(date --date=tomorrow --rfc-3339=date)"
 try "$gi" duedate -r "$issue"
 start ; "$gi" show "$issue" | try_ngrep 'Due Date'
 
+# Time Spent/Time Estimate
+ntry "$gi" timespent "$issue" alot
+ntry "$gi" timespent -r "$issue"
+ntry "$gi" timespent -r "$issue" alot
+ntry "$gi" timeestimate "$issue" alot
+ntry "$gi" timeestimate -r "$issue"
+ntry "$gi" timeestimate -r "$issue" alot
+try "$gi" timespent "$issue" 2hours
+start ; "$gi" show "$issue" | try_grep 'Time Spent: 0 days 02 hours 00 min 00 sec'
+try "$gi" timeestimate "$issue" 3days
+start ; "$gi" show "$issue" | try_grep 'Time Spent/Time Estimated: 0 days 02 hours 00 min 00 sec/3 days 00 hours 00 min 00 sec'
+try "$gi" timespent -r "$issue"
+start ; "$gi" show "$issue" | try_grep 'Time Estimate: 3 days 00 hours 00 min 00 sec'
 
 # Watchers
 try "$gi" watcher "$issue" jane@example.com
