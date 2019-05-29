@@ -16,7 +16,7 @@ It has the following advantages over other systems.
 * **Transparent text file format:**
   Issues are stored as simple text files, which you can view, edit, share, and
   backup with any tool you like.
-  There's no risk of loosing access to your issues because a server has
+  There's no risk of losing access to your issues because a server has
   failed.
 * **Git-based:**
   Issues are changed and shared through Git.
