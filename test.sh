@@ -307,11 +307,11 @@ ntry "$gi" timeestimate "$issue" alot
 ntry "$gi" timeestimate -r "$issue"
 ntry "$gi" timeestimate -r "$issue" alot
 try "$gi" timespent "$issue" 2hours
-start ; "$gi" show "$issue" | try_grep 'Time Spent: 0 days 02 hours 00 min 00 sec'
+start ; "$gi" show "$issue" | try_grep '^Time Spent: 02 hours '
 try "$gi" timeestimate "$issue" 3days
-start ; "$gi" show "$issue" | try_grep 'Time Spent/Time Estimated: 0 days 02 hours 00 min 00 sec/3 days 00 hours 00 min 00 sec'
+start ; "$gi" show "$issue" | try_grep 'Time Spent/Time Estimated: 02 hours / 3 days'
 try "$gi" timespent -r "$issue"
-start ; "$gi" show "$issue" | try_grep 'Time Estimate: 3 days 00 hours 00 min 00 sec'
+start ; "$gi" show "$issue" | try_grep 'Time Estimate: 3 days'
 
 # Watchers
 try "$gi" watcher "$issue" jane@example.com

@@ -333,22 +333,27 @@ Date:	%aD' "$isha"
       # shellcheck disable=SC2016
       # SC2016: Expressions don't expand is single quotes, use double quotes for that
       # Rationale: We don't want expansion
-      eval "echo -n $(date -ud "@$rawspent" +'$((%s/3600/24)) days %H hours %M min %S sec')"
-      printf '/'
+      eval "echo $(date -ud "@$rawspent" +'$((%s/3600/24)) days %H hours %M minutes %S seconds')" |
+      #remove newline and trim unnecessary fields
+      tr -d '\n' | sed -e "s/00 \(hours\|minutes\|seconds\) \?//g" -e "s/^0 days //"
+      printf '/ '
       # shellcheck disable=SC2016
-      eval "echo $(date -ud "@$rawest" +'$((%s/3600/24)) days %H hours %M min %S sec')"
+      eval "echo $(date -ud "@$rawest" +'$((%s/3600/24)) days %H hours %M minutes %S seconds')" |
+      sed -e "s/00 \(hours\|minutes\|seconds\) \?//g" -e "s/^0 days //"
     elif [ -s "$path/timespent" ] ; then
       printf 'Time Spent: '
       #Print time in human readable format
       rawspent=$(cat "$path/timespent")
       # shellcheck disable=SC2016
-      eval "echo $(date -ud "@$rawspent" +'$((%s/3600/24)) days %H hours %M min %S sec')"
+      eval "echo $(date -ud "@$rawspent" +'$((%s/3600/24)) days %H hours %M minutes %S seconds')" |
+      sed -e "s/00 \(hours\|minutes\|seconds\) \?//g" -e "s/^0 days //"
     elif [ -s "$path/timeestimate" ] ; then
       printf 'Time Estimate: '
       #Print time in human readable format
       rawest=$(cat "$path/timeestimate")
       # shellcheck disable=SC2016
-      eval "echo $(date -ud "@$rawest" +'$((%s/3600/24)) days %H hours %M min %S sec')"
+      eval "echo $(date -ud "@$rawest" +'$((%s/3600/24)) days %H hours %M minutes %S seconds')" |
+      sed -e "s/00 \(hours\|minutes\|seconds\) \?//g" -e "s/^0 days //"
     fi
 
     # Milestone
@@ -1172,7 +1177,8 @@ shortshow()
     # shellcheck disable=SC2016
     # SC2016: Expressions don't expand is single quotes, use double quotes for that
     # Rationale: We don't want expansion
-    timeestimate=$(eval "echo $(date -ud "@$rawest" +'$((%s/3600/24)) days %H hours %M minutes %S seconds')")
+    timeestimate=$(eval "echo $(date -ud "@$rawest" +'$((%s/3600/24)) days %H hours %M minutes %S seconds')"|
+    sed -e "s/00 \(hours\|minutes\|seconds\) \?//g" -e "s/^0 days //")
   else
     timeestimate='-'
   fi
@@ -1183,7 +1189,8 @@ shortshow()
     # shellcheck disable=SC2016
     # SC2016: Expressions don't expand is single quotes, use double quotes for that
     # Rationale: We don't want expansion
-    timespent=$(eval "echo $(date -ud "@$rawspent" +'$((%s/3600/24)) days %H hours %M minutes %S seconds')")
+    timespent=$(eval "echo $(date -ud "@$rawspent" +'$((%s/3600/24)) days %H hours %M minutes %S seconds')"|
+    sed -e "s/00 \(hours\|minutes\|seconds\) \?//g" -e "s/^0 days //")
   else
     timespent='-'
   fi
@@ -1260,7 +1267,7 @@ sub_list()
       formatstring='ID: %i%nDate: %c%nDue Date: %d%nTags: %T%nDescription: %D'
       ;;
     full)
-      formatstring='ID: %i%nDate: %c%nDue Date: %d%nTime Spent/Time Estimate: %s/%e%nAssignees: %A%nMilestone: %M%nWeight: %w%nTags: %T%nDescription: %D'
+      formatstring='ID: %i%nDate: %c%nDue Date: %d%nTime Spent/Time Estimate: %s/ %e%nAssignees: %A%nMilestone: %M%nWeight: %w%nTags: %T%nDescription: %D'
       ;;
   esac
   shift $((OPTIND - 1));
