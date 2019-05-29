@@ -305,11 +305,14 @@ ntry "$gi" timespent -r "$issue"
 ntry "$gi" timespent -r "$issue" alot
 ntry "$gi" timeestimate "$issue" alot
 ntry "$gi" timeestimate -r "$issue"
-ntry "$gi" timeestimate -r "$issue" alot
+ntry "$gi" timeestimate -r "$issue" 3months
 try "$gi" timespent "$issue" 2hours
 start ; "$gi" show "$issue" | try_grep '^Time Spent: 02 hours '
+try "$gi" timespent -a "$issue" 3hours
+start ; "$gi" show "$issue" | try_grep '^Time Spent: 05 hours '
 try "$gi" timeestimate "$issue" 3days
-start ; "$gi" show "$issue" | try_grep 'Time Spent/Time Estimated: 02 hours / 3 days'
+try "$gi" timespent -a "$issue" 15minutes
+start ; "$gi" show "$issue" | try_grep 'Time Spent/Time Estimated: 05 hours 15 minutes / 3 days'
 try "$gi" timespent -r "$issue"
 start ; "$gi" show "$issue" | try_grep 'Time Estimate: 3 days'
 

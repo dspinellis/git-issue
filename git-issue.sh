@@ -599,19 +599,23 @@ usage_timespent()
 {
   cat <<\USAGE_tag_EOF
 gi timespent usage: git issue timespent <sha> <timespent>
-	git issue timespent -r <sha>
+	git issue timespent -r -a <sha>
 <timespent> time interval in format accepted by `date`
 -r	Remove the issue's timespent
+-a	instead of replacing the time spent, add to it
 USAGE_tag_EOF
   exit 2
 }
 
 sub_timespent()
 {
-  local isha tag remove path timespent
+  local isha tag remove path timespent add
 
-  while getopts r flag ; do
+  while getopts ra flag ; do
     case $flag in
+    a)
+      add=1
+      ;;
     r)
       remove=1
       ;;
@@ -623,6 +627,7 @@ sub_timespent()
   shift $((OPTIND - 1));
 
   test -n "$1" -a -n "$2$remove" || usage_timespent
+  test -n "$remove" -a -n "$add" && usage_timespent
   test -n "$remove" -a -n "$2" && usage_timespent
   #timespent is stored in seconds
   timespent=$(date --date="1970-1-1 +$2" --utc +%s)|| usage_timespent
@@ -643,6 +648,12 @@ sub_timespent()
     commit "gi: Remove timespent" "gi timespent remove $timespent"
     echo "Removed timespent $timespent"
   else
+    if [ "$add" ] ; then
+      test -r "$path/timespent" || error "No timespent set"
+      rawspent=$(cat "$path/timespent")
+      #add the existing time spent
+      timespent=$((rawspent + timespent))
+    fi
     touch "$path/timespent" || error "Unable to modify timespent file"
     printf '%s\n' "$timespent" >"$path/timespent"
     trans_start
@@ -666,7 +677,7 @@ USAGE_tag_EOF
 
 sub_timeestimate()
 {
-  local isha tag remove path timeestimate
+  local isha tag remove path timeestimate rawspent
 
   while getopts r flag ; do
     case $flag in
