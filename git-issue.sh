@@ -24,7 +24,7 @@
 #
 
 # User agent string
-USER_AGENT=https://github.com/dspinellis/git-issue/tree/8551aa2
+USER_AGENT=https://github.com/dspinellis/git-issue/tree/98189db
 
 # Exit after displaying the specified error
 error()
@@ -562,9 +562,10 @@ sub_duedate()
   test -n "$1" -a -n "$2$remove" || usage_duedate
   test -n "$remove" -a -n "$2" && usage_duedate
   #date is stored in the ISO-8601 format
-  duedate=$(date --date="$2" --iso-8601=seconds --utc) || usage_duedate
+  duedate=$(date --date="$2" --iso-8601=seconds) || usage_duedate
   if ! [ "$remove" ] ; then
-    expr "$duedate" '>' "$(date --date='now' --iso-8601=seconds --utc)" > /dev/null || printf "Warning: duedate is in the past\n"
+    #convert dates to utc for accurate comparison
+    expr "$(date --date="$duedate" --iso-8601=seconds --utc)" '>' "$(date --date='now' --iso-8601=seconds --utc)" > /dev/null || printf "Warning: duedate is in the past\n"
   fi
 
   cdissues
