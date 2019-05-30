@@ -90,7 +90,7 @@ You use _git issue_ with the following sub-commands.
 * `git issue timeestimate`: Specify (or remove with `-r`) a time estimate for this issue.
   Time estimates can be given in a format accepted by `date`,
   however bear in mind that it represents a time interval, not a date.
-* `git issue timespent` Specify (or remove with `-r`) the time spent working on an issue so far.
+* `git issue timespent`: Specify (or remove with `-r`) the time spent working on an issue so far.
   Follows the same format outlined above.
   If the `-a` option is given, the time interval will be added together with the existing one.
 * `git issue assign`: Assign (or remove `-r`) an issue to a person.

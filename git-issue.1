@@ -96,10 +96,12 @@ Specify (or remove with \fC-r\fP) the issue's due date.
 \fBgit issue timeestimate\fP
 .RS 4
 Specify (or remove with \fC-r\fP) a time estimate for this issue.
-  Time estimates can be given in a format accepted by \fCdate\fP,
-  however bear in mind that it represents a time interval, not a date.
-.IP "" 4
-\fCgit issue timespent\fP Specify (or remove with \fC-r\fP) the time spent working on an issue so far.
+  Time estimates can be given in a format accepted by \fCdate\fP, however bear in mind that it represents a time interval, not a date.
+.RE
+.PP
+\fBgit issue timespent\fP
+.RS 4
+Specify (or remove with \fC-r\fP) the time spent working on an issue so far.
   Follows the same format outlined above.
   If the \fC-a\fP option is given, the time interval will be added together with the existing one.
 .RE
@@ -141,6 +143,10 @@ This will list issues in the specified format, given as an argument to \fC-l\fP.
    - \fC%n\fP : newline
    - \fC%i\fP : issue ID
    - \fC%c\fP : creation date
+   - \fC%d\fP : due date
+   - \fC%e\fP : time estimate
+   - \fC%s\fP : time spent
+   - \fC%w\fP : weight
    - \fC%M\fP : Milestone
    - \fC%A\fP : Assignee(s)
    - \fC%T\fP : Tags

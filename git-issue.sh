@@ -24,7 +24,7 @@
 #
 
 # User agent string
-USER_AGENT=https://github.com/dspinellis/git-issue/tree/48de919
+USER_AGENT=https://github.com/dspinellis/git-issue/tree/e9f4acd
 
 # Exit after displaying the specified error
 error()
@@ -1402,7 +1402,7 @@ Work with an issue
    weight     Specify (or remove with -r) the issue's weight
    duedate    Specify (or remove with -r) the issue's due date
 * timeestimate: Specify (or remove with -r) a time estimate for this issue
-* timespent Specify (or remove with -r) the time spent working on an issue so far
+   timespent  Specify (or remove with -r) the time spent working on an issue so far
    assign     Assign (or remove -r) an issue to a person
    attach     Attach (or remove with -r) a file to an issue
    watcher    Add (or remove with -r) an issue watcher
