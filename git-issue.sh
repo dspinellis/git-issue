@@ -24,7 +24,7 @@
 #
 
 # User agent string
-USER_AGENT=https://github.com/dspinellis/git-issue/tree/98189db
+USER_AGENT=https://github.com/dspinellis/git-issue/tree/48de919
 
 # Exit after displaying the specified error
 error()
@@ -512,6 +512,7 @@ sub_weight()
   test -n "$remove" -a -n "$2" && usage_weight
   weight="$2"
   if ! [ "$remove" ] ; then
+    #weight is positive integer
     expr "$weight" : '[0-9]*$' > /dev/null || usage_weight
   fi
 
@@ -540,9 +541,9 @@ sub_weight()
 usage_duedate()
 {
   cat <<\USAGE_tag_EOF
-gi duedate usage: git issue duedate <sha> <duedate>
+gi duedate usage: git issue duedate <sha> <dd>
 	git issue duedate -r <sha>
-<duedate> date in format accepted by `date`
+<dd>	date in format accepted by `date`
 -r	Remove the issue's duedate
 USAGE_tag_EOF
   exit 2
@@ -570,7 +571,8 @@ sub_duedate()
   duedate=$(date --date="$2" --iso-8601=seconds) || usage_duedate
   if ! [ "$remove" ] ; then
     #convert dates to utc for accurate comparison
-    expr "$(date --date="$duedate" --iso-8601=seconds --utc)" '>' "$(date --date='now' --iso-8601=seconds --utc)" > /dev/null || printf "Warning: duedate is in the past\n"
+    expr "$(date --date="$duedate" --iso-8601=seconds --utc)" '>' "$(date --date='now' --iso-8601=seconds --utc)" \
+    > /dev/null || printf "Warning: duedate is in the past\n"
   fi
 
   cdissues
@@ -598,11 +600,11 @@ sub_duedate()
 usage_timespent()
 {
   cat <<\USAGE_tag_EOF
-gi timespent usage: git issue timespent <sha> <timespent>
-	git issue timespent -r -a <sha>
-<timespent> time interval in format accepted by `date`
--r	Remove the issue's timespent
+gi timespent usage: git issue timespent [-a] <sha> <ts>
 -a	instead of replacing the time spent, add to it
+	git issue timespent -r <sha>
+<ts>	time interval in format accepted by `date`
+-r	Remove the issue's timespent
 USAGE_tag_EOF
   exit 2
 }
@@ -641,7 +643,7 @@ sub_timespent()
   shift
   isha=$(issue_sha "$path")
   if [ "$remove" ] ; then
-    test -r "$path/timespent" || error "No timespent set"
+    test -r "$path/timespent" || error "No time spent set"
     timespent=$(cat "$path/timespent")
     trans_start
     git rm "$path/timespent" >/dev/null || trans_abort
@@ -649,7 +651,7 @@ sub_timespent()
     echo "Removed timespent $timespent"
   else
     if [ "$add" ] ; then
-      test -r "$path/timespent" || error "No timespent set"
+      test -r "$path/timespent" || error "No time spent set"
       rawspent=$(cat "$path/timespent")
       #add the existing time spent
       timespent=$((rawspent + timespent))
@@ -667,9 +669,9 @@ sub_timespent()
 usage_timeestimate()
 {
   cat <<\USAGE_tag_EOF
-gi timeestimate usage: git issue timeestimate <sha> <timeestimate>
+gi timeestimate usage: git issue timeestimate <sha> <te>
 	git issue timeestimate -r <sha>
-<timeestimate> time interval in format accepted by `date`
+<te>	time interval in format accepted by `date`
 -r	Remove the issue's time estimate
 USAGE_tag_EOF
   exit 2
@@ -691,13 +693,13 @@ sub_timeestimate()
   done
   shift $((OPTIND - 1));
 
-  test -n "$1" -a -n "$2$remove" || usage_timespent
-  test -n "$remove" -a -n "$2" && usage_timespent
+  test -n "$1" -a -n "$2$remove" || usage_timeestimate
+  test -n "$remove" -a -n "$2" && usage_timeestimate
   #timeestimate is stored in seconds
-  timeestimate=$(date --date="1970-1-1 +$2" --utc +%s)|| usage_timespent
+  timeestimate=$(date --date="1970-1-1 +$2" --utc +%s)|| usage_timeestimate
   if ! [ "$remove" ] ; then
     #check for negative time interval
-   expr "$timeestimate" : '-' > /dev/null && usage_timespent
+   expr "$timeestimate" : '-' > /dev/null && usage_timeestimate
   fi
 
   cdissues
@@ -705,7 +707,7 @@ sub_timeestimate()
   shift
   isha=$(issue_sha "$path")
   if [ "$remove" ] ; then
-    test -r "$path/timeestimate" || error "No timeestimate set"
+    test -r "$path/timeestimate" || error "No time estimate set"
     timeestimate=$(cat "$path/timeestimate")
     trans_start
     git rm "$path/timeestimate" >/dev/null || trans_abort
@@ -1198,8 +1200,6 @@ shortshow()
   if [ -s "$path/timespent" ] ; then
     rawspent=$(cat "$path/timespent")
     # shellcheck disable=SC2016
-    # SC2016: Expressions don't expand is single quotes, use double quotes for that
-    # Rationale: We don't want expansion
     timespent=$(eval "echo $(date -ud "@$rawspent" +'$((%s/3600/24)) days %H hours %M minutes %S seconds')"|
     sed -e "s/00 \(hours\|minutes\|seconds\) \?//g" -e "s/^0 days //")
   else
@@ -1399,6 +1399,10 @@ Work with an issue
    edit       Edit the specified issue's description
    tag        Add (or remove with -r) a tag
    milestone  Specify (or remove with -r) the issue's milestone
+   weight     Specify (or remove with -r) the issue's weight
+   duedate    Specify (or remove with -r) the issue's due date
+* timeestimate: Specify (or remove with -r) a time estimate for this issue
+* timespent Specify (or remove with -r) the time spent working on an issue so far
    assign     Assign (or remove -r) an issue to a person
    attach     Attach (or remove with -r) a file to an issue
    watcher    Add (or remove with -r) an issue watcher
