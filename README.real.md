@@ -92,7 +92,7 @@ You use _git issue_ with the following sub-commands.
 * `git issue close`: Remove the `open` tag, add the closed tag
 ### Show multiple issues
 * `git issue list`: List open issues (or all with `-a`).
-   An optional argument can show issues matching a tags or milestone.
+   An optional argument can show issues matching a tag or milestone.
 * `git issue list -l formatstring`: This will list issues in the specified format, given as an argument to `-l`.
    The following escape sequences can be used:
    
