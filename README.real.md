@@ -153,6 +153,7 @@ The directory contains the following elements.
     _issue SHA_.
   * An `attachments` directory where the issue's attachments are stored.
   * A `tags` file containing the issue's tags, one in each line.
+  * A `milestone` file containing the issue's milestone name.
   * A `watchers` file containing the emails of persons to be notified when the issue changes (one per line).
   * An `assignee` file containing the email for the person assigned to the issue.
 * A `templates` directory with message templates.
