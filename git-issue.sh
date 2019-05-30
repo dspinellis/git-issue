@@ -945,7 +945,7 @@ sub_list()
 
   case "$formatstring" in
     oneline)
-      formatstring='ID: %i  Date: %c  Date: %T  Desc: %D'
+      formatstring='ID: %i  Date: %c  Tags: %T  Desc: %D'
       ;;
     short)
       formatstring='ID: %i%nDate: %c%nTags: %T%nDescription: %D'
