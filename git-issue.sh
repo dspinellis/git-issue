@@ -1277,8 +1277,14 @@ sub_list()
     short)
       formatstring='ID: %i%nDate: %c%nDue Date: %d%nTags: %T%nDescription: %D'
       ;;
+    compact)
+      formatstring='ID: %i   Date: %c%nDue Date: %d   Weight: %w%nTags: %T   Milestone: %M%nDescription: %D'
+      ;;
+    medium)
+      formatstring='ID: %i%nDate: %c%nDue Date: %d%nMilestone: %M%nWeight: %w%nTags: %T%nDescription: %D'
+      ;;
     full)
-      formatstring='ID: %i%nDate: %c%nDue Date: %d%nTime Spent/Time Estimate: %s/ %e%nAssignees: %A%nMilestone: %M%nWeight: %w%nTags: %T%nDescription: %D'
+      formatstring='ID: %i%nDate: %c%nDue Date: %d%nTime Spent: %s%nTime Estimate: %e%nAssignees: %A%nMilestone: %M%nWeight: %w%nTags: %T%nDescription: %D'
       ;;
   esac
   shift $((OPTIND - 1));

@@ -346,7 +346,9 @@ start ; "$gi" list -l oneline feature | try_grep 'Second issue'
 start ; "$gi" list -l oneline feature | try_ngrep 'First-issue'
 start ; "$gi" list -l "Tags:%T" | try_grep 'feature'
 try "$gi" milestone "$issue" ver2
+try "$gi" weight "$issue" 99
 start ; "$gi" list -l full | try_grep 'ver2'
+start ; "$gi" list -l compact | try_grep 'Weight: 99'
 try "$gi" milestone -r "$issue"
 
 # Long list ordering
