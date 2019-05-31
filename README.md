@@ -1,5 +1,5 @@
 #  <img src="https://developers.google.com/open-source/gsoc/resources/downloads/GSoC-icon-192.png" width="40"> GSoC 2019 Project - Git Issue <img src="https://developers.google.com/open-source/gsoc/resources/downloads/GSoC-icon-192.png" width="40">
-This is the home repository of the GSoC 2019 project, aiming to extend git-issue with full import and export capabilities towards GitHub and GitLab. The project is supervised by the Open Technologies Aliance - GFOSS, and the following mentors: Diomidis Spinellis, Kostas Papadimas, Alexios Zavras. For the original README, see [README.real.md](https://github.com/eellak/gsoc2019-git-issue/blob/gsoc-2019/README.real.md)
+This is the home repository of the GSoC 2019 project, aiming to extend git-issue with full import and export capabilities towards GitHub and GitLab. The project is supervised by the Open Technologies Aliance - GFOSS, and the following mentors: Diomidis Spinellis, Kostas Papadimas, Alexios Zavras. For the actual README, see [README.real.md](https://github.com/eellak/gsoc2019-git-issue/blob/gsoc-2019/README.real.md).
 
 # About the project
 `Git-issue` is a minimalist issue management system based on `git`. It strives to be **simple to use**, **decentralized**, and in line with existing **Unix software philosophy and design**.
@@ -11,16 +11,13 @@ Currently, `git-issue` can import data from GitHub's issue management interface,
 Thus, adding export capabilities would complete the round-trip integration between `git-issue` and *GitHub*, and pave the way to wider adoption. The same argument can be made with *GitLab*, for which neither export nor import capability is currently supported. This proposal aims to add import and import/export functionality for GitHub and GitLab respectively.
 
 # Timeline
-## May 7-May 26 (before coding starts)
-- Familiarize with the existing codebase and in particular with the current GitHub import
-implementation.
-- Familiarize with the GitHub/GitLab API, as well as the HTTP REST model, which both utilize.
-- Engage with the project’s community, by participating in discussions about the
-proposed features and taking the feedback into consideration for the rest of the
-program.
-## May 27-June 5 (coding period begins)
-- Add time tracking and weight attributes to git-issue
-- Write automated tests and documentation on the new attributes
+## ~~May 7-May 26 (before coding starts)~~ :heavy_check_mark:
+- Familiarize with the existing codebase and in particular with the current GitHub import implementation. :heavy_check_mark:
+- Familiarize with the GitHub/GitLab API, as well as the HTTP REST model, which both utilize. :heavy_check_mark:
+- Engage with the project’s community, by participating in discussions about the proposed features and taking the feedback into consideration for the rest of the program. :heavy_check_mark:
+## May 27-June 5 (coding period begins) :timer_clock:
+- Add time tracking and weight attributes to git-issue :heavy_check_mark: [new_attributes branch](https://github.com/eellak/gsoc2019-git-issue/tree/new_attributes)
+- Write automated tests and documentation on the new attributes :timer_clock:
 ## June 6-June 17
 - Implement issue exporting to GitHub
 - Test and debug(through both the existing automated testing system and manual tests) both import and export functionality
