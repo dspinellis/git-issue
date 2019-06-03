@@ -24,7 +24,7 @@
 #
 
 # User agent string
-USER_AGENT=https://github.com/dspinellis/git-issue/tree/8551aa2
+USER_AGENT=https://github.com/dspinellis/git-issue/tree/f7df3bf
 
 # Exit after displaying the specified error
 error()
@@ -637,6 +637,46 @@ gh_api_get()
   fi
 }
 
+# POST, PATCH or PUT data using the GitHub API; abort transaction on error
+# Header is saved in the file gh-$prefix-header; body in gh-$prefix-body
+gh_api_send()
+{
+  local url prefix data mode
+
+  url="$1"
+  prefix="$2"
+  data="$3"
+  mode=${4:-"POST"}
+  if [ "$mode" = 'PATCH' ] ; then
+    curl_mode='--request PATCH'
+  elif [ "$mode" = 'PUT' ] ; then
+    curl_mode='--request PUT'
+  elif [ "$mode" = 'POST' ] ; then
+    curl_mode=''
+  else
+    error "incorrect gh_api_send() mode: $mode"
+  fi
+
+  # shellcheck disable=SC2086
+  # SC2086: Double quote to prevent globbing and word splitting.
+  # Rationale: GI_CURL_ARGS and curl_mode indeed require splitting
+  if ! curl $GI_CURL_ARGS -A "$USER_AGENT" -s \
+    -o "gh-$prefix-body" -D "gh-$prefix-header" $curl_mode --data "$data" "$url" ; then
+    echo 'GitHub connection failed' 1>&2
+    trans_abort
+  fi
+
+  if ! grep -q '^Status: 20[0-9]' "gh-$prefix-header" ; then
+    echo 'GitHub API communication failure' 1>&2
+    echo "URL: $url" 1>&2
+    if grep -q '^Status: 4' "gh-$prefix-header" ; then
+      jq -r '.message' "gh-$prefix-body" 1>&2
+    fi
+    trans_abort
+  fi
+}
+
+
 # Import GitHub comments for the specified issue
 # gh_import_comments  <user> <repo> <issue_number> <issue_sha>
 gh_import_comments()
@@ -1097,6 +1137,11 @@ fi
 
 shift
 case "$subcommand" in
+
+  #DEBUG
+  ghsend) 
+    gh_api_send "$@"
+    ;;
   init) # Initialize a new issue repository.
     sub_init "$@"
     ;;

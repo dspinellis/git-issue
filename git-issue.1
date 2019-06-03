@@ -107,7 +107,7 @@ Remove the \fCopen\fP tag, add the closed tag
 \fBgit issue list\fP
 .RS 4
 List open issues (or all with \fC-a\fP).
-   An optional argument can show issues matching a tags or milestone.
+   An optional argument can show issues matching a tag or milestone.
 .RE
 .PP
 \fBgit issue list -l formatstring\fP
@@ -214,6 +214,8 @@ A \fCcomments\fP directory where comments are stored, each with the SHA of
 An \fCattachments\fP directory where the issue's attachments are stored.
 .IP "" 8
 A \fCtags\fP file containing the issue's tags, one in each line.
+.IP "" 8
+A \fCmilestone\fP file containing the issue's milestone name.
 .IP "" 8
 A \fCwatchers\fP file containing the emails of persons to be notified when the issue changes (one per line).
 .IP "" 8
