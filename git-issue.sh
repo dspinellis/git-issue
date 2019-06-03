@@ -618,10 +618,7 @@ gh_api_get()
   url="$1"
   prefix="$2"
 
-  # shellcheck disable=SC2086
-  # SC2086: Double quote to prevent globbing and word splitting.
-  # Rationale: GI_CURL_ARGS indeed require splitting
-  if ! curl $GI_CURL_ARGS -A "$USER_AGENT" -s \
+  if ! curl -H "$GI_CURL_AUTH" -A "$USER_AGENT" -s \
     -o "gh-$prefix-body" -D "gh-$prefix-header" "$url" ; then
     echo 'GitHub connection failed' 1>&2
     trans_abort
@@ -660,7 +657,7 @@ gh_api_send()
   # shellcheck disable=SC2086
   # SC2086: Double quote to prevent globbing and word splitting.
   # Rationale: GI_CURL_ARGS and curl_mode indeed require splitting
-  if ! curl $GI_CURL_ARGS -A "$USER_AGENT" -s \
+  if ! curl -H "$GI_CURL_AUTH" -A "$USER_AGENT" -s \
     -o "gh-$prefix-body" -D "gh-$prefix-header" $curl_mode --data "$data" "$url" ; then
     echo 'GitHub connection failed' 1>&2
     trans_abort
