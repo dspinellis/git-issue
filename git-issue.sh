@@ -24,7 +24,7 @@
 #
 
 # User agent string
-USER_AGENT=https://github.com/dspinellis/git-issue/tree/f7df3bf
+USER_AGENT=https://github.com/dspinellis/git-issue/tree/4800fdf
 
 # Exit after displaying the specified error
 error()
@@ -673,6 +673,55 @@ gh_api_send()
   fi
 }
 
+# Create an issue in Github, based on a local one
+gh_create_issue()
+{
+  local isha path milestone assignee description url
+  test -n "$1" || error "gh_create_issue(): No SHA given"
+  #repo can be given as user/repo, /user/repo/, or user/repo/
+  repo=${2#/}
+  repo=${2%/}
+  cdissues
+  path=$(issue_path_part "$1") || exit
+  isha=$(issue_sha "$path")
+
+  # initialize the string
+  jstring='{'
+  # Get the attributes
+
+  # Milestone
+  if [ -s "$path/milestone" ] ; then
+    # Escape sed special chars before passing them 
+    milestone=$(fmt "$path/milestone") 
+    # jstring="$jstring \"milestone"
+  fi
+
+  # Assignee
+  if [ -r "$path/assignee" ] ; then
+    assignee=$(fmt "$path/assignee")
+    jstring="$jstring\"assignee\":\"$(echo "$assignee" | sed 's/ .*//')\","
+  fi
+
+  # Tags
+  if [ -s "$path/tags" ] ; then
+    tags='["'$(fmt "$path/tags" | sed 's/ /","/g')'"]'
+    jstring="$jstring\"labels\":$tags,"
+  fi
+
+  # Description
+  # Title is the first line of description
+  title=$(head -n 1 "$path/description")
+  description=$(cat "$path/description")
+  jstring="$jstring\"title\":\"$title\",\"body\":\"$description\","
+
+  #remove trailing comma and close bracket
+  jstring=${jstring%,}'}'
+  jstring=$(echo "$jstring" | tr -d "\n")
+  echo "$jstring"
+  url="https://api.github.com/repos/$repo/issues"
+  gh_api_send "$url" create "$jstring" POST
+
+}
 
 # Import GitHub comments for the specified issue
 # gh_import_comments  <user> <repo> <issue_number> <issue_sha>
@@ -1136,6 +1185,10 @@ shift
 case "$subcommand" in
 
   #DEBUG
+
+  ghcreate) 
+    gh_create_issue "$@"
+    ;;
   ghsend) 
     gh_api_send "$@"
     ;;
