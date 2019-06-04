@@ -24,7 +24,7 @@
 #
 
 # User agent string
-USER_AGENT=https://github.com/dspinellis/git-issue/tree/4800fdf
+USER_AGENT=https://github.com/dspinellis/git-issue/tree/78a16f4
 
 # Exit after displaying the specified error
 error()
@@ -691,7 +691,6 @@ gh_create_issue()
 
   # Milestone
   if [ -s "$path/milestone" ] ; then
-    # Escape sed special chars before passing them 
     milestone=$(fmt "$path/milestone") 
     # jstring="$jstring \"milestone"
   fi
@@ -711,13 +710,13 @@ gh_create_issue()
   # Description
   # Title is the first line of description
   title=$(head -n 1 "$path/description")
-  description=$(cat "$path/description")
+  description=$(tail --lines=+2 < "$path/description")
   jstring="$jstring\"title\":\"$title\",\"body\":\"$description\","
 
   #remove trailing comma and close bracket
   jstring=${jstring%,}'}'
-  jstring=$(echo "$jstring" | tr -d "\n")
-  echo "$jstring"
+  jstring=$(echo -n "$jstring" | sed 's=\\=\\\\=g' | sed ':a;N;$!ba;s/\n/\\n/g')
+  echo -E "$jstring"
   url="https://api.github.com/repos/$repo/issues"
   gh_api_send "$url" create "$jstring" POST
 
