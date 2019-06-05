@@ -24,7 +24,7 @@
 #
 
 # User agent string
-USER_AGENT=https://github.com/dspinellis/git-issue/tree/78a16f4
+USER_AGENT=https://github.com/dspinellis/git-issue/tree/5c6ba22
 
 # Exit after displaying the specified error
 error()
@@ -717,7 +717,6 @@ gh_create_issue()
   jstring=${jstring%,}'}'
   #Properly escape backslashes and newlines for json
   jstring=$(echo -n "$jstring" | sed 's=\\=\\\\=g' | sed ':a;N;$!ba;s/\n/\\n/g')
-  echo -E "$jstring"
   url="https://api.github.com/repos/$repo/issues"
   gh_api_send "$url" create "$jstring" POST
 
@@ -730,7 +729,6 @@ gh_import_issue()
   url=$1
   gh_api_get "$url" issue
   path=$(mktemp -d)
-  cat gh-issue-body
   # Create tags (in sorted order to avoid gratuitous updates)
   {
     jq -r ".state" gh-issue-body
@@ -760,7 +758,6 @@ gh_import_issue()
       jq -r ".body" gh-issue-body
     } |
       tr -d \\r >"$path/description"
-    echo "$path"
     TEMP_ISSUE_DIR=$path
 }
 # update a remote GitHub issue, based on a local one
@@ -771,13 +768,11 @@ gh_update_issue()
   test -n "$2" || error "gh_create_issue(): No url given"
   cdissues
   path=$(issue_path_part "$1") || exit
-  echo $path
   isha=$(issue_sha "$path")
 
   url="$2"
   gh_import_issue "$url"
   tpath=$TEMP_ISSUE_DIR
-  echo "$tpath"
 
   # initialize the string
   jstring='{'
@@ -806,10 +801,6 @@ gh_update_issue()
   # Title is the first line of description
   title=$(head -n 1 "$path/description")
   oldtitle=$(head -n 1 "$tpath/description")
-  echo $path
-  echo $title
-  echo $tpath
-  echo $oldtitle
   description=$(tail --lines=+2 < "$path/description")
   olddescription=$(tail --lines=+2 < "$tpath/description")
   if [ "$title" != "$oldtitle" ] ; then
@@ -823,7 +814,6 @@ gh_update_issue()
   jstring=${jstring%,}'}'
   #Properly escape backslashes and newlines for json
   jstring=$(echo -n "$jstring" | sed 's=\\=\\\\=g' | sed ':a;N;$!ba;s/\n/\\n/g')
-  echo -E "$jstring"
   gh_api_send "$url" update "$jstring" PATCH
 
 }
@@ -1305,7 +1295,8 @@ case "$subcommand" in
   ghget) 
     gh_api_get "$@"
     ;;
-  
+ #/DEBUG 
+
   init) # Initialize a new issue repository.
     sub_init "$@"
     ;;
