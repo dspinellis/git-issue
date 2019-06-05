@@ -715,10 +715,116 @@ gh_create_issue()
 
   #remove trailing comma and close bracket
   jstring=${jstring%,}'}'
+  #Properly escape backslashes and newlines for json
   jstring=$(echo -n "$jstring" | sed 's=\\=\\\\=g' | sed ':a;N;$!ba;s/\n/\\n/g')
   echo -E "$jstring"
   url="https://api.github.com/repos/$repo/issues"
   gh_api_send "$url" create "$jstring" POST
+
+}
+
+#import issue to temporary directory $TEMP_ISSUE_DIR
+gh_import_issue()
+{
+  local path
+  url=$1
+  gh_api_get "$url" issue
+  path=$(mktemp -d)
+  cat gh-issue-body
+  # Create tags (in sorted order to avoid gratuitous updates)
+  {
+    jq -r ".state" gh-issue-body
+    jq -r ".labels[] | .name" gh-issue-body
+  } |
+    LC_ALL=C sort >"$path/tags" || trans_abort
+
+    # Create assignees (in sorted order to avoid gratuitous updates)
+    jq -r ".assignees[] | .login" gh-issue-body |
+      LC_ALL=C sort >"$path/assignee" || trans_abort
+    # Obtain milestone
+    if [ "$(jq ".milestone" gh-issue-body)" = null ] ; then
+      if [ -r "$path/milestone" ] ; then
+        rm "$path/milestone" || trans_abort
+      fi
+    else
+      jq -r ".milestone.title" gh-issue-body >"$path/milestone" || trans_abort
+      git add "$path/milestone" || trans_abort
+    fi
+
+    # Create description
+    jq -r ".title" gh-issue-body >/dev/null || trans_abort
+    jq -r ".body" gh-issue-body >/dev/null || trans_abort
+    {
+      jq -r ".title" gh-issue-body
+      echo
+      jq -r ".body" gh-issue-body
+    } |
+      tr -d \\r >"$path/description"
+    echo "$path"
+    TEMP_ISSUE_DIR=$path
+}
+# update a remote GitHub issue, based on a local one
+gh_update_issue()
+{
+  local isha path milestone assignee description url
+  test -n "$1" || error "gh_create_issue(): No SHA given"
+  test -n "$2" || error "gh_create_issue(): No url given"
+  cdissues
+  path=$(issue_path_part "$1") || exit
+  echo $path
+  isha=$(issue_sha "$path")
+
+  url="$2"
+  gh_import_issue "$url"
+  tpath=$TEMP_ISSUE_DIR
+  echo "$tpath"
+
+  # initialize the string
+  jstring='{'
+
+  # Compare the attributes and add the ones that need updating to the jstring
+
+  # Assignee
+  if [ -r "$path/assignee" ] ; then
+    assignee=$(fmt "$path/assignee" | sed 's/ .*//')
+    oldassignee=$(fmt "$path/assignee")
+    if [ "$assignee" != "$oldassignee" ] ; then
+      jstring="$jstring\"assignee\":\"$assignee\","
+    fi
+  fi
+
+  # Tags
+  if [ -s "$path/tags" ] ; then
+    tags='["'$(fmt "$path/tags" | sed 's/ /","/g')'"]'
+    oldtags='["'$(fmt "$tpath/tags" | sed 's/ /","/g')'"]'
+    if [ "$tags" != "$oldtags" ] ; then
+      jstring="$jstring\"labels\":$tags,"
+    fi
+  fi
+
+  # Description
+  # Title is the first line of description
+  title=$(head -n 1 "$path/description")
+  oldtitle=$(head -n 1 "$tpath/description")
+  echo $path
+  echo $title
+  echo $tpath
+  echo $oldtitle
+  description=$(tail --lines=+2 < "$path/description")
+  olddescription=$(tail --lines=+2 < "$tpath/description")
+  if [ "$title" != "$oldtitle" ] ; then
+    jstring="$jstring\"title\":\"$title\","
+  fi
+  if [ "$description" != "$olddescription" ] ; then
+    jstring="$jstring\"body\":\"$description\","
+  fi
+
+  #remove trailing comma and close bracket
+  jstring=${jstring%,}'}'
+  #Properly escape backslashes and newlines for json
+  jstring=$(echo -n "$jstring" | sed 's=\\=\\\\=g' | sed ':a;N;$!ba;s/\n/\\n/g')
+  echo -E "$jstring"
+  gh_api_send "$url" update "$jstring" PATCH
 
 }
 
@@ -1184,13 +1290,22 @@ shift
 case "$subcommand" in
 
   #DEBUG
-
+  ghupdate) 
+    gh_update_issue "$@"
+    ;;
+  ghissuport) 
+    gh_import_issue "$@"
+    ;;
   ghcreate) 
     gh_create_issue "$@"
     ;;
   ghsend) 
     gh_api_send "$@"
     ;;
+  ghget) 
+    gh_api_get "$@"
+    ;;
+  
   init) # Initialize a new issue repository.
     sub_init "$@"
     ;;
