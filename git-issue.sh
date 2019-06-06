@@ -1,9 +1,10 @@
 #!/bin/sh
-# shellcheck disable=SC2039
+# shellcheck disable=SC2039,SC1117
 #
 # Shellcheck ignore list:
 #  - SC2039: In POSIX sh, 'local' is undefined.
 #    Rationale: Local makes for better code and works on many modern shells
+#  - SC1117: Backslash is literal. Prefer explicit escaping.
 #
 # (C) Copyright 2016-2019 Diomidis Spinellis
 #
