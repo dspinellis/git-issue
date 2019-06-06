@@ -16,7 +16,7 @@ It has the following advantages over other systems.
 * **Transparent text file format:**
   Issues are stored as simple text files, which you can view, edit, share, and
   backup with any tool you like.
-  There's no risk of loosing access to your issues because a server has
+  There's no risk of losing access to your issues because a server has
   failed.
 * **Git-based:**
   Issues are changed and shared through Git.
@@ -102,7 +102,7 @@ You use _git issue_ with the following sub-commands.
 * `git issue close`: Remove the `open` tag, add the closed tag
 ### Show multiple issues
 * `git issue list`: List open issues (or all with `-a`).
-   An optional argument can show issues matching a tags or milestone.
+   An optional argument can show issues matching a tag or milestone.
 * `git issue list -l formatstring`: This will list issues in the specified format, given as an argument to `-l`.
    The following escape sequences can be used:
    
@@ -170,6 +170,7 @@ The directory contains the following elements.
     _issue SHA_.
   * An `attachments` directory where the issue's attachments are stored.
   * A `tags` file containing the issue's tags, one in each line.
+  * A `milestone` file containing the issue's milestone name.
   * A `watchers` file containing the emails of persons to be notified when the issue changes (one per line).
   * An `assignee` file containing the email for the person assigned to the issue.
 * A `templates` directory with message templates.
