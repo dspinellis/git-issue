@@ -25,7 +25,13 @@
 #
 
 # User agent string
-USER_AGENT=https://github.com/dspinellis/git-issue/tree/e9f4acd
+USER_AGENT=https://github.com/dspinellis/git-issue/tree/17e1174
+
+if command -v gdate > /dev/null ; then
+  DATEBIN="gdate"
+else
+  DATEBIN="date"
+fi
 
 # Exit after displaying the specified error
 error()
@@ -34,6 +40,7 @@ error()
   exit 1
 }
 
+$DATEBIN --help | grep 'gnu' > /dev/null || error "Require GNU date"
 # Return a unique identifier for the specified file
 filesysid()
 {
@@ -323,7 +330,7 @@ Date:	%aD' "$isha"
       printf 'Due Date: '
       #Print date in rfc-3339 for consistency with git show
       rawdate=$(cat "$path/duedate")
-      date --date="$rawdate" --rfc-3339=seconds
+      $DATEBIN --date="$rawdate" --rfc-3339=seconds
     fi
 
     # Time estimate
@@ -334,26 +341,26 @@ Date:	%aD' "$isha"
       # shellcheck disable=SC2016
       # SC2016: Expressions don't expand is single quotes, use double quotes for that
       # Rationale: We don't want expansion
-      eval "echo $(date -ud "@$rawspent" +'$((%s/3600/24)) days %H hours %M minutes %S seconds')" |
+      eval "echo $($DATEBIN --utc --date="@$rawspent" +'$((%s/3600/24)) days %H hours %M minutes %S seconds')" |
       #remove newline and trim unnecessary fields
       tr -d '\n' | sed -e "s/00 \(hours\|minutes\|seconds\) \?//g" -e "s/^0 days //"
       printf '/ '
       # shellcheck disable=SC2016
-      eval "echo $(date -ud "@$rawest" +'$((%s/3600/24)) days %H hours %M minutes %S seconds')" |
+      eval "echo $($DATEBIN --utc --date="@$rawest" +'$((%s/3600/24)) days %H hours %M minutes %S seconds')" |
       sed -e "s/00 \(hours\|minutes\|seconds\) \?//g" -e "s/^0 days //"
     elif [ -s "$path/timespent" ] ; then
       printf 'Time Spent: '
       #Print time in human readable format
       rawspent=$(cat "$path/timespent")
       # shellcheck disable=SC2016
-      eval "echo $(date -ud "@$rawspent" +'$((%s/3600/24)) days %H hours %M minutes %S seconds')" |
+      eval "echo $($DATEBIN --utc --date="@$rawspent" +'$((%s/3600/24)) days %H hours %M minutes %S seconds')" |
       sed -e "s/00 \(hours\|minutes\|seconds\) \?//g" -e "s/^0 days //"
     elif [ -s "$path/timeestimate" ] ; then
       printf 'Time Estimate: '
       #Print time in human readable format
       rawest=$(cat "$path/timeestimate")
       # shellcheck disable=SC2016
-      eval "echo $(date -ud "@$rawest" +'$((%s/3600/24)) days %H hours %M minutes %S seconds')" |
+      eval "echo $($DATEBIN --utc --date="@$rawest" +'$((%s/3600/24)) days %H hours %M minutes %S seconds')" |
       sed -e "s/00 \(hours\|minutes\|seconds\) \?//g" -e "s/^0 days //"
     fi
 
@@ -569,10 +576,10 @@ sub_duedate()
   test -n "$1" -a -n "$2$remove" || usage_duedate
   test -n "$remove" -a -n "$2" && usage_duedate
   #date is stored in the ISO-8601 format
-  duedate=$(date --date="$2" --iso-8601=seconds) || usage_duedate
+  duedate=$($DATEBIN --date="$2" --iso-8601=seconds) || usage_duedate
   if ! [ "$remove" ] ; then
     #convert dates to utc for accurate comparison
-    expr "$(date --date="$duedate" --iso-8601=seconds --utc)" '>' "$(date --date='now' --iso-8601=seconds --utc)" \
+    expr "$($DATEBIN --date="$duedate" --iso-8601=seconds --utc)" '>' "$($DATEBIN --date='now' --iso-8601=seconds --utc)" \
     > /dev/null || printf "Warning: duedate is in the past\n"
   fi
 
@@ -633,10 +640,12 @@ sub_timespent()
   test -n "$remove" -a -n "$add" && usage_timespent
   test -n "$remove" -a -n "$2" && usage_timespent
   #timespent is stored in seconds
-  timespent=$(date --date="1970-1-1 +$2" --utc +%s)|| usage_timespent
+  timespent=$($DATEBIN --date="1970-1-1 +$2" --utc +%s)|| usage_timespent
   if ! [ "$remove" ] ; then
     #check for negative time interval
-   expr "$timespent" : '-' > /dev/null && usage_timespent
+    if [ "$timespent" -lt 0 ] ; then
+      usage_timespent
+    fi
   fi
 
   cdissues
@@ -697,10 +706,12 @@ sub_timeestimate()
   test -n "$1" -a -n "$2$remove" || usage_timeestimate
   test -n "$remove" -a -n "$2" && usage_timeestimate
   #timeestimate is stored in seconds
-  timeestimate=$(date --date="1970-1-1 +$2" --utc +%s)|| usage_timeestimate
+  timeestimate=$($DATEBIN --date="1970-1-1 +$2" --utc +%s)|| usage_timeestimate
   if ! [ "$remove" ] ; then
     #check for negative time interval
-   expr "$timeestimate" : '-' > /dev/null && usage_timeestimate
+    if [ "$timespent" -lt 0 ] ; then
+      usage_timespent
+    fi
   fi
 
   cdissues
@@ -1182,7 +1193,7 @@ shortshow()
   if [ -s "$path/duedate" ] ; then
     rawdate=$(fmt "$path/duedate") 
     #Print it in rfc-3339 for consistency with git show format
-    duedate=$(date --date="$rawdate" --rfc-3339=seconds)
+    duedate=$($DATEBIN --date="$rawdate" --rfc-3339=seconds)
   fi
 
   # Time Estimate
@@ -1191,7 +1202,7 @@ shortshow()
     # shellcheck disable=SC2016
     # SC2016: Expressions don't expand is single quotes, use double quotes for that
     # Rationale: We don't want expansion
-    timeestimate=$(eval "echo $(date -ud "@$rawest" +'$((%s/3600/24)) days %H hours %M minutes %S seconds')"|
+    timeestimate=$(eval "echo $($DATEBIN --utc --date="@$rawest" +'$((%s/3600/24)) days %H hours %M minutes %S seconds')"|
     sed -e "s/00 \(hours\|minutes\|seconds\) \?//g" -e "s/^0 days //")
   else
     timeestimate='-'
@@ -1201,7 +1212,7 @@ shortshow()
   if [ -s "$path/timespent" ] ; then
     rawspent=$(cat "$path/timespent")
     # shellcheck disable=SC2016
-    timespent=$(eval "echo $(date -ud "@$rawspent" +'$((%s/3600/24)) days %H hours %M minutes %S seconds')"|
+    timespent=$(eval "echo $($DATEBIN --utc --date="@$rawspent" +'$((%s/3600/24)) days %H hours %M minutes %S seconds')"|
     sed -e "s/00 \(hours\|minutes\|seconds\) \?//g" -e "s/^0 days //")
   else
     timespent='-'

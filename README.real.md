@@ -67,6 +67,7 @@ its operation, and (please) update this file.
 
 ### Requirements
 `git-issue` requires the *jq* and *curl* utilities.
+OS X users might also need GNU date, obtained by installing `homebrew` package coreutils.
 For running the tests *shellcheck* is also required.
 
 ## Use
