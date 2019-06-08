@@ -16,10 +16,10 @@ Thus, adding export capabilities would complete the round-trip integration betwe
 - Familiarize with the existing codebase and in particular with the current GitHub import implementation. :heavy_check_mark:
 - Familiarize with the GitHub/GitLab API, as well as the HTTP REST model, which both utilize. :heavy_check_mark:
 - Engage with the project’s community, by participating in discussions about the proposed features and taking the feedback into consideration for the rest of the program. :heavy_check_mark:
-## May 27-June 5 (coding period begins) :timer_clock:
-- Add time tracking and weight attributes to git-issue :heavy_check_mark: [new_attributes branch](https://github.com/eellak/gsoc2019-git-issue/tree/new_attributes)
+## ~~May 27-June 5 (coding period begins)~~ :heavy_check_mark:
+- Add time tracking and weight attributes to git-issue :heavy_check_mark: [new_attributes branch](https://github.com/eellak/gsoc2019-git-issue/tree/new_attributes) **[merged]**
 - Write automated tests and documentation on the new attributes :heavy_check_mark:
-## June 6-June 17
+## June 6-June 17 :timer_clock:
 - Implement issue exporting to GitHub :timer_clock:
 - Test and debug(through both the existing automated testing system and manual tests) both import and export functionality
 - This concludes the GitHub integration part
