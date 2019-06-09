@@ -69,6 +69,7 @@ gh_api_send()
   if ! grep -q '^Status: 20[0-9]' "gh-$prefix-header" ; then
     echo 'GitHub API communication failure' 1>&2
     echo "URL: $url" 1>&2
+    echo "Data: $data" 1>&2
     if grep -q '^Status: 4' "gh-$prefix-header" ; then
       jq -r '.message' "gh-$prefix-body" 1>&2
     fi
@@ -113,13 +114,12 @@ gh_create_issue()
   # Description
   # Title is the first line of description
   title=$(head -n 1 "$path/description")
-  description=$(tail --lines=+2 < "$path/description")
+  description=$(tail --lines=+2 < "$path/description" | sed -e 's=\\=\\\\=g' -e 's/"/\\"/g' | sed ':a;N;$!ba;s/\n/\\n/g')
   jstring="$jstring\"title\":\"$title\",\"body\":\"$description\","
 
   #remove trailing comma and close bracket
   jstring=${jstring%,}'}'
   #Properly escape backslashes and newlines for json
-  jstring=$(echo -n "$jstring" | sed 's=\\=\\\\=g' | sed ':a;N;$!ba;s/\n/\\n/g')
   url="https://api.github.com/repos/$repo/issues"
   gh_api_send "$url" create "$jstring" POST
 

@@ -163,8 +163,8 @@ TopDir=$(mktemp -d)
 # https://travis-ci.org/dspinellis/git-issue/settings
 if [ -n "$GH_TOKEN" ] &&  curl --version | awk '/curl/{exit $2 >= "7.55" ? 0 : 1}' ; then
   echo "Authorization: token $GH_TOKEN" >"$HOME/.token"
-  export GI_CURL_ARGS="-H @$HOME/.token"
-  echo "Set GI_CURL_ARGS to $GI_CURL_ARGS using GH_TOKEN"
+  export GI_CURL_AUTH="Authorization: token $GH_TOKEN"
+  echo "Set GI_CURL_AUTH to $GI_CURL_AUTH using GH_TOKEN"
 fi
 
 echo 'TAP version 13'
@@ -360,8 +360,8 @@ try "$gi" pull
 "$gi" show "$issue" | try_grep modified-upstream
 cd ../testdir
 
-if [ -z "$GI_CURL_ARGS" ] ; then
-  echo "Skipping import tests due to lack of GitHub authentication token."
+if [ -z "$GI_CURL_AUTH" ] ; then
+  echo "Skipping import/export tests due to lack of GitHub authentication token."
 else
   # Import
   try "$gi" import github dspinellis git-issue-test-issues
@@ -390,6 +390,15 @@ else
   try "$gi" import github dspinellis git-issue-test-issues
   after=$(cd .issues ; git rev-parse --short HEAD)
   try test x"$before" = x"$after"
+
+  # Export
+  # remove assignees to prevent notifications about test issues on GitHub
+  try "$gi" assign -r "$issue" dspinellis
+  try "$gi" assign -r "$issue" louridas
+  try "$gi" ghcreate "$issue" "vyrondrosos/git-issue-export-test"
+  try "$gi" assign "$issue" dspinellis
+  try "$gi" assign "$issue" louridas
+  
 fi
 
 if ! [ -r "$TopDir/failure" ]; then
