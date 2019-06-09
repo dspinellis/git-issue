@@ -1,5 +1,6 @@
 PREFIX ?= /usr/local
 BINPREFIX ?= "$(PREFIX)/bin"
+LIBPREFIX ?= "$(PREFIX)/lib"
 MANPREFIX ?= "$(PREFIX)/share/man/man1"
 SYSCONFDIR ?= $(PREFIX)/etc
 
@@ -8,7 +9,9 @@ default: install
 install:
 	@mkdir -p $(DESTDIR)$(MANPREFIX)
 	@mkdir -p $(DESTDIR)$(BINPREFIX)
+	@mkdir -p $(DESTDIR)$(LIBPREFIX)
 	install git-issue.sh $(DESTDIR)$(BINPREFIX)/git-issue
+	install lib/git-issue/github.sh $(DESTDIR)$(LIBPREFIX)/github.sh
 	install -m 644 git-issue.1 $(DESTDIR)$(MANPREFIX)/
 	@mkdir -p $(DESTDIR)$(SYSCONFDIR)/bash_completion.d
 	install -m 644 gi-completion.sh $(DESTDIR)$(SYSCONFDIR)/bash_completion.d/git-issue
@@ -18,7 +21,7 @@ sync-docs:
 	./sync-docs.sh
 
 test:
-	shellcheck *.sh
+	shellcheck -x *.sh lib/git-issue/*.sh
 	./test.sh
 
 uninstall:
