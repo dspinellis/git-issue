@@ -738,7 +738,7 @@ sub_timeestimate()
 
 
 # assign: assign an issue to a person or remove assignment {{{1
-usage_assign()
+usage_assignee()
 {
   cat <<\USAGE_tag_EOF
 gi assign usage: git issue assign [-r] <sha> <email> ...
