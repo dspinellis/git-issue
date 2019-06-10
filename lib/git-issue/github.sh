@@ -121,6 +121,7 @@ gh_create_issue()
   jstring=${jstring%,}'}'
   #Properly escape backslashes and newlines for json
   url="https://api.github.com/repos/$repo/issues"
+  cd ..
   gh_api_send "$url" create "$jstring" POST
 
 }
@@ -217,6 +218,7 @@ gh_update_issue()
   jstring=${jstring%,}'}'
   #Properly escape backslashes and newlines for json
   jstring=$(echo -n "$jstring" | sed 's=\\=\\\\=g' | sed ':a;N;$!ba;s/\n/\\n/g')
+  cd ..
   gh_api_send "$url" update "$jstring" PATCH
 
 }
