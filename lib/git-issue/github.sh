@@ -218,7 +218,6 @@ gh_update_issue()
   jstring=${jstring%,}'}'
   #Properly escape backslashes and newlines for json
   jstring=$(echo -n "$jstring" | sed 's=\\=\\\\=g' | sed ':a;N;$!ba;s/\n/\\n/g')
-  cd ..
   gh_api_send "$url" update "$jstring" PATCH
 
 }
@@ -380,6 +379,25 @@ gh_import_issues()
   done
 }
 
+gh_export_issues()
+{
+  local user repo i import_dir sha url
+
+  user="$1"
+  repo="$2"
+
+  cdissues
+  # For each issue in the respective import dir
+  for i in imports/github/"$user/$repo"/[1-9]* ; do
+    pwd
+    sha=$(cat "$i/sha")
+    # extract number
+    num=$(echo "$i" | grep -o '[1-9].*$')
+    echo "Exporting issue $num"
+    url="https://api.github.com/repos/$user/$repo/issues/$num"
+    gh_update_issue "$sha" "$url"
+  done
+}
 # Return the next page API URL specified in the header with the specified prefix
 # Header examples (easy and tricky)
 # Link: <https://api.github.com/repositories/146456308/issues?state=all&per_page=1&page=3>; rel="next", <https://api.github.com/repositories/146456308/issues?state=all&per_page=1&page=3>; rel="last", <https://api.github.com/repositories/146456308/issues?state=all&per_page=1&page=1>; rel="first"
