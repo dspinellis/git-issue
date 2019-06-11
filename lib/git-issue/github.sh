@@ -80,14 +80,14 @@ gh_api_send()
 # Create an issue in Github, based on a local one
 gh_create_issue()
 {
-  local isha path assignee description url
+  local isha path assignee description url user repo
   test -n "$1" || error "gh_create_issue(): No SHA given"
   #repo can be given as user/repo, /user/repo/, or user/repo/
-  repo=${2#/}
-  repo=${2%/}
   cdissues
   path=$(issue_path_part "$1") || exit
   isha=$(issue_sha "$path")
+  user="$2"
+  repo="$3"
 
   # initialize the string
   jstring='{'
@@ -120,7 +120,7 @@ gh_create_issue()
   #remove trailing comma and close bracket
   jstring=${jstring%,}'}'
   #Properly escape backslashes and newlines for json
-  url="https://api.github.com/repos/$repo/issues"
+  url="https://api.github.com/repos/$user/$repo/issues"
   cd ..
   gh_api_send "$url" create "$jstring" POST
 
@@ -167,14 +167,17 @@ gh_import_issue()
 # update a remote GitHub issue, based on a local one
 gh_update_issue()
 {
-  local isha path assignee description url
+  local isha path assignee description url user repo num
   test -n "$1" || error "gh_create_issue(): No SHA given"
   test -n "$2" || error "gh_create_issue(): No url given"
   cdissues
   path=$(issue_path_part "$1") || exit
   isha=$(issue_sha "$path")
+  user="$2"
+  repo="$3"
+  num="$4"
+  url="https://api.github.com/repos/$user/$repo/issues/$num"
 
-  url="$2"
   gh_import_issue "$url"
   tpath=$TEMP_ISSUE_DIR
 
@@ -395,7 +398,8 @@ gh_export_issues()
     num=$(echo "$i" | grep -o '[1-9].*$')
     echo "Exporting issue $num"
     url="https://api.github.com/repos/$user/$repo/issues/$num"
-    gh_update_issue "$sha" "$url"
+    gh_update_issue "$sha" "$user" "$repo" "$num"
+
   done
 }
 # Return the next page API URL specified in the header with the specified prefix

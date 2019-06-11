@@ -395,9 +395,9 @@ else
   # remove assignees to prevent notifications about test issues on GitHub
   "$gi" assign -r "$issue" dspinellis
   "$gi" assign -r "$issue" louridas
-  try "$gi" ghcreate "$issue" "vyrondrosos/git-issue-export-test"
+  try "$gi" ghcreate "$issue" vyrondrosos git-issue-export-test
   # Get the created issue
-  try "$gi" ghupdate "$issue" "https://api.github.com/repos/vyrondrosos/git-issue-export-test/issues/$(jq -r '.number' gh-create-body)"
+  try "$gi" ghupdate "$issue" vyrondrosos git-issue-export-test "$(jq -r '.number' gh-create-body)"
   "$gi" assign "$issue" dspinellis
   "$gi" assign "$issue" louridas
   
