@@ -123,6 +123,10 @@ gh_create_issue()
   url="https://api.github.com/repos/$user/$repo/issues"
   cd ..
   gh_api_send "$url" create "$jstring" POST
+  num=$(jq '.number' < gh-create-body)
+  import_dir="imports/github/$user/$repo/$num"
+  test -d "$import_dir" || mkdir -p "$import_dir"
+  printf "$isha" > "$import_dir/sha"
 
 }
 
@@ -167,7 +171,7 @@ gh_import_issue()
 # update a remote GitHub issue, based on a local one
 gh_update_issue()
 {
-  local isha path assignee description url user repo num
+  local isha path assignee description url user repo num import_dir
   test -n "$1" || error "gh_create_issue(): No SHA given"
   test -n "$2" || error "gh_create_issue(): No url given"
   cdissues
@@ -222,6 +226,9 @@ gh_update_issue()
   #Properly escape backslashes and newlines for json
   jstring=$(echo -n "$jstring" | sed 's=\\=\\\\=g' | sed ':a;N;$!ba;s/\n/\\n/g')
   gh_api_send "$url" update "$jstring" PATCH
+  import_dir="imports/github/$user/$repo/$num"
+  test -d "$import_dir" || mkdir -p "$import_dir"
+  printf "$isha" > "$import_dir/sha"
 
 }
 
