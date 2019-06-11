@@ -126,7 +126,7 @@ gh_create_issue()
   num=$(jq '.number' < gh-create-body)
   import_dir="imports/github/$user/$repo/$num"
   test -d "$import_dir" || mkdir -p "$import_dir"
-  printf "$isha" > "$import_dir/sha"
+  echo "$isha" > "$import_dir/sha"
 
 }
 
@@ -228,7 +228,7 @@ gh_update_issue()
   gh_api_send "$url" update "$jstring" PATCH
   import_dir="imports/github/$user/$repo/$num"
   test -d "$import_dir" || mkdir -p "$import_dir"
-  printf "$isha" > "$import_dir/sha"
+  echo "$isha" > "$import_dir/sha"
 
 }
 
@@ -406,6 +406,7 @@ gh_export_issues()
     echo "Exporting issue $num"
     url="https://api.github.com/repos/$user/$repo/issues/$num"
     gh_update_issue "$sha" "$user" "$repo" "$num"
+    rm -f gh-update-body gh-update-header
 
   done
 }
