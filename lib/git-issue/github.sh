@@ -80,7 +80,20 @@ gh_api_send()
 # Create an issue in Github, based on a local one
 gh_create_issue()
 {
-  local isha path assignee description url user repo
+  local isha path assignee description url user repo delete
+     
+  while getopts d flag ; do    
+    case $flag in    
+    d)    
+      delete=1    
+      ;;    
+    ?)    
+      error "gh_create_issue(): unknown option"
+      ;;    
+    esac    
+  done    
+  shift $((OPTIND - 1));    
+    
   test -n "$1" || error "gh_create_issue(): No SHA given"
   #repo can be given as user/repo, /user/repo/, or user/repo/
   cdissues
@@ -123,9 +136,9 @@ gh_create_issue()
   description=$(tail --lines=+2 < "$path/description")
 
   # shellcheck disable=SC2090,SC2086
-  jstring=$(echo $jstring | jq --arg desc "$description" --arg tit "$title" -r '. + {title: $tit, body: $desc}')
+  # jq handles properly escaping the string if passed as variable
+  jstring=$(echo $jstring | jq --arg desc "$description" --arg tit "$title" -r '. + {title: $tit, body: $desc}')    #TODO:do same for every
 
- #Properly escape backslashes and newlines for json
   url="https://api.github.com/repos/$user/$repo/issues"
   cd ..
   gh_api_send "$url" create "$jstring" POST
@@ -133,6 +146,9 @@ gh_create_issue()
   import_dir="imports/github/$user/$repo/$num"
   test -d "$import_dir" || mkdir -p "$import_dir"
   echo "$isha" > "$import_dir/sha"
+  if [ "$delete" ] ; then
+    rm -f gh-create-body gh-create-header
+  fi
 
 }
 
@@ -227,9 +243,10 @@ gh_update_issue()
   oldtitle=$(head -n 1 "$tpath/description")
   description=$(tail --lines=+2 < "$path/description")
   olddescription=$(tail --lines=+2 < "$tpath/description")
+  # jq handles properly escaping the string if passed as variable
   if [ "$title" != "$oldtitle" ] ; then
     # shellcheck disable=SC2090,SC2086
-    jstring=$(echo $jstring | jq --arg title "$title" -r '. + {title: $title}')
+    jstring=$(echo $jstring | jq --arg title "$title" -r '. + {title: $title}')   #TODO
   fi
   if [ "$title" != "$olddescription" ] ; then
     # shellcheck disable=SC2090,SC2086
