@@ -88,6 +88,8 @@ gh_create_issue()
   isha=$(issue_sha "$path")
   user="$2"
   repo="$3"
+  test -n repo || error "gh_create_issue(): no repo given"
+  test -n user || error "gh_create_issue(): no user given"
 
   # initialize the string
   jstring='{'
@@ -102,6 +104,7 @@ gh_create_issue()
   # Assignee
   if [ -r "$path/assignee" ] ; then
     assignee=$(fmt "$path/assignee")
+  # shellcheck disable=SC2089
     jstring="$jstring\"assignee\":\"$(echo "$assignee" | sed 's/ .*//')\","
   fi
 
@@ -111,15 +114,18 @@ gh_create_issue()
     jstring="$jstring\"labels\":$tags,"
   fi
 
+  #remove trailing comma and close bracket
+  jstring=${jstring%,}'}'
+ 
   # Description
   # Title is the first line of description
   title=$(head -n 1 "$path/description")
-  description=$(tail --lines=+2 < "$path/description" | sed -e 's=\\=\\\\=g' -e 's/"/\\"/g' | sed ':a;N;$!ba;s/\n/\\n/g')
-  jstring="$jstring\"title\":\"$title\",\"body\":\"$description\","
+  description=$(tail --lines=+2 < "$path/description")
 
-  #remove trailing comma and close bracket
-  jstring=${jstring%,}'}'
-  #Properly escape backslashes and newlines for json
+  # shellcheck disable=SC2090,SC2086
+  jstring=$(echo $jstring | jq --arg desc "$description" --arg tit "$title" -r '. + {title: $tit, body: $desc}')
+
+ #Properly escape backslashes and newlines for json
   url="https://api.github.com/repos/$user/$repo/issues"
   cd ..
   gh_api_send "$url" create "$jstring" POST
@@ -167,6 +173,7 @@ gh_import_issue()
     } |
       tr -d \\r >"$path/description"
     TEMP_ISSUE_DIR=$path
+    rm -f gh-issue-body gh-issue-header
 }
 # update a remote GitHub issue, based on a local one
 gh_update_issue()
@@ -180,6 +187,9 @@ gh_update_issue()
   user="$2"
   repo="$3"
   num="$4"
+  test -n repo || error "gh_updade_issue(): no repo given"
+  test -n user || error "gh_updade_issue(): no user given"
+  test -n num || error "gh_updade_issue(): no num given"
   url="https://api.github.com/repos/$user/$repo/issues/$num"
 
   gh_import_issue "$url"
@@ -208,6 +218,9 @@ gh_update_issue()
     fi
   fi
 
+  #remove trailing comma and close bracket
+  jstring=${jstring%,}'}'
+
   # Description
   # Title is the first line of description
   title=$(head -n 1 "$path/description")
@@ -215,16 +228,13 @@ gh_update_issue()
   description=$(tail --lines=+2 < "$path/description")
   olddescription=$(tail --lines=+2 < "$tpath/description")
   if [ "$title" != "$oldtitle" ] ; then
-    jstring="$jstring\"title\":\"$title\","
+    # shellcheck disable=SC2090,SC2086
+    jstring=$(echo $jstring | jq --arg title "$title" -r '. + {title: $title}')
   fi
-  if [ "$description" != "$olddescription" ] ; then
-    jstring="$jstring\"body\":\"$description\","
+  if [ "$title" != "$olddescription" ] ; then
+    # shellcheck disable=SC2090,SC2086
+    jstring=$(echo $jstring | jq --arg desc "$description" -r '. + {body: $desc}')
   fi
-
-  #remove trailing comma and close bracket
-  jstring=${jstring%,}'}'
-  #Properly escape backslashes and newlines for json
-  jstring=$(echo -n "$jstring" | sed 's=\\=\\\\=g' | sed ':a;N;$!ba;s/\n/\\n/g')
   gh_api_send "$url" update "$jstring" PATCH
   import_dir="imports/github/$user/$repo/$num"
   test -d "$import_dir" || mkdir -p "$import_dir"
