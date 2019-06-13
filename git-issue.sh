@@ -862,7 +862,7 @@ fi
 shift
 case "$subcommand" in
 
-  ghexport) 
+  export) 
     gh_export_issues "$@"
     ;;
   #DEBUG

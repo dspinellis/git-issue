@@ -398,6 +398,10 @@ else
   try "$gi" ghcreate "$issue" vyrondrosos git-issue-export-test
   # Get the created issue
   try "$gi" ghupdate "$issue" vyrondrosos git-issue-export-test "$(jq -r '.number' gh-create-body)"
+  # modify and export
+  try "$gi" assign "$issue" vyrondrosos
+  try "$gi" export vyrondrosos git-issue-export-test
+  try "$gi" assign -r "$issue" vyrondrosos
   "$gi" assign "$issue" dspinellis
   "$gi" assign "$issue" louridas
   
