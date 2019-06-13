@@ -217,6 +217,7 @@ EOF
 try "$gi" new
 
 issue=$("$gi" list | awk '/Second issue/{print $1}')
+issue2=$("$gi" list | awk '/First-issue/{print $1}')
 
 # Show
 start ; "$gi" show "$issue" | try_grep 'Second issue'
@@ -392,16 +393,17 @@ else
   try test x"$before" = x"$after"
 
   # Export
-  # remove assignees to prevent notifications about test issues on GitHub
+  # remove assignees to prevent notifications about test issues on GitHub     #TODO denser tests
   "$gi" assign -r "$issue" dspinellis
   "$gi" assign -r "$issue" louridas
   try "$gi" ghcreate "$issue" vyrondrosos git-issue-export-test
   # Get the created issue
   try "$gi" ghupdate "$issue" vyrondrosos git-issue-export-test "$(jq -r '.number' gh-create-body)"
   # modify and export
-  try "$gi" assign "$issue" vyrondrosos
+  try "$gi" ghcreate "$issue2" vyrondrosos git-issue-export-test
+  try "$gi" assign "$issue2" vyrondrosos
   try "$gi" export vyrondrosos git-issue-export-test
-  try "$gi" assign -r "$issue" vyrondrosos
+  try "$gi" assign -r "$issue2" vyrondrosos
   "$gi" assign "$issue" dspinellis
   "$gi" assign "$issue" louridas
   
