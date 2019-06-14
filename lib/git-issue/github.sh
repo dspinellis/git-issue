@@ -12,6 +12,17 @@ USAGE_import_EOF
   exit 2
 }
 
+# export: export issues to GitHub {{{1
+usage_export()
+{
+  cat <<\USAGE_import_EOF
+gi export usage: git issue export provider user repo
+Example: git issue export github torvalds linux
+USAGE_import_EOF
+  exit 2
+}
+
+
 # Get a page using the GitHub API; abort transaction on error
 # Header is saved in the file gh-$prefix-header; body in gh-$prefix-body
 gh_api_get()
@@ -420,8 +431,9 @@ gh_export_issues()
 {
   local user repo i import_dir sha url
 
-  user="$1"
-  repo="$2"
+  test "$1" = github -a -n "$2" -a -n "$3" || usage_export
+  user="$2"
+  repo="$3"
 
   cdissues
   # For each issue in the respective import dir

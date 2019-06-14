@@ -402,7 +402,7 @@ else
   # modify and export
   try "$gi" ghcreate "$issue2" vyrondrosos git-issue-export-test
   try "$gi" assign "$issue2" vyrondrosos
-  try "$gi" export vyrondrosos git-issue-export-test
+  try "$gi" export github vyrondrosos git-issue-export-test
   try "$gi" assign -r "$issue2" vyrondrosos
   "$gi" assign "$issue" dspinellis
   "$gi" assign "$issue" louridas
