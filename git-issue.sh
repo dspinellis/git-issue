@@ -26,7 +26,7 @@
 # User agent string
 # shellcheck disable=SC2034
 # SC2034 : USER_AGENT appears unused. Verify use (or export if used externally)
-USER_AGENT=https://github.com/dspinellis/git-issue/tree/e0d1afa
+USER_AGENT=https://github.com/dspinellis/git-issue/tree/f4c4dc2
 
 # Determine our script library path
 my_IFS=$IFS
@@ -38,8 +38,8 @@ LD_LIBRARY_PATH="$(dirname $0)/lib:$LD_LIBRARY_PATH:/usr/lib"
 for i in ${LD_LIBRARY_PATH} ; do
   if [ -d "${i}/git-issue" ] ; then
     MY_LIB="${i}/git-issue"
+    break
   fi
-  break
 done
 
 IFS=$my_IFS
