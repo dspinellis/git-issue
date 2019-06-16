@@ -91,7 +91,7 @@ gh_api_send()
 # Create an issue in Github, based on a local one
 gh_create_issue()
 {
-  local isha path assignee description url user repo delete
+  local isha path assignee description url user repo delete OPTIND
      
   while getopts d flag ; do    
     case $flag in    

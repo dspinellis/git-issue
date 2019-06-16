@@ -270,10 +270,13 @@ sub_new()
 {
   local summary sha path
 
-  while getopts s: flag ; do
+  while getopts s:c: flag ; do
     case $flag in
     s)
       summary="$OPTARG"
+      ;;
+    c)
+      create=$OPTARG
       ;;
     ?)
       usage_new
@@ -297,6 +300,12 @@ sub_new()
   git add "$path/description" "$path/tags" || trans_abort
   commit 'gi: Add issue description' "gi new description $sha"
   echo "Added issue $(short_sha "$sha")"
+  # export issue immediately
+  if [ -n "$create" ] ; then
+    # shellcheck disable=SC2086
+    # Rationale: We want word splitting
+    gh_create_issue $sha $create
+  fi
 }
 
 # show: Show the specified issue {{{1
@@ -865,6 +874,9 @@ case "$subcommand" in
   export) 
     gh_export_issues "$@"
     ;;
+  ghcreate) 
+    gh_create_issue "$@"
+    ;;
   #DEBUG
   ghupdate) 
     gh_update_issue "$@"
@@ -872,10 +884,7 @@ case "$subcommand" in
   ghissuport) 
     gh_import_issue "$@"
     ;;
-  ghcreate) 
-    gh_create_issue "$@"
-    ;;
-  ghsend) 
+ ghsend) 
     gh_api_send "$@"
     ;;
   ghget) 
