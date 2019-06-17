@@ -19,13 +19,13 @@ Thus, adding export capabilities would complete the round-trip integration betwe
 ## ~~May 27-June 5 (coding period begins)~~ :heavy_check_mark:
 - Add time tracking and weight attributes to git-issue :heavy_check_mark: [new_attributes branch](https://github.com/eellak/gsoc2019-git-issue/tree/new_attributes) **[merged]**
 - Write automated tests and documentation on the new attributes :heavy_check_mark:
-## June 6-June 17 :timer_clock:
-- Implement issue exporting to GitHub :timer_clock:
-- Test and debug(through both the existing automated testing system and manual tests) both import and export functionality
-- This concludes the GitHub integration part
-## June 18-June 21
-- Test and debug both import and export functionality
-- Write automated tests and documentation on the above
+## ~~June 6-June 17~~ :heavy_check_mark:
+- Implement issue exporting to GitHub :heavy_check_mark:
+- Test and debug(through both the existing automated testing system and manual tests) both import and export functionality :heavy_check_mark:
+- This concludes the GitHub integration part :heavy_check_mark:
+## June 18-June 21 :timer_clock:
+- Test and debug both import and export functionality :timer_clock:
+- Write automated tests and documentation on the above :timer_clock:
 ## June 28-July 11
 - Work shifts towards GitLab integration.
 - Implement GitLab import functionality.
