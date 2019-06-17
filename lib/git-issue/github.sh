@@ -135,14 +135,18 @@ gh_create_issue()
   # Tags
   if [ -s "$path/tags" ] ; then
     # Remove the open/closed labels
+    # shellcheck disable=2089
+    # Quotes will be treated literally. Use an array.
     tags='["'$(fmt "$path/tags" | sed 's/ \?\bopen\b \?//' | sed 's/ /","/g')'"]'
-      # Process state (open or closed)
-      if cat "$path/tags" | grep '\bopen\b' >/dev/null; then
-        jstring="$jstring\"state\":\"open\","
-      elif cat "$path/tags" | grep '\bclosed\b' > /dev/null; then
-        jstring="$jstring\"state\":\"closed\","
-      fi
-    jstring="$jstring\"labels\":$tags,"
+    # Process state (open or closed)
+    if grep '\bopen\b' >/dev/null < "$path/tags"; then
+      jstring="$jstring\"state\":\"open\","
+    elif grep '\bclosed\b' > /dev/null; then
+      jstring="$jstring\"state\":\"closed\","
+    fi
+    if [ "$tags" != '[""]' ] ; then
+      jstring="$jstring\"labels\":$tags,"
+    fi
   fi
 
   #remove trailing comma and close bracket
@@ -157,12 +161,15 @@ gh_create_issue()
   # jq handles properly escaping the string if passed as variable
   jstring=$(echo $jstring | jq --arg desc "$description" --arg tit "$title" -r '. + {title: $tit, body: $desc}')    #TODO:do same for every
 
+  cd ..
   url="https://api.github.com/repos/$user/$repo/issues"
   gh_api_send "$url" create "$jstring" POST
   num=$(jq '.number' < gh-create-body)
   import_dir="imports/github/$user/$repo/$num"
+  cdissues
   test -d "$import_dir" || mkdir -p "$import_dir"
   echo "$isha" > "$import_dir/sha"
+  cd ..
   if [ "$delete" ] ; then
     rm -f gh-create-body gh-create-header
   fi
@@ -250,12 +257,14 @@ gh_update_issue()
     oldtags='["'$(fmt "$tpath/tags" | sed 's/ \?\bopen\b \?//' | sed 's/ /","/g')'"]'
     if [ "$tags" != "$oldtags" ] ; then
       # Process state (open or closed)
-      if cat "$path/tags" | grep '\bopen\b' >/dev/null; then
+      if grep '\bopen\b' >/dev/null < "$path/tags"; then
         jstring="$jstring\"state\":\"open\","
-      elif cat "$path/tags" | grep '\bclosed\b' > /dev/null; then
+        elif grep '\bclosed\b' >/dev/null < "$path/tags"; then
         jstring="$jstring\"state\":\"closed\","
       fi
-      jstring="$jstring\"labels\":$tags,"
+      if [ "$tags" != '[""]' ] ; then
+        jstring="$jstring\"labels\":$tags,"
+      fi
     fi
   fi
 

@@ -401,6 +401,7 @@ else
   try "$gi" ghupdate "$issue" vyrondrosos git-issue-export-test "$(jq -r '.number' gh-create-body)"
   # modify and export
   try "$gi" ghcreate "$issue2" vyrondrosos git-issue-export-test
+  try "$gi" new -c "vyrondrosos git-issue-export-test" -s "Issue exported directly"
   try "$gi" assign "$issue2" vyrondrosos
   try "$gi" export github vyrondrosos git-issue-export-test
   try "$gi" assign -r "$issue2" vyrondrosos
