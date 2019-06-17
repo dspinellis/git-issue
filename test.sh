@@ -393,7 +393,7 @@ else
   try test x"$before" = x"$after"
 
   # Export
-  # remove assignees to prevent notifications about test issues on GitHub     #TODO denser tests
+  # remove assignees to prevent notifications about test issues on GitHub
   "$gi" assign -r "$issue" dspinellis
   "$gi" assign -r "$issue" louridas
   try "$gi" ghcreate "$issue" vyrondrosos git-issue-export-test

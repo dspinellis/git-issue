@@ -134,7 +134,14 @@ gh_create_issue()
 
   # Tags
   if [ -s "$path/tags" ] ; then
-    tags='["'$(fmt "$path/tags" | sed 's/ /","/g')'"]'
+    # Remove the open/closed labels
+    tags='["'$(fmt "$path/tags" | sed 's/ \?\bopen\b \?//' | sed 's/ /","/g')'"]'
+      # Process state (open or closed)
+      if cat "$path/tags" | grep '\bopen\b' >/dev/null; then
+        jstring="$jstring\"state\":\"open\","
+      elif cat "$path/tags" | grep '\bclosed\b' > /dev/null; then
+        jstring="$jstring\"state\":\"closed\","
+      fi
     jstring="$jstring\"labels\":$tags,"
   fi
 
@@ -151,7 +158,6 @@ gh_create_issue()
   jstring=$(echo $jstring | jq --arg desc "$description" --arg tit "$title" -r '. + {title: $tit, body: $desc}')    #TODO:do same for every
 
   url="https://api.github.com/repos/$user/$repo/issues"
-  cd ..
   gh_api_send "$url" create "$jstring" POST
   num=$(jq '.number' < gh-create-body)
   import_dir="imports/github/$user/$repo/$num"
@@ -238,9 +244,17 @@ gh_update_issue()
 
   # Tags
   if [ -s "$path/tags" ] ; then
-    tags='["'$(fmt "$path/tags" | sed 's/ /","/g')'"]'
-    oldtags='["'$(fmt "$tpath/tags" | sed 's/ /","/g')'"]'
+    # sed is used to translate to json
+    # and to remove the `open` tag
+    tags='["'$(fmt "$path/tags" | sed 's/ \?\bopen\b \?//' | sed 's/ /","/g')'"]'
+    oldtags='["'$(fmt "$tpath/tags" | sed 's/ \?\bopen\b \?//' | sed 's/ /","/g')'"]'
     if [ "$tags" != "$oldtags" ] ; then
+      # Process state (open or closed)
+      if cat "$path/tags" | grep '\bopen\b' >/dev/null; then
+        jstring="$jstring\"state\":\"open\","
+      elif cat "$path/tags" | grep '\bclosed\b' > /dev/null; then
+        jstring="$jstring\"state\":\"closed\","
+      fi
       jstring="$jstring\"labels\":$tags,"
     fi
   fi
