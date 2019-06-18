@@ -91,12 +91,12 @@ gh_api_send()
 # Create an issue in Github, based on a local one
 gh_create_issue()
 {
-  local isha path assignee description url user repo delete OPTIND
+  local isha path assignee description url user repo nodelete OPTIND
      
-  while getopts d flag ; do    
+  while getopts n flag ; do    
     case $flag in    
-    d)    
-      delete=1    
+    n)    
+      nodelete=1    
       ;;    
     ?)    
       error "gh_create_issue(): unknown option"
@@ -170,9 +170,8 @@ gh_create_issue()
   test -d "$import_dir" || mkdir -p "$import_dir"
   echo "$isha" > "$import_dir/sha"
   cd ..
-  if [ "$delete" ] ; then
-    rm -f gh-create-body gh-create-header
-  fi
+  # delete temp files
+  test -z $nodelete && rm -f gh-create-body gh-create-header
 
 }
 
@@ -219,7 +218,7 @@ gh_import_issue()
 gh_update_issue()
 {
   local isha path assignee description url user repo num import_dir
-  test -n "$1" || error "gh_create_issue(): No SHA given"
+  test -n "$1" || error "gh_create_issue(): No SHA given" #TODO
   test -n "$2" || error "gh_create_issue(): No url given"
   cdissues
   path=$(issue_path_part "$1") || exit

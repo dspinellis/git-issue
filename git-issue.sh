@@ -304,7 +304,7 @@ sub_new()
   if [ -n "$create" ] ; then
     # shellcheck disable=SC2086
     # Rationale: We want word splitting
-    gh_create_issue $sha $create
+    gh_create_issue -n "$sha" $create
   fi
 }
 
