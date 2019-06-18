@@ -91,7 +91,7 @@ gh_api_send()
 # Create an issue in Github, based on a local one
 gh_create_issue()
 {
-  local isha path assignee description url user repo nodelete OPTIND
+  local isha path assignee description url user repo nodelete
      
   while getopts n flag ; do    
     case $flag in    
@@ -218,17 +218,17 @@ gh_import_issue()
 gh_update_issue()
 {
   local isha path assignee description url user repo num import_dir
-  test -n "$1" || error "gh_create_issue(): No SHA given" #TODO
-  test -n "$2" || error "gh_create_issue(): No url given"
+  test -n "$1" || error "gh_update_issue(): No SHA given"
+  test -n "$2" || error "gh_update_issue(): No url given"
   cdissues
   path=$(issue_path_part "$1") || exit
   isha=$(issue_sha "$path")
   user="$2"
   repo="$3"
   num="$4"
-  test -n repo || error "gh_updade_issue(): no repo given"
-  test -n user || error "gh_updade_issue(): no user given"
-  test -n num || error "gh_updade_issue(): no num given"
+  test -n repo || error "gh_update_issue(): no repo given"
+  test -n user || error "gh_update_issue(): no user given"
+  test -n num || error "gh_update_issue(): no num given"
   url="https://api.github.com/repos/$user/$repo/issues/$num"
 
   gh_import_issue "$url"
