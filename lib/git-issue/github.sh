@@ -151,7 +151,6 @@ gh_create_issue()
 
   cd ..
   url="https://api.github.com/repos/$user/$repo/issues"
-  echo "$jstring"
   gh_api_send "$url" create "$jstring" POST
   num=$(jq '.number' < gh-create-body)
   import_dir="imports/github/$user/$repo/$num"
@@ -161,7 +160,8 @@ gh_create_issue()
   cd ..
   # delete temp files
   test -z $nodelete && rm -f gh-create-body gh-create-header
-
+  # dont inherit `test` exit status
+  exit 0
 }
 
 #import issue to temporary directory $TEMP_ISSUE_DIR
@@ -446,7 +446,6 @@ gh_export_issues()
   cdissues
   # For each issue in the respective import dir
   for i in imports/github/"$user/$repo"/[1-9]* ; do
-    pwd
     sha=$(cat "$i/sha")
     # extract number
     num=$(echo "$i" | grep -o '[1-9].*$')

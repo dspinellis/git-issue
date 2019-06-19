@@ -53,7 +53,7 @@ Create a new issues repository in the current directory.
 .PP
 \fBgit issue new\fP
 .RS 4
-Create a new open issue (with optional \fC-s\fP summary).
+Create a new open issue (with optional \fC-s\fP summary and -c "user repo" for github export).
 .RE
 .PP
 \fBgit issue show\fP
@@ -143,12 +143,24 @@ Update local Git repository with remote changes.
 .RS 4
 Import/update GitHub issues from the specified project.
   If the import involves more than a dozen of issues or if the repository
-  is private, set the environment variable \fCGI_CURL_ARGS\fP to an argument
+  is private, set the environment variable \fCGI_CURL_AUTH\fP to an argument
   that when passed to the \fIcurl\fP program will supply GitHub the appropriate
   API authentication.
-  For example, run the following command: \fCecho "Authorization: token  badf00ddead9bfee8f3c19afc3c97c6db55fcfde" >$HOME/.token; export GI_CURL_ARGS='-H @$HOME/.token'\fP
+  For example, run the following command: \fCexport GI_CURL_AUTH="badf00ddead9bfee8f3c19afc3c97c6db55fcfde"\fP
   You can create the authorization token through
   GitHub settings <https://github.com/settings/tokens/new>.
+.RE
+.PP
+\fBgit issue create\fP
+.RS 4
+Create the issue in the provided GitHub repository.
+.RE
+.PP
+\fBgit issue export\fP
+.RS 4
+Export issues for the specified project.
+  Only the issues that have been imported or modified by \fCgit-issue\fP will be
+  exported.
 .RE
 .PP
 \fBgit issue help\fP

@@ -26,7 +26,7 @@
 # User agent string
 # shellcheck disable=SC2034
 # SC2034 : USER_AGENT appears unused. Verify use (or export if used externally)
-USER_AGENT=https://github.com/dspinellis/git-issue/tree/42ad7af
+USER_AGENT=https://github.com/dspinellis/git-issue/tree/33063cc
 
 # Determine our script library path
 my_IFS=$IFS
@@ -833,7 +833,7 @@ Start an issue repository
    init       Create a new issues repository in the current directory
 
 Work with an issue
-   new        Create a new open issue (with optional -s summary)
+   new        Create a new open issue (with optional -s summary and -c "user repo" for github export)
    show       Show specified issue (and its comments with -c)
    comment    Add an issue comment
    edit       Edit the specified issue's description
@@ -852,6 +852,8 @@ Synchronize with remote repositories
    push       Update remote Git repository with local changes
    pull       Update local Git repository with remote changes
    import     Import/update GitHub issues from the specified project
+   create     Create the issue in the provided GitHub repository
+   export     Export issues for the specified project
 
 Help and debug
    help       Display help information about git issue
@@ -874,23 +876,13 @@ case "$subcommand" in
   export) 
     gh_export_issues "$@"
     ;;
-  ghcreate) 
+  create) 
     gh_create_issue "$@"
     ;;
-  #DEBUG
-  ghupdate) 
+
+  update) 
     gh_update_issue "$@"
     ;;
-  ghissuport) 
-    gh_import_issue "$@"
-    ;;
- ghsend) 
-    gh_api_send "$@"
-    ;;
-  ghget) 
-    gh_api_get "$@"
-    ;;
- #/DEBUG 
 
   init) # Initialize a new issue repository.
     sub_init "$@"
