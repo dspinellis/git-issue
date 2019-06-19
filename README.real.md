@@ -77,7 +77,7 @@ You use _git issue_ with the following sub-commands.
 * `git issue init`: Create a new issues repository in the current directory.
   The `-e` option uses an existing Git project repository.
 ### Work with an issue
-* `git issue new`: Create a new open issue (with optional `-s` summary).
+* `git issue new`: Create a new open issue (with optional `-s` summary and -c "user repo" for github export).
 * `git issue show`: Show specified issue (and its comments with `-c`).
 * `git issue comment`: Add an issue comment.
 * `git issue edit`: Edit the specified issue's description
@@ -113,12 +113,16 @@ You use _git issue_ with the following sub-commands.
 * `git issue pull`: Update local Git repository with remote changes.
 * `git issue import`: Import/update GitHub issues from the specified project.
   If the import involves more than a dozen of issues or if the repository
-  is private, set the environment variable `GI_CURL_ARGS` to an argument
+  is private, set the environment variable `GI_CURL_AUTH` to an argument
   that when passed to the _curl_ program will supply GitHub the appropriate
   API authentication.
-  For example, run the following command: `echo "Authorization: token  badf00ddead9bfee8f3c19afc3c97c6db55fcfde" >$HOME/.token; export GI_CURL_ARGS='-H @$HOME/.token'`
+  For example, run the following command: `export GI_CURL_AUTH="badf00ddead9bfee8f3c19afc3c97c6db55fcfde"`
   You can create the authorization token through
   [GitHub settings](https://github.com/settings/tokens/new).
+* `git issue create`: Create the issue in the provided GitHub repository.
+* `git issue export`: Export issues for the specified project.
+  Only the issues that have been imported or modified by `git-issue` will be
+  exported.
 ### Help and debug
 * `git issue help`: Display help information about git issue.
 * `git issue log`: Output a log of changes made
