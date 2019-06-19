@@ -91,7 +91,7 @@ gh_api_send()
 # Create an issue in Github, based on a local one
 gh_create_issue()
 {
-  local isha path assignee description url user repo nodelete
+  local isha path assignee description url user repo nodelete OPTIND
      
   while getopts n flag ; do    
     case $flag in    
@@ -106,7 +106,6 @@ gh_create_issue()
   shift $((OPTIND - 1));    
     
   test -n "$1" || error "gh_create_issue(): No SHA given"
-  #repo can be given as user/repo, /user/repo/, or user/repo/
   cdissues
   path=$(issue_path_part "$1") || exit
   isha=$(issue_sha "$path")
@@ -116,42 +115,31 @@ gh_create_issue()
   test -n user || error "gh_create_issue(): no user given"
 
   # initialize the string
-  jstring='{'
+  jstring='{}'
   # Get the attributes
-
-  # Milestone
-  #if [ -s "$path/milestone" ] ; then
-    #milestone=$(fmt "$path/milestone") 
-    # jstring="$jstring \"milestone"
-  #fi
-
   # Assignee
   if [ -r "$path/assignee" ] ; then
     assignee=$(fmt "$path/assignee")
-  # shellcheck disable=SC2089
-    jstring="$jstring\"assignee\":\"$(echo "$assignee" | sed 's/ .*//')\","
+    jstring=$(echo "$jstring" | jq --arg A "$assignee" -r '. + { assignee: $A }')
   fi
 
   # Tags
   if [ -s "$path/tags" ] ; then
-    # Remove the open/closed labels
-    # shellcheck disable=2089
-    # Quotes will be treated literally. Use an array.
-    tags='["'$(fmt "$path/tags" | sed 's/ \?\bopen\b \?//' | sed 's/ /","/g')'"]'
+    # format tags as json array
+    tags=$(fmt "$path/tags" | tr -d '\n' | jq --slurp --raw-input 'split(" ")')
     # Process state (open or closed)
     if grep '\bopen\b' >/dev/null < "$path/tags"; then
-      jstring="$jstring\"state\":\"open\","
+      jstring=$(echo "$jstring" | jq -r '. + { state: "open" }')
     elif grep '\bclosed\b' > /dev/null; then
-      jstring="$jstring\"state\":\"closed\","
+      jstring=$(echo "$jstring" | jq -r '. + { state: "closed" }')
     fi
-    if [ "$tags" != '[""]' ] ; then
-      jstring="$jstring\"labels\":$tags,"
+    tags=$(echo "$tags" | jq 'map(select(. != "open"))')
+    tags=$(echo "$tags" | jq 'map(select(. != "closed"))')
+    if [ "$tags" != '[]' ] ; then
+      jstring=$(echo "$jstring" | jq -r ". + { labels: $tags }")
     fi
   fi
 
-  #remove trailing comma and close bracket
-  jstring=${jstring%,}'}'
- 
   # Description
   # Title is the first line of description
   title=$(head -n 1 "$path/description")
@@ -159,10 +147,11 @@ gh_create_issue()
 
   # shellcheck disable=SC2090,SC2086
   # jq handles properly escaping the string if passed as variable
-  jstring=$(echo $jstring | jq --arg desc "$description" --arg tit "$title" -r '. + {title: $tit, body: $desc}')    #TODO:do same for every
+  jstring=$(echo $jstring | jq --arg desc "$description" --arg tit "$title" -r '. + {title: $tit, body: $desc}')
 
   cd ..
   url="https://api.github.com/repos/$user/$repo/issues"
+  echo "$jstring"
   gh_api_send "$url" create "$jstring" POST
   num=$(jq '.number' < gh-create-body)
   import_dir="imports/github/$user/$repo/$num"
@@ -235,7 +224,7 @@ gh_update_issue()
   tpath=$TEMP_ISSUE_DIR
 
   # initialize the string
-  jstring='{'
+  jstring='{}'
 
   # Compare the attributes and add the ones that need updating to the jstring
 
@@ -244,31 +233,28 @@ gh_update_issue()
     assignee=$(fmt "$path/assignee" | sed 's/ .*//')
     oldassignee=$(fmt "$path/assignee")
     if [ "$assignee" != "$oldassignee" ] ; then
-      jstring="$jstring\"assignee\":\"$assignee\","
+      jstring=$(echo "$jstring" | jq --arg A "$assignee" -r '. + { assignee: $A }')
     fi
   fi
 
   # Tags
   if [ -s "$path/tags" ] ; then
-    # sed is used to translate to json
-    # and to remove the `open` tag
-    tags='["'$(fmt "$path/tags" | sed 's/ \?\bopen\b \?//' | sed 's/ /","/g')'"]'
-    oldtags='["'$(fmt "$tpath/tags" | sed 's/ \?\bopen\b \?//' | sed 's/ /","/g')'"]'
+    tags=$(fmt "$path/tags" | tr -d '\n' | jq --slurp --raw-input 'split(" ")')
+    oldtags=$(fmt "$tpath/tags" | tr -d '\n' | jq --slurp --raw-input 'split(" ")')
+    tags=$(echo "$tags" | jq 'map(select(. != "open"))')
+    tags=$(echo "$tags" | jq 'map(select(. != "closed"))')
     if [ "$tags" != "$oldtags" ] ; then
       # Process state (open or closed)
       if grep '\bopen\b' >/dev/null < "$path/tags"; then
-        jstring="$jstring\"state\":\"open\","
-        elif grep '\bclosed\b' >/dev/null < "$path/tags"; then
-        jstring="$jstring\"state\":\"closed\","
+        jstring=$(echo "$jstring" | jq -r '. + { state: "open" }')
+      elif grep '\bclosed\b' > /dev/null; then
+        jstring=$(echo "$jstring" | jq -r '. + { state: "closed" }')
       fi
-      if [ "$tags" != '[""]' ] ; then
-        jstring="$jstring\"labels\":$tags,"
+      if [ "$tags" != '[]' ] ; then
+        jstring=$(echo "$jstring" | jq -r ". + { labels: $tags }")
       fi
     fi
   fi
-
-  #remove trailing comma and close bracket
-  jstring=${jstring%,}'}'
 
   # Description
   # Title is the first line of description
@@ -279,7 +265,7 @@ gh_update_issue()
   # jq handles properly escaping the string if passed as variable
   if [ "$title" != "$oldtitle" ] ; then
     # shellcheck disable=SC2090,SC2086
-    jstring=$(echo $jstring | jq --arg title "$title" -r '. + {title: $title}')   #TODO
+    jstring=$(echo $jstring | jq --arg title "$title" -r '. + {title: $title}')
   fi
   if [ "$title" != "$olddescription" ] ; then
     # shellcheck disable=SC2090,SC2086
