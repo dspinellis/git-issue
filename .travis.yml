@@ -14,4 +14,3 @@ script: make test
 
 os:
   - linux
-  - osx
