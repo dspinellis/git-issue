@@ -140,6 +140,36 @@ gh_create_issue()
     fi
   fi
 
+  # Milestone
+
+  milestone=$(fmt "$path/milestone")
+
+  # Milestones are separate entities in the GitHub API
+  # They need to be created before use on an issue
+
+  # get milestone list
+  gh_api_get "https://api.github.com/repos/$user/$repo/milestones" milestone
+
+  for i in $(seq 0 $(($(jq '. | length' gh-milestone-body) - 1)) ) ; do
+      milenum=$(jq ".[$i].number" gh-milestone-body)
+      miletitle=$(jq ".[$i].title" gh-milestone-body)
+      if [ "$milestone" != "$miletitle" ] ; then
+        # it already exists
+        found=$milenum
+      fi
+  done
+
+      if ! [[ "$found" ]] ; then
+        # we need to create it
+        gh_api_send "https://api.github.com/repos/$user/$repo/milestones" mileres "\"{ \"title\": \"$milestone\",
+        \"state\": \"open\", \"description\":\"\"}" POST
+        found=$(jq '.number' gh-mileres-body)
+      fi
+      jstring=$(echo "$jstring" | jq --arg A "$found" -r '. + { milestone: $A }')
+
+ 
+
+
   # Description
   # Title is the first line of description
   title=$(head -n 1 "$path/description")
