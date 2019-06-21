@@ -81,6 +81,32 @@ Add (or remove with \fC-r\fP) a tag.
 Specify (or remove with \fC-r\fP) the issue's milestone.
 .RE
 .PP
+\fBgit issue weight\fP
+.RS 4
+Specify (or remove with \fC-r\fP) the issue's weight.
+  The weight is a positive integer that serves as a measure of importance.
+.RE
+.PP
+\fBgit issue duedate\fP
+.RS 4
+Specify (or remove with \fC-r\fP) the issue's due date.
+  The command accepts all formats supported by the \fCdate\fP utility.
+.RE
+.PP
+\fBgit issue timeestimate\fP
+.RS 4
+Specify (or remove with \fC-r\fP) a time estimate for this issue.
+  Time estimates can be given in a format accepted by \fCdate\fP,
+  however bear in mind that it represents a time interval, not a date.
+.RE
+.PP
+\fBgit issue timespent\fP
+.RS 4
+Specify (or remove with \fC-r\fP) the time spent working on an issue so far.
+  Follows the same format outlined above.
+  If the \fC-a\fP option is given, the time interval will be added together with the existing one.
+.RE
+.PP
 \fBgit issue assign\fP
 .RS 4
 Assign (or remove \fC-r\fP) an issue to a person.
@@ -118,6 +144,10 @@ This will list issues in the specified format, given as an argument to \fC-l\fP.
    - \fC%n\fP : newline
    - \fC%i\fP : issue ID
    - \fC%c\fP : creation date
+   - \fC%d\fP : due date
+   - \fC%e\fP : time estimate
+   - \fC%s\fP : time spent
+   - \fC%w\fP : weight
    - \fC%M\fP : Milestone
    - \fC%A\fP : Assignee(s)
    - \fC%T\fP : Tags
@@ -219,6 +249,12 @@ Each issue can have the following elements in its directory.
 .IP "" 8
 A \fCdescription\fP file with a one-line summary and a description of the issue.
 .IP "" 8
+A \fCduedate\fP file with the due date stored in ISO-8601 format.
+.IP "" 8
+A \fCweight\fP file with the weight stored as a positive integer.
+.IP "" 8
+A \fCtimespent\fP and \fCtimeestimate\fP file with the time estimate and time spent respectively, stored in seconds.
+.IP "" 8
 A \fCcomments\fP directory where comments are stored, each with the SHA of
     a commit containing the text \fCgi comment mark\fP
     \fIissue SHA\fP.
@@ -280,6 +316,30 @@ Add an issue comment (opens editor window)
 .nf
 $ git issue comment e6a95c9
 Added comment 8c0d5b3
+
+.ft P
+.fi
+.PP
+Add a due date for the issue
+\fC\fP\fC.ft C
+.nf
+$ git issue duedate "next Tuesday"
+
+.ft P
+.fi
+.PP
+Keep track of time spent on the issue
+\fC\fP\fC.ft C
+.nf
+$ git issue timespent "2hours"
+
+.ft P
+.fi
+.PP
+Log additional time spent working on it
+\fC\fP\fC.ft C
+.nf
+$ git issue timespent -a "4 hours"
 
 .ft P
 .fi

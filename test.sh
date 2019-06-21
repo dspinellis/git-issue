@@ -1,10 +1,12 @@
 #!/bin/sh
-# shellcheck disable=SC2039,SC2164,SC2086
+# shellcheck disable=SC2039,SC2164,SC2086,SC2103
 #
 # Shellcheck ignore list:
 #  - SC2039: In POSIX sh, 'local' is undefined.
 #    Rationale: Local makes for better code and works on many modern shells
 #  - SC2164: Use cd ... || exit in case cd fails.
+#    Rationale: We run this after creating the directory
+#  - SC2164: Use a ( subshell ) to avoid having to cd back.
 #    Rationale: We run this after creating the directory
 #
 #
@@ -158,6 +160,12 @@ TopDir=$(mktemp -d)
   echo "Test artifacts saved in $TopDir"
 } 1>&2
 
+if command -v gdate ; then
+  DATEBIN="gdate"                
+else
+  DATEBIN="date"
+fi
+
 # Setup GitHub authentication token for Travis CI for curl version >= 7.55
 # The GH_TOKEN environment variable with the secret token is specified in
 # https://travis-ci.org/dspinellis/git-issue/settings
@@ -280,6 +288,41 @@ ntry "$gi" milestone -r "$issue" foo
 try "$gi" milestone -r "$issue"
 start ; "$gi" show "$issue" | try_ngrep ver3
 
+# Weight
+ntry "$gi" weight "$issue" l33t
+ntry "$gi" weight -r "$issue"
+try "$gi" weight "$issue" 1337
+start ; "$gi" show "$issue" | try_grep 1337
+try "$gi" weight -r "$issue"
+start ; "$gi" show "$issue" | try_ngrep 1337
+
+# Due Date
+ntry "$gi" duedate "$issue" someday
+ntry "$gi" duedate -r "$issue"
+ntry "$gi" duedate -r "$issue" someday
+start ; "$gi" duedate "$issue" yesterday | try_grep Warning
+try "$gi" duedate "$issue" tomorrow
+start ; "$gi" show "$issue" | try_grep "$($DATEBIN --date=tomorrow --rfc-3339=date)"
+try "$gi" duedate -r "$issue"
+start ; "$gi" show "$issue" | try_ngrep 'Due Date'
+
+# Time Spent/Time Estimate
+ntry "$gi" timespent "$issue" alot
+ntry "$gi" timespent -r "$issue"
+ntry "$gi" timespent -r "$issue" alot
+ntry "$gi" timeestimate "$issue" alot
+ntry "$gi" timeestimate -r "$issue"
+ntry "$gi" timeestimate -r "$issue" 3months
+try "$gi" timespent "$issue" 2hours
+start ; "$gi" show "$issue" | try_grep '^Time Spent: 02 hours '
+try "$gi" timespent -a "$issue" 3hours
+start ; "$gi" show "$issue" | try_grep '^Time Spent: 05 hours '
+try "$gi" timeestimate "$issue" 3days
+try "$gi" timespent -a "$issue" 15minutes
+# start ; "$gi" show "$issue" | try_grep 'Time Spent/Time Estimated: 05 hours 15 minutes \?/ \?3 days'
+try "$gi" timespent -r "$issue"
+start ; "$gi" show "$issue" | try_grep 'Time Estimate: 3 days'
+
 # Watchers
 try "$gi" watcher "$issue" jane@example.com
 start ; "$gi" show "$issue" | header_continuation | try_grep '^Watchers:[ 	]jane@example.com'
@@ -310,7 +353,9 @@ start ; "$gi" list -l oneline feature | try_grep 'Second issue'
 start ; "$gi" list -l oneline feature | try_ngrep 'First-issue'
 start ; "$gi" list -l "Tags:%T" | try_grep 'feature'
 try "$gi" milestone "$issue" ver2
+try "$gi" weight "$issue" 99
 start ; "$gi" list -l full | try_grep 'ver2'
+start ; "$gi" list -l compact | try_grep 'Weight: 99'
 try "$gi" milestone -r "$issue"
 
 # Long list ordering

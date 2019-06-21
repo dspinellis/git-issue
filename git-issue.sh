@@ -1,9 +1,10 @@
 #!/bin/sh
-# shellcheck disable=SC2039
+# shellcheck disable=SC2039,SC1117
 #
 # Shellcheck ignore list:
 #  - SC2039: In POSIX sh, 'local' is undefined.
 #    Rationale: Local makes for better code and works on many modern shells
+#  - SC1117: Backslash is literal. Prefer explicit escaping.
 #
 # (C) Copyright 2016-2019 Diomidis Spinellis
 #
@@ -26,7 +27,7 @@
 # User agent string
 # shellcheck disable=SC2034
 # SC2034 : USER_AGENT appears unused. Verify use (or export if used externally)
-USER_AGENT=https://github.com/dspinellis/git-issue/tree/fe309d4
+USER_AGENT=https://github.com/dspinellis/git-issue/tree/b79a2fe
 
 # Determine our script library path
 my_IFS=$IFS
@@ -44,6 +45,11 @@ done
 
 IFS=$my_IFS
 
+if command -v gdate > /dev/null ; then
+  DATEBIN="gdate"
+else
+  DATEBIN="date"
+fi
 
 # Exit after displaying the specified error
 error()
@@ -52,6 +58,7 @@ error()
   exit 1
 }
 
+$DATEBIN --help | grep 'gnu' > /dev/null || error "Require GNU date"
 # Return a unique identifier for the specified file
 filesysid()
 {
@@ -320,7 +327,7 @@ USAGE_show_EOF
 
 sub_show()
 {
-  local isha path comments
+  local isha path comments rawdate rawest rawspent
 
   while getopts c flag ; do
     case $flag in
@@ -345,11 +352,57 @@ sub_show()
     git show --no-patch --format='Author:	%an <%ae>
 Date:	%aD' "$isha"
 
+    # Due Date
+    if [ -s "$path/duedate" ] ; then
+      printf 'Due Date: '
+      #Print date in rfc-3339 for consistency with git show
+      rawdate=$(cat "$path/duedate")
+      $DATEBIN --date="$rawdate" --rfc-3339=seconds
+    fi
+
+    # Time estimate
+    if [ -s "$path/timeestimate" ] && [ -s "$path/timespent" ] ; then
+      printf 'Time Spent/Time Estimated: '
+      rawest=$(cat "$path/timeestimate")
+      rawspent=$(cat "$path/timespent")
+      # shellcheck disable=SC2016
+      # SC2016: Expressions don't expand is single quotes, use double quotes for that
+      # Rationale: We don't want expansion
+      eval "echo $($DATEBIN --utc --date="@$rawspent" +'$((%s/3600/24)) days %H hours %M minutes %S seconds')" |
+      #remove newline and trim unnecessary fields
+      tr -d '\n' | sed -e "s/00 \(hours\|minutes\|seconds\) \?//g" -e "s/^0 days //"
+      printf '/ '
+      # shellcheck disable=SC2016
+      eval "echo $($DATEBIN --utc --date="@$rawest" +'$((%s/3600/24)) days %H hours %M minutes %S seconds')" |
+      sed -e "s/00 \(hours\|minutes\|seconds\) \?//g" -e "s/^0 days //"
+    elif [ -s "$path/timespent" ] ; then
+      printf 'Time Spent: '
+      #Print time in human readable format
+      rawspent=$(cat "$path/timespent")
+      # shellcheck disable=SC2016
+      eval "echo $($DATEBIN --utc --date="@$rawspent" +'$((%s/3600/24)) days %H hours %M minutes %S seconds')" |
+      sed -e "s/00 \(hours\|minutes\|seconds\) \?//g" -e "s/^0 days //"
+    elif [ -s "$path/timeestimate" ] ; then
+      printf 'Time Estimate: '
+      #Print time in human readable format
+      rawest=$(cat "$path/timeestimate")
+      # shellcheck disable=SC2016
+      eval "echo $($DATEBIN --utc --date="@$rawest" +'$((%s/3600/24)) days %H hours %M minutes %S seconds')" |
+      sed -e "s/00 \(hours\|minutes\|seconds\) \?//g" -e "s/^0 days //"
+    fi
+
     # Milestone
     if [ -s "$path/milestone" ] ; then
       printf 'Milestone: '
       cat "$path/milestone"
     fi
+
+    # Weight
+    if [ -s "$path/weight" ] ; then
+      printf 'Weight: '
+      cat "$path/weight"
+    fi
+
 
     # Tags
     if [ -s "$path/tags" ] ; then
@@ -463,9 +516,256 @@ sub_milestone()
   fi
 }
 
+# weight: set an issue's weight {{{1
+usage_weight()
+{
+  cat <<\USAGE_tag_EOF
+gi weight usage: git issue weight <sha> <weight>
+	git issue weight -r <sha>
+-r	Remove the issue's weight
+USAGE_tag_EOF
+  exit 2
+}
+
+sub_weight()
+{
+  local isha tag remove path weight
+
+  while getopts r flag ; do
+    case $flag in
+    r)
+      remove=1
+      ;;
+    ?)
+      usage_weight
+      ;;
+    esac
+  done
+  shift $((OPTIND - 1));
+
+  test -n "$1" -a -n "$2$remove" || usage_weight
+  test -n "$remove" -a -n "$2" && usage_weight
+  weight="$2"
+  if ! [ "$remove" ] ; then
+    #weight is positive integer
+    expr "$weight" : '[0-9]*$' > /dev/null || usage_weight
+  fi
+
+  cdissues
+  path=$(issue_path_part "$1") || exit
+  shift
+  isha=$(issue_sha "$path")
+  if [ "$remove" ] ; then
+    test -r "$path/weight" || error "No weight set"
+    weight=$(cat "$path/weight")
+    trans_start
+    git rm "$path/weight" >/dev/null || trans_abort
+    commit "gi: Remove weight" "gi weight remove $weight"
+    echo "Removed weight $weight"
+  else
+    touch "$path/weight" || error "Unable to modify weight file"
+    printf '%s\n' "$weight" >"$path/weight"
+    trans_start
+    git add "$path/weight" || trans_abort
+    commit "gi: Add weight" "gi weight add $weight"
+    echo "Added weight $weight"
+  fi
+}
+
+# duedate: set an issue's weight {{{1
+usage_duedate()
+{
+  cat <<\USAGE_tag_EOF
+gi duedate usage: git issue duedate <sha> <dd>
+	git issue duedate -r <sha>
+<dd>	date in format accepted by `date`
+-r	Remove the issue's duedate
+USAGE_tag_EOF
+  exit 2
+}
+
+sub_duedate()
+{
+  local isha tag remove path duedate
+
+  while getopts r flag ; do
+    case $flag in
+    r)
+      remove=1
+      ;;
+    ?)
+      usage_duedate
+      ;;
+    esac
+  done
+  shift $((OPTIND - 1));
+
+  test -n "$1" -a -n "$2$remove" || usage_duedate
+  test -n "$remove" -a -n "$2" && usage_duedate
+  #date is stored in the ISO-8601 format
+  duedate=$($DATEBIN --date="$2" --iso-8601=seconds) || usage_duedate
+  if ! [ "$remove" ] ; then
+    #convert dates to utc for accurate comparison
+    expr "$($DATEBIN --date="$duedate" --iso-8601=seconds --utc)" '>' "$($DATEBIN --date='now' --iso-8601=seconds --utc)" \
+    > /dev/null || printf "Warning: duedate is in the past\n"
+  fi
+
+  cdissues
+  path=$(issue_path_part "$1") || exit
+  shift
+  isha=$(issue_sha "$path")
+  if [ "$remove" ] ; then
+    test -r "$path/duedate" || error "No duedate set"
+    duedate=$(cat "$path/duedate")
+    trans_start
+    git rm "$path/duedate" >/dev/null || trans_abort
+    commit "gi: Remove duedate" "gi duedate remove $duedate"
+    echo "Removed duedate $duedate"
+  else
+    touch "$path/duedate" || error "Unable to modify duedate file"
+    printf '%s\n' "$duedate" >"$path/duedate"
+    trans_start
+    git add "$path/duedate" || trans_abort
+    commit "gi: Add duedate" "gi duedate add $duedate"
+    echo "Added duedate $duedate"
+  fi
+}
+
+# timespent: set time spent on an issue {{{1
+usage_timespent()
+{
+  cat <<\USAGE_tag_EOF
+gi timespent usage: git issue timespent [-a] <sha> <ts>
+-a	instead of replacing the time spent, add to it
+	git issue timespent -r <sha>
+<ts>	time interval in format accepted by `date`
+-r	Remove the issue's timespent
+USAGE_tag_EOF
+  exit 2
+}
+
+sub_timespent()
+{
+  local isha tag remove path timespent add
+
+  while getopts ra flag ; do
+    case $flag in
+    a)
+      add=1
+      ;;
+    r)
+      remove=1
+      ;;
+    ?)
+      usage_timespent
+      ;;
+    esac
+  done
+  shift $((OPTIND - 1));
+
+  test -n "$1" -a -n "$2$remove" || usage_timespent
+  test -n "$remove" -a -n "$add" && usage_timespent
+  test -n "$remove" -a -n "$2" && usage_timespent
+  #timespent is stored in seconds
+  timespent=$($DATEBIN --date="1970-1-1 +$2" --utc +%s)|| usage_timespent
+  if ! [ "$remove" ] ; then
+    #check for negative time interval
+    if [ "$timespent" -lt 0 ] ; then
+      usage_timespent
+    fi
+  fi
+
+  cdissues
+  path=$(issue_path_part "$1") || exit
+  shift
+  isha=$(issue_sha "$path")
+  if [ "$remove" ] ; then
+    test -r "$path/timespent" || error "No time spent set"
+    timespent=$(cat "$path/timespent")
+    trans_start
+    git rm "$path/timespent" >/dev/null || trans_abort
+    commit "gi: Remove timespent" "gi timespent remove $timespent"
+    echo "Removed timespent $timespent"
+  else
+    if [ "$add" ] ; then
+      test -r "$path/timespent" || error "No time spent set"
+      rawspent=$(cat "$path/timespent")
+      #add the existing time spent
+      timespent=$((rawspent + timespent))
+    fi
+    touch "$path/timespent" || error "Unable to modify timespent file"
+    printf '%s\n' "$timespent" >"$path/timespent"
+    trans_start
+    git add "$path/timespent" || trans_abort
+    commit "gi: Add timespent" "gi timespent add $timespent"
+    echo "Added timespent $timespent"
+  fi
+}
+
+# timeestimate: set time spent on an issue {{{1
+usage_timeestimate()
+{
+  cat <<\USAGE_tag_EOF
+gi timeestimate usage: git issue timeestimate <sha> <te>
+	git issue timeestimate -r <sha>
+<te>	time interval in format accepted by `date`
+-r	Remove the issue's time estimate
+USAGE_tag_EOF
+  exit 2
+}
+
+sub_timeestimate()
+{
+  local isha tag remove path timeestimate rawspent
+
+  while getopts r flag ; do
+    case $flag in
+    r)
+      remove=1
+      ;;
+    ?)
+      usage_timeestimate
+      ;;
+    esac
+  done
+  shift $((OPTIND - 1));
+
+  test -n "$1" -a -n "$2$remove" || usage_timeestimate
+  test -n "$remove" -a -n "$2" && usage_timeestimate
+  #timeestimate is stored in seconds
+  timeestimate=$($DATEBIN --date="1970-1-1 +$2" --utc +%s)|| usage_timeestimate
+  if ! [ "$remove" ] ; then
+    #check for negative time interval
+    if [ "$timeestimate" -lt 0 ] ; then
+      usage_timespent
+    fi
+  fi
+
+  cdissues
+  path=$(issue_path_part "$1") || exit
+  shift
+  isha=$(issue_sha "$path")
+  if [ "$remove" ] ; then
+    test -r "$path/timeestimate" || error "No time estimate set"
+    timeestimate=$(cat "$path/timeestimate")
+    trans_start
+    git rm "$path/timeestimate" >/dev/null || trans_abort
+    commit "gi: Remove timeestimate" "gi timeestimate remove $timeestimate"
+    echo "Removed timeestimate $timeestimate"
+  else
+    touch "$path/timeestimate" || error "Unable to modify timeestimate file"
+    printf '%s\n' "$timeestimate" >"$path/timeestimate"
+    trans_start
+    git add "$path/timeestimate" || trans_abort
+    commit "gi: Add timeestimate" "gi timeestimate add $timeestimate"
+    echo "Added timeestimate $timeestimate"
+  fi
+}
+
+
 
 # assign: assign an issue to a person or remove assignment {{{1
-usage_assign()
+usage_assignee()
 {
   cat <<\USAGE_tag_EOF
 gi assign usage: git issue assign [-r] <sha> <email> ...
@@ -645,7 +945,7 @@ USAGE_list_EOF
 shortshow()
 {
 
-  local date milestone assignee tags description
+  local date duedate rawdate milestone weight assignee tags description rawest timeestimate rawspent timespent
 
   # Date
   date=$(git show --no-patch --format='%ai' "$id")
@@ -654,6 +954,40 @@ shortshow()
   if [ -s "$path/milestone" ] ; then
     # Escape sed special chars before passing them 
     milestone=$(fmt "$path/milestone"|sed -e 's/[\/&]/\\&/g') 
+  fi
+
+  # Weight
+  if [ -s "$path/weight" ] ; then
+    weight=$(fmt "$path/weight") 
+  fi
+
+  # Due Date
+  if [ -s "$path/duedate" ] ; then
+    rawdate=$(fmt "$path/duedate") 
+    #Print it in rfc-3339 for consistency with git show format
+    duedate=$($DATEBIN --date="$rawdate" --rfc-3339=seconds)
+  fi
+
+  # Time Estimate
+  if [ -s "$path/timeestimate" ] ; then
+    rawest=$(cat "$path/timeestimate")
+    # shellcheck disable=SC2016
+    # SC2016: Expressions don't expand is single quotes, use double quotes for that
+    # Rationale: We don't want expansion
+    timeestimate=$(eval "echo $($DATEBIN --utc --date="@$rawest" +'$((%s/3600/24)) days %H hours %M minutes %S seconds')"|
+    sed -e "s/00 \(hours\|minutes\|seconds\) \?//g" -e "s/^0 days //")
+  else
+    timeestimate='-'
+  fi
+
+  # Time Spent
+  if [ -s "$path/timespent" ] ; then
+    rawspent=$(cat "$path/timespent")
+    # shellcheck disable=SC2016
+    timespent=$(eval "echo $($DATEBIN --utc --date="@$rawspent" +'$((%s/3600/24)) days %H hours %M minutes %S seconds')"|
+    sed -e "s/00 \(hours\|minutes\|seconds\) \?//g" -e "s/^0 days //")
+  else
+    timespent='-'
   fi
 
   # Assignee
@@ -675,7 +1009,11 @@ shortshow()
   sed -e s/%n/$'\001'/g \
   -e s/%i/"$id"/g \
   -e s/%c/"$date"/g \
+  -e s/%d/"$duedate"/g \
+  -e s/%e/"$timeestimate"/g \
+  -e s/%s/"$timespent"/g \
   -e s/%M/"$milestone"/g \
+  -e s/%w/"$weight"/g \
   -e s/%A/"$assignee"/g \
   -e s/%T/"$tags"/g \
   -e s/%D/"$description"/g | 
@@ -703,7 +1041,7 @@ sub_list()
       if [ -z "$sortfield" ] ; then
         usage_list
       fi
-      if ! expr "$sortfield" : '^%[icMATD]$' > /dev/null ; then
+      if ! expr "$sortfield" : '^%[icdeswMATD]$' > /dev/null ; then
         usage_list
       fi
       ;;
@@ -721,10 +1059,16 @@ sub_list()
       formatstring='ID: %i  Date: %c  Tags: %T  Desc: %D'
       ;;
     short)
-      formatstring='ID: %i%nDate: %c%nTags: %T%nDescription: %D'
+      formatstring='ID: %i%nDate: %c%nDue Date: %d%nTags: %T%nDescription: %D'
+      ;;
+    compact)
+      formatstring='ID: %i   Date: %c%nDue Date: %d   Weight: %w%nTags: %T   Milestone: %M%nDescription: %D'
+      ;;
+    medium)
+      formatstring='ID: %i%nDate: %c%nDue Date: %d%nMilestone: %M%nWeight: %w%nTags: %T%nDescription: %D'
       ;;
     full)
-      formatstring='ID: %i%nDate: %c%nAssignees: %A%nMilestone: %M%nTags: %T%nDescription: %D'
+      formatstring='ID: %i%nDate: %c%nDue Date: %d%nTime Spent: %s%nTime Estimate: %e%nAssignees: %A%nMilestone: %M%nWeight: %w%nTags: %T%nDescription: %D'
       ;;
   esac
   shift $((OPTIND - 1));
@@ -839,6 +1183,10 @@ Work with an issue
    edit       Edit the specified issue's description
    tag        Add (or remove with -r) a tag
    milestone  Specify (or remove with -r) the issue's milestone
+   weight     Specify (or remove with -r) the issue's weight
+   duedate    Specify (or remove with -r) the issue's due date
+* timeestimate: Specify (or remove with -r) a time estimate for this issue
+   timespent  Specify (or remove with -r) the time spent working on an issue so far
    assign     Assign (or remove -r) an issue to a person
    attach     Attach (or remove with -r) a file to an issue
    watcher    Add (or remove with -r) an issue watcher
@@ -934,6 +1282,18 @@ case "$subcommand" in
     ;;
   milestone) # Add (or remove with -r) a milestone
     sub_milestone "$@"
+    ;;
+   duedate) # Add (or remove with -r) a duedate
+    sub_duedate "$@"
+    ;;
+   timespent) # Add (or remove with -r) the time spent
+    sub_timespent "$@"
+    ;; 
+   timeestimate) # Add (or remove with -r) the time estimate
+    sub_timeestimate "$@"
+    ;; 
+  weight) # Add (or remove with -r) a weight
+    sub_weight "$@"
     ;;
   push) # Update remote repository with local changes.
     cdissues

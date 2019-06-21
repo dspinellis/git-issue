@@ -1,5 +1,4 @@
 [![Build Status](https://travis-ci.org/eellak/gsoc2019-git-issue.svg?branch=github_export)](https://travis-ci.org/eellak/gsoc2019-git-issue)
-
 #  <img src="https://developers.google.com/open-source/gsoc/resources/downloads/GSoC-icon-192.png" width="40"> GSoC 2019 Project - Git Issue <img src="https://developers.google.com/open-source/gsoc/resources/downloads/GSoC-icon-192.png" width="40">
 This is the home repository of the GSoC 2019 project, aiming to extend git-issue with full import and export capabilities towards GitHub and GitLab. The project is supervised by the Open Technologies Aliance - GFOSS, and the following mentors: Diomidis Spinellis, Kostas Papadimas, Alexios Zavras. For the actual README, see [README.real.md](https://github.com/eellak/gsoc2019-git-issue/blob/gsoc-2019/README.real.md).
 
@@ -17,16 +16,16 @@ Thus, adding export capabilities would complete the round-trip integration betwe
 - Familiarize with the existing codebase and in particular with the current GitHub import implementation. :heavy_check_mark:
 - Familiarize with the GitHub/GitLab API, as well as the HTTP REST model, which both utilize. :heavy_check_mark:
 - Engage with the project’s community, by participating in discussions about the proposed features and taking the feedback into consideration for the rest of the program. :heavy_check_mark:
-## May 27-June 5 (coding period begins) :timer_clock:
-- Add time tracking and weight attributes to git-issue :heavy_check_mark: [new_attributes branch](https://github.com/eellak/gsoc2019-git-issue/tree/new_attributes)
-- Write automated tests and documentation on the new attributes :timer_clock:
-## June 6-June 17
-- Implement issue exporting to GitHub
-- Test and debug(through both the existing automated testing system and manual tests) both import and export functionality
-- This concludes the GitHub integration part
-## June 18-June 21
-- Test and debug both import and export functionality
-- Write automated tests and documentation on the above
+## ~~May 27-June 5 (coding period begins)~~ :heavy_check_mark:
+- Add time tracking and weight attributes to git-issue :heavy_check_mark: [new_attributes branch](https://github.com/eellak/gsoc2019-git-issue/tree/new_attributes) **[merged]**
+- Write automated tests and documentation on the new attributes :heavy_check_mark:
+## ~~June 6-June 17~~ :heavy_check_mark:
+- Implement issue exporting to GitHub :heavy_check_mark:
+- Test and debug(through both the existing automated testing system and manual tests) both import and export functionality :heavy_check_mark:
+- This concludes the GitHub integration part :heavy_check_mark:
+## June 18-June 21 :timer_clock:
+- Test and debug both import and export functionality :timer_clock:
+- Write automated tests and documentation on the above :timer_clock:
 ## June 28-July 11
 - Work shifts towards GitLab integration.
 - Implement GitLab import functionality.

@@ -67,6 +67,7 @@ its operation, and (please) update this file.
 
 ### Requirements
 `git-issue` requires the *jq* and *curl* utilities.
+OS X users might also need GNU date, obtained by installing `homebrew` package coreutils.
 For running the tests *shellcheck* is also required.
 
 ## Use
@@ -83,6 +84,16 @@ You use _git issue_ with the following sub-commands.
 * `git issue edit`: Edit the specified issue's description
 * `git issue tag`: Add (or remove with `-r`) a tag.
 * `git issue milestone`: Specify (or remove with `-r`) the issue's milestone.
+* `git issue weight`: Specify (or remove with `-r`) the issue's weight.
+  The weight is a positive integer that serves as a measure of importance.
+* `git issue duedate`: Specify (or remove with `-r`) the issue's due date.
+  The command accepts all formats supported by the `date` utility.
+* `git issue timeestimate`: Specify (or remove with `-r`) a time estimate for this issue.
+  Time estimates can be given in a format accepted by `date`,
+  however bear in mind that it represents a time interval, not a date.
+* `git issue timespent`: Specify (or remove with `-r`) the time spent working on an issue so far.
+  Follows the same format outlined above.
+  If the `-a` option is given, the time interval will be added together with the existing one.
 * `git issue assign`: Assign (or remove `-r`) an issue to a person.
   The person is specified with his/her email address.
   The form `@name` or `name@` can be used as a shortcut, provided it
@@ -99,6 +110,10 @@ You use _git issue_ with the following sub-commands.
    - `%n` : newline
    - `%i` : issue ID
    - `%c` : creation date
+   - `%d` : due date
+   - `%e` : time estimate
+   - `%s` : time spent
+   - `%w` : weight
    - `%M` : Milestone
    - `%A` : Assignee(s)
    - `%T` : Tags
@@ -152,6 +167,9 @@ The directory contains the following elements.
     where the x's are the SHA of the issue's initial commit.
 * Each issue can have the following elements in its directory.
   * A `description` file with a one-line summary and a description of the issue.
+  * A `duedate` file with the due date stored in ISO-8601 format.
+  * A `weight` file with the weight stored as a positive integer.
+  * A `timespent` and `timeestimate` file with the time estimate and time spent respectively, stored in seconds.
   * A `comments` directory where comments are stored, each with the SHA of
     a commit containing the text `gi comment mark`
     _issue SHA_.
@@ -204,6 +222,21 @@ e6a95c9 New issue entered from the command line
 ```
 $ git issue comment e6a95c9
 Added comment 8c0d5b3
+```
+
+### Add a due date for the issue
+```
+$ git issue duedate "next Tuesday"
+```
+
+### Keep track of time spent on the issue
+```
+$ git issue timespent "2hours"
+```
+
+### Log additional time spent working on it
+```
+$ git issue timespent -a "4 hours"
 ```
 
 ### Add tag to an issue
