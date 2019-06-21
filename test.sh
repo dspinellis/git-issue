@@ -400,7 +400,6 @@ else
   # Get the created issue
   try "$gi" update "$issue" vyrondrosos git-issue-export-test "$(jq -r '.number' gh-create-body)"
   # modify and export
-  "$gi" milestone "$issue2" worldpeace
   try "$gi" create -n "$issue2" vyrondrosos git-issue-export-test
   try "$gi" new -c "vyrondrosos git-issue-export-test" -s "Issue exported directly"
   try "$gi" assign "$issue2" vyrondrosos
@@ -408,6 +407,11 @@ else
   try "$gi" assign -r "$issue2" vyrondrosos
   "$gi" assign "$issue" dspinellis
   "$gi" assign "$issue" louridas
+  # test milestone creation
+  "$gi" new -s "milestone issue"
+  issue3=$("$gi" list | awk '/milestone issue/{print $1}')
+  "$gi" milestone "$issue3" milestone_$RANDOM
+  try "$gi" create "$issue3" vyrondrosos git-issue-export-test
   
 fi
 

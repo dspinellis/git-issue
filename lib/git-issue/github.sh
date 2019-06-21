@@ -50,7 +50,7 @@ gh_api_get()
 
 # POST, PATCH or PUT data using the GitHub API; abort transaction on error
 # Header is saved in the file gh-$prefix-header; body in gh-$prefix-body
-gh_api_send()
+gh_api_send() # TODO
 {
   local url prefix data mode
 
@@ -62,6 +62,8 @@ gh_api_send()
     curl_mode='--request PATCH'
   elif [ "$mode" = 'PUT' ] ; then
     curl_mode='--request PUT'
+  elif [ "$mode" = 'DELETE' ] ; then
+    curl_mode='--request DELETE'
   elif [ "$mode" = 'POST' ] ; then
     curl_mode=''
   else
@@ -142,7 +144,6 @@ gh_create_issue()
 
   # Milestone
 
-
   if [ -s "$path/milestone" ] ; then
 
     milestone=$(fmt "$path/milestone")
@@ -170,8 +171,6 @@ gh_create_issue()
 
     fi
  
-
-
   # Description
   # Title is the first line of description
   title=$(head -n 1 "$path/description")
@@ -192,6 +191,7 @@ gh_create_issue()
   cd ..
   # delete temp files
   test -z $nodelete && rm -f gh-create-body gh-create-header
+  rm -f gh-milestone-body gh-milestone-header
   # dont inherit `test` exit status
   exit 0
 }
@@ -287,6 +287,40 @@ gh_update_issue()
       fi
     fi
   fi
+
+  # Milestone
+
+  if [ -s "$path/milestone" ] ; then
+
+    milestone=$(fmt "$path/milestone")
+    oldmilestone=$(fmt "$tpath/milestone" 2> /dev/null)
+    if [ "$milestone" != "$oldmilestone" ] ; then
+
+      # Milestones are separate entities in the GitHub API
+      # They need to be created before use on an issue
+      # get milestone list
+      gh_api_get "https://api.github.com/repos/$user/$repo/milestones" milestone
+
+      for i in $(seq 0 $(($(jq '. | length' gh-milestone-body) - 1)) ) ; do
+        milenum=$(jq -r ".[$i].number" gh-milestone-body)
+        miletitle=$(jq -r ".[$i].title" gh-milestone-body)
+        if [ "$miletitle" = "$milestone" ] ; then
+          # it already exists
+          found=$milenum
+        fi
+      done
+
+      if ! [[ "$found" ]] ; then
+        # we need to create it
+        gh_api_send "https://api.github.com/repos/$user/$repo/milestones" mileres "{ \"title\": \"$milestone\",
+        \"state\": \"open\", \"description\":\"\"}" POST
+        found=$(jq '.number' gh-mileres-body)
+      fi
+      jstring=$(echo "$jstring" | jq --arg A "$found" -r '. + { milestone: $A }')
+
+    fi
+  fi
+ 
 
   # Description
   # Title is the first line of description
