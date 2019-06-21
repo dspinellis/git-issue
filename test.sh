@@ -1,5 +1,5 @@
 #!/bin/sh
-# shellcheck disable=SC2039,SC2164
+# shellcheck disable=SC2039,SC2164,SC2086
 #
 # Shellcheck ignore list:
 #  - SC2039: In POSIX sh, 'local' is undefined.
@@ -393,26 +393,38 @@ else
   try test x"$before" = x"$after"
 
   # Export
-  # remove assignees to prevent notifications about test issues on GitHub
-  "$gi" assign -r "$issue" dspinellis
-  "$gi" assign -r "$issue" louridas
-  try "$gi" create -n "$issue" vyrondrosos git-issue-export-test
-  # Get the created issue
-  try "$gi" update "$issue" vyrondrosos git-issue-export-test "$(jq -r '.number' gh-create-body)"
-  # modify and export
-  try "$gi" create -n "$issue2" vyrondrosos git-issue-export-test
-  try "$gi" new -c "vyrondrosos git-issue-export-test" -s "Issue exported directly"
-  try "$gi" assign "$issue2" vyrondrosos
-  try "$gi" export github vyrondrosos git-issue-export-test
-  try "$gi" assign -r "$issue2" vyrondrosos
-  "$gi" assign "$issue" dspinellis
-  "$gi" assign "$issue" louridas
-  # test milestone creation
-  "$gi" new -s "milestone issue"
-  issue3=$("$gi" list | awk '/milestone issue/{print $1}')
-  "$gi" milestone "$issue3" milestone_$RANDOM
-  try "$gi" create "$issue3" vyrondrosos git-issue-export-test
-  
+  # create new repository to test issue exporting
+  echo "Trying to create repository..."
+  curl -H "$GI_CURL_AUTH" -s --data '{"name": "git-issue-test-export-'"$RANDOM"'", "private": true}' --output ghrepo https://api.github.com/user/repos
+  if  grep "git-issue-test-export" > /dev/null < ghrepo ; then
+    echo "Starting export tests."
+    ghrepo=$(jq --raw-output '.full_name' < ghrepo | tr '/' ' ')
+    ghrepourl=$(jq --raw-output '.url' < ghrepo)
+    # remove assignees to prevent notifications about test issues on GitHub
+    "$gi" assign -r "$issue" dspinellis
+    "$gi" assign -r "$issue" louridas
+    try "$gi" create -n "$issue" $ghrepo
+    # Get the created issue
+    try "$gi" update "$issue" $ghrepo "$(jq -r '.number' gh-create-body)"
+    # modify and export
+    try "$gi" create -n "$issue2" $ghrepo
+    try "$gi" new -c "$ghrepo" -s "Issue exported directly"
+    try "$gi" assign "$issue2" octocat
+    try "$gi" export github $ghrepo
+    try "$gi" assign -r "$issue2" octocat
+    "$gi" assign "$issue" dspinellis
+    "$gi" assign "$issue" louridas
+    # test milestone creation
+    "$gi" new -s "milestone issue"
+    issue3=$("$gi" list | awk '/milestone issue/{print $1}')
+    "$gi" milestone "$issue3" worldpeace
+    try "$gi" create "$issue3" $ghrepo
+    # delete repo
+    curl -H "$GI_CURL_AUTH" -s --request DELETE $ghrepourl | grep "{" && echo "Couldn't delete repository.\nYou probably don't have delete permittions activated on the OAUTH token.\nPlease delete $ghrepo manually."
+
+  else
+    echo "Couldn't create test repository. Skipping export tests."
+  fi
 fi
 
 if ! [ -r "$TopDir/failure" ]; then

@@ -22,7 +22,6 @@ USAGE_import_EOF
   exit 2
 }
 
-
 # Get a page using the GitHub API; abort transaction on error
 # Header is saved in the file gh-$prefix-header; body in gh-$prefix-body
 gh_api_get()
@@ -48,9 +47,9 @@ gh_api_get()
   fi
 }
 
-# POST, PATCH or PUT data using the GitHub API; abort transaction on error
+# POST, PATCH, PUT or DELETE data using the GitHub API; abort transaction on error
 # Header is saved in the file gh-$prefix-header; body in gh-$prefix-body
-gh_api_send() # TODO
+gh_api_send()
 {
   local url prefix data mode
 
