@@ -513,7 +513,7 @@ gh_export_issues()
   for i in imports/github/"$user/$repo"/[1-9]* ; do
     sha=$(cat "$i/sha")
     # extract number
-    num=$(echo "$i" | grep -o '[1-9].*$')
+    num=$(echo "$i" | grep -o '/[1-9].*$' | tr -d '/')
     echo "Exporting issue $num"
     url="https://api.github.com/repos/$user/$repo/issues/$num"
     gh_update_issue "$sha" "$user" "$repo" "$num"
