@@ -400,6 +400,7 @@ else
   # Get the created issue
   try "$gi" update "$issue" vyrondrosos git-issue-export-test "$(jq -r '.number' gh-create-body)"
   # modify and export
+  "$gi" milestone "$issue2" worldpeace
   try "$gi" create -n "$issue2" vyrondrosos git-issue-export-test
   try "$gi" new -c "vyrondrosos git-issue-export-test" -s "Issue exported directly"
   try "$gi" assign "$issue2" vyrondrosos
