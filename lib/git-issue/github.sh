@@ -184,6 +184,7 @@ gh_create_issue()
   fi
 
   # Time estimate
+  # shellcheck disable=2129
   if [ -s "$path/timeestimate" ] && [ -s "$path/timespent" ] ; then
     printf 'Time Spent/Time Estimated: ' > tmpestimate
     rawest=$(cat "$path/timeestimate")
@@ -384,6 +385,8 @@ gh_update_issue()
   fi
 
   # Time estimate
+  # shellcheck disable=2129
+  # TODO: fix
   if [ -s "$path/timeestimate" ] && [ -s "$path/timespent" ] ; then
     printf 'Time Spent/Time Estimated: ' > tmpestimate
     rawest=$(cat "$path/timeestimate")

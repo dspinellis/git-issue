@@ -410,6 +410,7 @@ if [ -z "$GI_CURL_AUTH" ] ; then
   echo "Skipping import/export tests due to lack of GitHub authentication token."
 else
   # Import
+  echo "Starting export tests..."
   try "$gi" import github dspinellis git-issue-test-issues
   start ; "$gi" list | try_grep 'An open issue on GitHub with a description and comments'
   # Closed issues
@@ -442,30 +443,29 @@ else
   echo "Trying to create repository..."
   curl -H "$GI_CURL_AUTH" -s --data '{"name": "git-issue-test-export-'"$RANDOM"'", "private": true}' --output ghrepo https://api.github.com/user/repos
   if  grep "git-issue-test-export" > /dev/null < ghrepo ; then
-    echo "Starting export tests."
+    echo "Starting export tests..."
     ghrepo=$(jq --raw-output '.full_name' < ghrepo | tr '/' ' ')
     ghrepourl=$(jq --raw-output '.url' < ghrepo)
     # remove assignees to prevent notifications about test issues on GitHub
-    "$gi" assign -r "$issue" dspinellis
-    "$gi" assign -r "$issue" louridas
+    "$gi" assign -r "$issue" dspinellis > /dev/null 2>&1
+    "$gi" assign -r "$issue" louridas > /dev/null 2>&1
     try "$gi" create -n "$issue" $ghrepo
     # Get the created issue
     try "$gi" update "$issue" $ghrepo "$(jq -r '.number' gh-create-body)"
     # modify and export
     try "$gi" create -n "$issue2" $ghrepo
     try "$gi" new -c "$ghrepo" -s "Issue exported directly"
-    try "$gi" assign "$issue2" octocat
+    "$gi" assign "$issue2" octocat > /dev/null 2>&1
     try "$gi" export github $ghrepo
-    try "$gi" assign -r "$issue2" octocat
-    "$gi" assign "$issue" dspinellis
-    "$gi" assign "$issue" louridas
     # test milestone creation
-    "$gi" new -s "milestone issue"
+    "$gi" new -s "milestone issue" > /dev/null 2>&1
     issue3=$("$gi" list | awk '/milestone issue/{print $1}')
-    "$gi" milestone "$issue3" worldpeace
+    "$gi" milestone "$issue3" worldpeace > /dev/null 2>&1
+    "$gi" duedate "$issue3" week > /dev/null 2>&1
+    "$gi" timeestimate "$issue3" 3hours > /dev/null 2>&1
     try "$gi" create "$issue3" $ghrepo
     # delete repo
-    curl -H "$GI_CURL_AUTH" -s --request DELETE $ghrepourl | grep "{" && echo "Couldn't delete repository.\nYou probably don't have delete permittions activated on the OAUTH token.\nPlease delete $ghrepo manually."
+    curl -H "$GI_CURL_AUTH" -s --request DELETE $ghrepourl | grep "{" && printf "Couldn't delete repository.\nYou probably don't have delete permittions activated on the OAUTH token.\nPlease delete %s manually." $ghrepo
 
   else
     echo "Couldn't create test repository. Skipping export tests."
