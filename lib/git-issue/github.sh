@@ -234,9 +234,12 @@ gh_create_issue()
   gh_api_send "$url" create "$jstring" POST
   num=$(jq '.number' < gh-create-body)
   import_dir="imports/github/$user/$repo/$num"
+
   cdissues
   test -d "$import_dir" || mkdir -p "$import_dir"
   echo "$isha" > "$import_dir/sha"
+  git add "$import_dir"
+  commit "gi: Add $import_dir" 'gi new mark'
   cd ..
   # delete temp files
   test -z $nodelete && rm -f gh-create-body gh-create-header
@@ -445,6 +448,8 @@ gh_update_issue()
   import_dir="imports/github/$user/$repo/$num"
   test -d "$import_dir" || mkdir -p "$import_dir"
   echo "$isha" > "$import_dir/sha"
+  git add "$import_dir"
+  commit "gi: Add $import_dir" 'gi new mark'
 
 }
 
