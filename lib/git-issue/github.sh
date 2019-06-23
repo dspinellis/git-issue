@@ -173,7 +173,7 @@ gh_create_issue()
   # Description
   # Title is the first line of description
   title=$(head -n 1 "$path/description")
-  description=$(tail --lines=+2 < "$path/description")
+  description=$(tail --lines=+3 < "$path/description")
 
   # Append weight, due date, and timespent/timeestimate
   # Due Date
@@ -311,7 +311,7 @@ gh_update_issue()
   # Assignee
   if [ -r "$path/assignee" ] ; then
     assignee=$(fmt "$path/assignee" | sed 's/ .*//')
-    oldassignee=$(fmt "$path/assignee")
+    oldassignee=$(fmt "$tpath/assignee")
     if [ "$assignee" != "$oldassignee" ] ; then
       jstring=$(echo "$jstring" | jq --arg A "$assignee" -r '. + { assignee: $A }')
     fi
@@ -323,6 +323,8 @@ gh_update_issue()
     oldtags=$(fmt "$tpath/tags" | tr -d '\n' | jq --slurp --raw-input 'split(" ")')
     tags=$(echo "$tags" | jq 'map(select(. != "open"))')
     tags=$(echo "$tags" | jq 'map(select(. != "closed"))')
+    oldtags=$(echo "$oldtags" | jq 'map(select(. != "open"))')
+    oldtags=$(echo "$oldtags" | jq 'map(select(. != "closed"))')
     if [ "$tags" != "$oldtags" ] ; then
       # Process state (open or closed)
       if grep '\bopen\b' >/dev/null < "$path/tags"; then
@@ -374,7 +376,8 @@ gh_update_issue()
   # Title is the first line of description
   title=$(head -n 1 "$path/description")
   oldtitle=$(head -n 1 "$tpath/description")
-  description=$(tail --lines=+2 < "$path/description")
+  description=$(tail --lines=+3 < "$path/description")
+  olddescription=$(tail --lines=+3 < "$tpath/description")
 
   # Append weight, due date, and timespent/timeestimate
   # Due Date
@@ -427,17 +430,18 @@ gh_update_issue()
   fi
 
 
-  olddescription=$(tail --lines=+2 < "$tpath/description")
   # jq handles properly escaping the string if passed as variable
   if [ "$title" != "$oldtitle" ] ; then
     # shellcheck disable=SC2090,SC2086
     jstring=$(echo $jstring | jq --arg title "$title" -r '. + {title: $title}')
   fi
-  if [ "$title" != "$olddescription" ] ; then
+  if [ "$description" != "$olddescription" ] ; then
     # shellcheck disable=SC2090,SC2086
     jstring=$(echo $jstring | jq --arg desc "$description" -r '. + {body: $desc}')
   fi
-  gh_api_send "$url" update "$jstring" PATCH
+  if [ "$jstring" != '{}' ] ; then
+    gh_api_send "$url" update "$jstring" PATCH
+  fi
   import_dir="imports/github/$user/$repo/$num"
   test -d "$import_dir" || mkdir -p "$import_dir"
   echo "$isha" > "$import_dir/sha"
