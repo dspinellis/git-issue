@@ -446,6 +446,7 @@ else
     echo "Starting export tests..."
     ghrepo=$(jq --raw-output '.full_name' < ghrepo | tr '/' ' ')
     ghrepourl=$(jq --raw-output '.url' < ghrepo)
+    ghuser=$(jq --raw-output '.owner.login' < ghrepo)
     # remove assignees to prevent notifications about test issues on GitHub
     "$gi" assign -r "$issue" dspinellis > /dev/null 2>&1
     "$gi" assign -r "$issue" louridas > /dev/null 2>&1
@@ -455,7 +456,7 @@ else
     # modify and export
     try "$gi" create -n "$issue2" $ghrepo
     try "$gi" new -c "$ghrepo" -s "Issue exported directly"
-    "$gi" assign "$issue2" octocat > /dev/null 2>&1
+    "$gi" assign "$issue2" "$ghuser" > /dev/null 2>&1
     try "$gi" export github $ghrepo
     # test milestone creation
     "$gi" new -s "milestone issue" > /dev/null 2>&1
