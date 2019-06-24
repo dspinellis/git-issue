@@ -945,7 +945,12 @@ USAGE_list_EOF
 shortshow()
 {
 
-  local date duedate rawdate milestone weight assignee tags description rawest timeestimate rawspent timespent
+  local path formatstring sortfield id date duedate rawdate milestone weight assignee tags description rawest timeestimate rawspent timespent
+
+  path=$1
+  formatstring=$2
+  sortfield=$3
+  id=$4
 
   # Date
   date=$(git show --no-patch --format='%ai' "$id")
@@ -1089,7 +1094,7 @@ sub_list()
   if [ "$long" ] ; then
 
     while read -r path id ; do
-      shortshow
+      shortshow "$path" "$formatstring" "$sortfield" "$id"
     done |
     sort $sortrev |
     sed 's/^.*\x02//' |

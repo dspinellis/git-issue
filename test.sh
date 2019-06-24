@@ -410,7 +410,7 @@ if [ -z "$GI_CURL_AUTH" ] ; then
   echo "Skipping import/export tests due to lack of GitHub authentication token."
 else
   # Import
-  echo "Starting export tests..."
+  echo "Starting import tests..."
   try "$gi" import github dspinellis git-issue-test-issues
   start ; "$gi" list | try_grep 'An open issue on GitHub with a description and comments'
   # Closed issues

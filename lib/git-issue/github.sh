@@ -175,55 +175,8 @@ gh_create_issue()
   title=$(head -n 1 "$path/description")
   description=$(tail --lines=+3 < "$path/description")
 
-  # Append weight, due date, and timespent/timeestimate
-  # Due Date
-  if [ -s "$path/duedate" ] ; then
-    #Print date in rfc-3339 for consistency with git show
-    rawdate=$(cat "$path/duedate")
-    description="$description"$(printf '\nDue Date: '; $DATEBIN --date="$rawdate" --rfc-3339=seconds)
-  fi
-
-  # Time estimate
-  # shellcheck disable=2129
-  if [ -s "$path/timeestimate" ] && [ -s "$path/timespent" ] ; then
-    printf 'Time Spent/Time Estimated: ' > tmpestimate
-    rawest=$(cat "$path/timeestimate")
-    rawspent=$(cat "$path/timespent")
-    # shellcheck disable=SC2016
-    # SC2016: Expressions don't expand is single quotes, use double quotes for that
-    # Rationale: We don't want expansion
-    eval "echo $($DATEBIN --utc --date="@$rawspent" +'$((%s/3600/24)) days %H hours %M minutes %S seconds')" |
-    #remove newline and trim unnecessary fields
-    tr -d '\n' | sed -e "s/00 \(hours\|minutes\|seconds\) \?//g" -e "s/^0 days //" >> tmpestimate
-    printf '/ ' >> tmpestimate
-    # shellcheck disable=SC2016
-    eval "echo $($DATEBIN --utc --date="@$rawest" +'$((%s/3600/24)) days %H hours %M minutes %S seconds')" |
-    sed -e "s/00 \(hours\|minutes\|seconds\) \?//g" -e "s/^0 days //" >> tmpestimate
-    description="$description$(echo; cat tmpestimate)"
-  elif [ -s "$path/timespent" ] ; then
-    printf 'Time Spent: ' >> tmpestimate
-    #Print time in human readable format
-    rawspent=$(cat "$path/timespent")
-    # shellcheck disable=SC2016
-    eval "echo $($DATEBIN --utc --date="@$rawspent" +'$((%s/3600/24)) days %H hours %M minutes %S seconds')" |
-    sed -e "s/00 \(hours\|minutes\|seconds\) \?//g" -e "s/^0 days //" >> tmpestimate
-    description="$description$(echo; cat tmpestimate)"
-  elif [ -s "$path/timeestimate" ] ; then
-    printf 'Time Estimate: ' >> tmpestimate
-    #Print time in human readable format
-    rawest=$(cat "$path/timeestimate")
-    # shellcheck disable=SC2016
-    eval "echo $($DATEBIN --utc --date="@$rawest" +'$((%s/3600/24)) days %H hours %M minutes %S seconds')" |
-    sed -e "s/00 \(hours\|minutes\|seconds\) \?//g" -e "s/^0 days //" >> tmpestimate
-    description="$description$(echo; cat tmpestimate)"
-    rm -f tmpestimate
-  fi
-
-  # Weight
-  if [ -s "$path/weight" ] ; then
-    description="$description"$(printf '\nWeight: ' ; cat "$path/weight" )
-  fi
-
+  # Handle formatting indicators
+  description=$(shortshow "$path" "$description" 'i' "$isha" | sed 's/^.*\x02//' | tr '\001' '\n')
 
   # shellcheck disable=SC2090,SC2086
   # jq handles properly escaping the string if passed as variable
@@ -374,13 +327,16 @@ gh_update_issue()
     fi
   fi
  
-
   # Description
   # Title is the first line of description
   title=$(head -n 1 "$path/description")
   oldtitle=$(head -n 1 "$tpath/description")
   description=$(tail --lines=+3 < "$path/description")
+  # Handle formatting indicators
+  description=$(shortshow "$path" "$description" 'i' "$isha" | sed 's/^.*\x02//' | tr '\001' '\n')
   olddescription=$(tail --lines=+3 < "$tpath/description")
+  # Handle formatting indicators
+  olddescription=$(shortshow "$tpath" "$olddescription" 'i' "$isha" | sed 's/^.*\x02//' | tr '\001' '\n')
 
   # Append weight, due date, and timespent/timeestimate
   # Due Date
