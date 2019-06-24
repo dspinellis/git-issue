@@ -184,13 +184,18 @@ Import/update GitHub issues from the specified project.
 \fBgit issue create\fP
 .RS 4
 Create the issue in the provided GitHub repository.
+  With the \fC-e\fP option any escape sequences for the attributes present in the description, will be replaced as above.
+  This can be used to e.g export an unsupported attribute to GitHub as text.
 .RE
 .PP
 \fBgit issue export\fP
 .RS 4
 Export issues for the specified project.
-  Only the issues that have been imported or modified by \fCgit-issue\fP will be
-  exported.
+  Only the issues that have been imported or modified by \fCgit-issue\fP will be exported.
+  With the \fC-e\fP option any escape sequences for the attributes present in the description, will be replaced as above.
+  This can be used to e.g export an unsupported attribute to GitHub as text.
+
+
 .RE
 .PP
 \fBgit issue help\fP

@@ -135,11 +135,14 @@ You use _git issue_ with the following sub-commands.
   You can create the authorization token through
   [GitHub settings](https://github.com/settings/tokens/new).
 * `git issue create`: Create the issue in the provided GitHub repository.
-  Any escape sequences for the attributes present in the description, will be replaced as above.
+  With the `-e` option any escape sequences for the attributes present in the description, will be replaced as above.
   This can be used to e.g export an unsupported attribute to GitHub as text.
 * `git issue export`: Export issues for the specified project.
-  Only the issues that have been imported or modified by `git-issue` will be
-  exported.
+  Only the issues that have been imported or modified by `git-issue` will be exported.
+  With the `-e` option any escape sequences for the attributes present in the description, will be replaced as above.
+  This can be used to e.g export an unsupported attribute to GitHub as text.
+
+
 ### Help and debug
 * `git issue help`: Display help information about git issue.
 * `git issue log`: Output a log of changes made
