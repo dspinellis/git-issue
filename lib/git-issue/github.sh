@@ -145,7 +145,7 @@ gh_create_issue()
   # Tags
   if [ -s "$path/tags" ] ; then
     # format tags as json array
-    tags=$(fmt "$path/tags" | tr -d '\n' | jq --slurp --raw-input 'split(" ")')
+    tags=$(head "$path/tags" | jq --slurp --raw-input 'split("\n")')
     # Process state (open or closed)
     if grep '\bopen\b' >/dev/null < "$path/tags"; then
       jstring=$(echo "$jstring" | jq -r '. + { state: "open" }')
@@ -154,6 +154,7 @@ gh_create_issue()
     fi
     tags=$(echo "$tags" | jq 'map(select(. != "open"))')
     tags=$(echo "$tags" | jq 'map(select(. != "closed"))')
+    tags=$(echo "$tags" | jq 'map(select(. != ""))')
     if [ "$tags" != '[]' ] ; then
       jstring=$(echo "$jstring" | jq -r ". + { labels: $tags }")
     fi
