@@ -125,13 +125,13 @@ gh_create_issue()
   shift $((OPTIND - 1));    
     
   test -n "$1" || error "gh_create_issue(): No SHA given"
+  test -n "$2" || error "gh_create_issue(): no repo given"
+  test -n "$3" || error "gh_create_issue(): no user given"
   cdissues
   path=$(issue_path_part "$1") || exit
   isha=$(issue_sha "$path")
   user="$2"
   repo="$3"
-  test -n repo || error "gh_create_issue(): no repo given"
-  test -n user || error "gh_create_issue(): no user given"
 
   # initialize the string
   jstring='{}'
@@ -265,16 +265,15 @@ gh_update_issue()
 {
   local isha path assignee description url user repo num import_dir
   test -n "$1" || error "gh_update_issue(): No SHA given"
-  test -n "$2" || error "gh_update_issue(): No url given"
+  test -n "$2" || error "gh_update_issue(): No user given"
+  test -n "$3" || error "gh_update_issue(): No repo given"
+  test -n "$4" || error "gh_update_issue(): No num given"
   cdissues
   path=$(issue_path_part "$1") || exit
   isha=$(issue_sha "$path")
   user="$2"
   repo="$3"
   num="$4"
-  test -n repo || error "gh_update_issue(): no repo given"
-  test -n user || error "gh_update_issue(): no user given"
-  test -n num || error "gh_update_issue(): no num given"
   url="https://api.github.com/repos/$user/$repo/issues/$num"
 
   gh_import_issue "$url"
