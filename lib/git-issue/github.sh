@@ -265,7 +265,7 @@ gh_update_issue()
 {
   local isha path assignee description url user repo num import_dir
   test -n "$1" || error "gh_update_issue(): No SHA given"
-  test -n "$2" || error "gh_update_issue(): No user given"
+  test -n "$2" || error "gh_update_issue(): No url given"
   test -n "$3" || error "gh_update_issue(): No repo given"
   test -n "$4" || error "gh_update_issue(): No num given"
   cdissues
@@ -559,12 +559,14 @@ gh_export_issues()
   repo="$3"
 
   cdissues
+  test -d imports/github/"$user/$repo" || error "No local issues found for this repository."
+
   # For each issue in the respective import dir
   for i in imports/github/"$user/$repo"/[1-9]* ; do
     sha=$(cat "$i/sha")
     # extract number
     num=$(echo "$i" | grep -o '/[1-9].*$' | tr -d '/')
-    echo "Exporting issue $num"
+    echo "Exporting issue $sha as #$num"
     url="https://api.github.com/repos/$user/$repo/issues/$num"
     gh_update_issue "$sha" "$user" "$repo" "$num"
     rm -f gh-update-body gh-update-header
