@@ -265,7 +265,7 @@ gh_update_issue()
 {
   local isha path assignee description url user repo num import_dir
   test -n "$1" || error "gh_update_issue(): No SHA given"
-  test -n "$2" || error "gh_update_issue(): No url given"
+  test -n "$2" || error "gh_update_issue(): No URL given"
   test -n "$3" || error "gh_update_issue(): No repo given"
   test -n "$4" || error "gh_update_issue(): No num given"
   cdissues
