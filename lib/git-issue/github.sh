@@ -72,9 +72,6 @@ gh_api_send()
     error "incorrect gh_api_send() mode: $mode"
   fi
 
-  # shellcheck disable=SC2086
-  # SC2086: Double quote to prevent globbing and word splitting.
-  # Rationale: GI_CURL_ARGS and curl_mode indeed require splitting
   if ! curl -H "$GI_CURL_AUTH" -A "$USER_AGENT" -s \
     -o "gh-$prefix-body" -D "gh-$prefix-header" $curl_mode --data "$data" "$url" ; then
     echo 'GitHub connection failed' 1>&2
@@ -199,9 +196,8 @@ gh_create_issue()
     description=$(shortshow "$path" "$description" 'i' "$isha" | sed 's/^.*\x02//' | tr '\001' '\n')
   fi
 
-  # shellcheck disable=SC2090,SC2086
   # jq handles properly escaping the string if passed as variable
-  jstring=$(echo $jstring | jq --arg desc "$description" --arg tit "$title" -r '. + {title: $tit, body: $desc}')
+  jstring=$(echo "$jstring" | jq --arg desc "$description" --arg tit "$title" -r '. + {title: $tit, body: $desc}')
 
   cd ..
   url="https://api.github.com/repos/$user/$repo/issues"
@@ -362,12 +358,10 @@ gh_update_issue()
 
   # jq handles properly escaping the string if passed as variable
   if [ "$title" != "$oldtitle" ] ; then
-    # shellcheck disable=SC2090,SC2086
-    jstring=$(echo $jstring | jq --arg title "$title" -r '. + {title: $title}')
+    jstring=$(echo "$jstring" | jq --arg title "$title" -r '. + {title: $title}')
   fi
   if [ "$description" != "$olddescription" ] ; then
-    # shellcheck disable=SC2090,SC2086
-    jstring=$(echo $jstring | jq --arg desc "$description" -r '. + {body: $desc}')
+    jstring=$(echo "$jstring" | jq --arg desc "$description" -r '. + {body: $desc}')
   fi
   if [ "$jstring" != '{}' ] ; then
     gh_api_send "$url" update "$jstring" PATCH
