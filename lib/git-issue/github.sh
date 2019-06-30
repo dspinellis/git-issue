@@ -106,11 +106,14 @@ gh_create_issue()
 {
   local isha path assignee description url user repo nodelete OPTIND
      
-  while getopts ne flag ; do    
+  while getopts neu: flag ; do    
     case $flag in    
     n)    
       nodelete=1    
       ;;    
+    u)
+      num=$OPTARG
+      ;;
     e)
       attr_expand=1    
       ;;
@@ -157,7 +160,20 @@ gh_create_issue()
     fi
   fi
 
-  # Milestone
+ # Description
+  # Title is the first line of description
+  title=$(head -n 1 "$path/description")
+  description=$(tail --lines=+3 < "$path/description")
+
+  # Handle formatting indicators
+  if [ -n "$attr_expand" ] ; then
+    description=$(shortshow "$path" "$description" 'i' "$isha" | sed 's/^.*\x02//' | tr '\001' '\n')
+  fi
+
+  # jq handles properly escaping the string if passed as variable
+  jstring=$(echo "$jstring" | jq --arg desc "$description" --arg tit "$title" -r '. + {title: $tit, body: $desc}')
+
+ # Milestone
 
   if [ -s "$path/milestone" ] ; then
 
@@ -186,23 +202,15 @@ gh_create_issue()
 
     fi
  
-  # Description
-  # Title is the first line of description
-  title=$(head -n 1 "$path/description")
-  description=$(tail --lines=+3 < "$path/description")
-
-  # Handle formatting indicators
-  if [ -n "$attr_expand" ] ; then
-    description=$(shortshow "$path" "$description" 'i' "$isha" | sed 's/^.*\x02//' | tr '\001' '\n')
-  fi
-
-  # jq handles properly escaping the string if passed as variable
-  jstring=$(echo "$jstring" | jq --arg desc "$description" --arg tit "$title" -r '. + {title: $tit, body: $desc}')
-
   cd ..
-  url="https://api.github.com/repos/$user/$repo/issues"
-  gh_api_send "$url" create "$jstring" POST
-  num=$(jq '.number' < gh-create-body)
+  if [ -n "$num" ] ; then
+    url="https://api.github.com/repos/$user/$repo/issues/$num"
+    gh_api_send "$url" update "$jstring" PATCH
+  else
+    url="https://api.github.com/repos/$user/$repo/issues"
+    gh_api_send "$url" create "$jstring" POST
+    num=$(jq '.number' < gh-create-body)
+  fi
   import_dir="imports/github/$user/$repo/$num"
 
   cdissues
@@ -215,7 +223,7 @@ gh_create_issue()
   test -z $nodelete && rm -f gh-create-body gh-create-header
   rm -f gh-milestone-body gh-milestone-header
   # dont inherit `test` exit status
-  exit 0
+  cdissues
 }
 
 #import issue to temporary directory $TEMP_ISSUE_DIR
@@ -562,8 +570,8 @@ gh_export_issues()
     num=$(echo "$i" | grep -o '/[1-9].*$' | tr -d '/')
     echo "Exporting issue $sha as #$num"
     url="https://api.github.com/repos/$user/$repo/issues/$num"
-    gh_update_issue "$sha" "$user" "$repo" "$num"
-    rm -f gh-update-body gh-update-header
+    gh_create_issue -u "$num" "$sha" "$user" "$repo"
+    rm -f gh-create-body gh-create-header
 
   done
 }
