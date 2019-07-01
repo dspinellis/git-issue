@@ -27,9 +27,9 @@ Thus, adding export capabilities would complete the round-trip integration betwe
 - Test and debug both import and export functionality :heavy_check_mark:
 - Write automated tests and documentation on the above :heavy_check_mark:
 - [github_export branch](https://github.com/eellak/gsoc2019-git-issue/tree/github_export) **[merged]**
-## June 28-July 11
+## June 28-July 11 :alarm_clock:
 - Work shifts towards GitLab integration.
-- Implement GitLab import functionality.
+- Implement GitLab import functionality. :alarm_clock:
 ## July 12-July 19
 - Test and debug GitLab import
 - Write documentation and automated tests on GitLab import
