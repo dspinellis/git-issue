@@ -539,6 +539,90 @@ gh_import_issues()
   done
 }
 
+gl_import_issues()
+{
+  local user repo
+  local i issue_number import_dir sha path name
+
+  user="$1"
+  repo="$2"
+
+  #TODO
+  cdissues
+  # For each issue in the gh-issue-body file
+  for i in $(seq 0 $(($(jq '. | length' gl-issue-body) - 1)) ) ; do
+    issue_number=$(jq ".[$i].iid" gl-issue-body)
+
+    # See if issue already there
+    import_dir="imports/gitlab/$user/$repo/$issue_number"
+    if [ -d "$import_dir" ] ; then
+      sha=$(cat "$import_dir/sha")
+    else
+      name=$(jq -r ".[$i].author.username" gl-issue-body)
+      GIT_AUTHOR_DATE=$(jq -r ".[$i].updated_at" gl-issue-body) \
+      commit 'gi: Add issue' 'gi new mark' \
+	--author="$name <$name@users.noreply.gitlab.com>"
+      sha=$(git rev-parse HEAD)
+    fi
+
+    path=$(issue_path_full "$sha")
+    mkdir -p "$path" || trans_abort
+    mkdir -p "$import_dir" || trans_abort
+
+    # Add issue import number to allow future updates
+    echo "$sha" >"$import_dir/sha"
+
+    # Create tags (in sorted order to avoid gratuitous updates)
+    {
+      jq -r ".[$i].state" gl-issue-body # TODO opened open
+      jq -r ".[$i].labels[]" gl-issue-body
+    } |
+    LC_ALL=C sort >"$path/tags" || trans_abort
+
+    # Create assignee
+    jq -r ".[$i].assignee.username" gl-issue-body |
+    LC_ALL=C sort >"$path/assignee" || trans_abort
+
+    if [ -s "$path/assignee" ] ; then
+      git add "$path/assignee" || trans_abort
+    else
+      rm -f "$path/assignee"
+    fi
+
+    # Obtain milestone
+    if [ "$(jq ".[$i].milestone" gl-issue-body)" = null ] ; then
+      if [ -r "$path/milestone" ] ; then
+	git rm "$path/milestone" || trans_abort
+      fi
+    else
+      jq -r ".[$i].milestone.title" gl-issue-body >"$path/milestone" || trans_abort
+      git add "$path/milestone" || trans_abort
+    fi
+
+    # Create description
+    jq -r ".[$i].title" gl-issue-body >/dev/null || trans_abort
+    jq -r ".[$i].body" gl-issue-body >/dev/null || trans_abort
+    {
+      jq -r ".[$i].title" gl-issue-body
+      echo
+      jq -r ".[$i].body" gl-issue-body
+    } |
+    tr -d \\r >"$path/description"
+
+    git add "$path/description" "$path/tags" imports || trans_abort
+    if ! git diff --quiet HEAD ; then
+      name=${name:-$(jq -r ".[$i].user.login" gl-issue-body)}
+      GIT_AUTHOR_DATE=$(jq -r ".[$i].updated_at" gl-issue-body) \
+	commit "gi: Import issue #$issue_number from GitHub" \
+	"Issue URL: https://gitlab.com/$user/$repo/issues/$issue_number" \
+	--author="$name <$name@users.noreply.github.com>"
+      echo "Imported/updated issue #$issue_number as $(short_sha "$sha")"
+    fi
+
+    #TODO comments
+  done
+}
+
 gh_export_issues()
 {
   local user repo i import_dir sha url
@@ -550,7 +634,7 @@ gh_export_issues()
       attr_expand=1    
       ;;    
     ?)    
-      error "gh_export_issues(): unknown option"
+      error "gl_export_issues(): unknown option"
       ;;    
     esac    
   done    
