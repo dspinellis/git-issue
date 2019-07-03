@@ -606,7 +606,7 @@ gl_import_issues()
 
     # Create description
     jq -r ".[$i].title" gl-issue-body >/dev/null || trans_abort
-    desc=$(jq -r ".[$i].body" gl-issue-body) 
+    desc=$(jq -r ".[$i].description" gl-issue-body) 
     if [ "$desc" = "null" ] ; then
       #no description
       desc="";
