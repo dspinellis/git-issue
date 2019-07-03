@@ -580,8 +580,10 @@ gl_import_issues()
     LC_ALL=C sort >"$path/tags" || trans_abort
 
     # Create assignee
-    jq -r ".[$i].assignee.username" gl-issue-body |
-    LC_ALL=C sort >"$path/assignee" || trans_abort
+    assignee=$(jq -r ".[$i].assignee.username" gl-issue-body)
+    if [ "$assignee" != "null" ] ; then
+      echo "$assignee" > "$path/assignee"
+    fi
 
     if [ -s "$path/assignee" ] ; then
       git add "$path/assignee" || trans_abort
@@ -601,11 +603,15 @@ gl_import_issues()
 
     # Create description
     jq -r ".[$i].title" gl-issue-body >/dev/null || trans_abort
-    jq -r ".[$i].body" gl-issue-body >/dev/null || trans_abort
+    desc=$(jq -r ".[$i].body" gl-issue-body) 
+    if [ "$desc" = "null" ] ; then
+      #no description
+      desc="";
+    fi
     {
       jq -r ".[$i].title" gl-issue-body
       echo
-      jq -r ".[$i].body" gl-issue-body
+      echo "$desc"
     } |
     tr -d \\r >"$path/description"
 
