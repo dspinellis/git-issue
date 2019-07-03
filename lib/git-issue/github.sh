@@ -542,13 +542,15 @@ gh_import_issues()
 gl_import_issues()
 {
   local user repo
-  local i issue_number import_dir sha path name
+  local i issue_number import_dir sha path name desc milestone assignee
 
   user="$1"
   repo="$2"
+  repoid="$3"
 
-  #TODO
+  endpoint="https://gitlab.com/api/v4/projects/$repoid/issues"
   cdissues
+  curl -o gl-issue-body "https://gitlab.com/api/v4/projects/$repoid/issues/"
   # For each issue in the gh-issue-body file
   for i in $(seq 0 $(($(jq '. | length' gl-issue-body) - 1)) ) ; do
     issue_number=$(jq ".[$i].iid" gl-issue-body)
