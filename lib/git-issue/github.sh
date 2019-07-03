@@ -574,7 +574,8 @@ gl_import_issues()
 
     # Create tags (in sorted order to avoid gratuitous updates)
     {
-      jq -r ".[$i].state" gl-issue-body # TODO opened open
+      # convert to our format
+      jq -r ".[$i].state" gl-issue-body | sed 's/opened/open/'
       jq -r ".[$i].labels[]" gl-issue-body
     } |
     LC_ALL=C sort >"$path/tags" || trans_abort
