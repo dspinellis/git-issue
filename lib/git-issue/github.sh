@@ -550,7 +550,7 @@ gl_import_issues()
 
   endpoint="https://gitlab.com/api/v4/projects/$repoid/issues"
   cdissues
-  curl -o gl-issue-body "https://gitlab.com/api/v4/projects/$repoid/issues/"
+ curl -s -o gl-issue-body "https://gitlab.com/api/v4/projects/$repoid/issues/"
   # For each issue in the gh-issue-body file
   for i in $(seq 0 $(($(jq '. | length' gl-issue-body) - 1)) ) ; do
     issue_number=$(jq ".[$i].iid" gl-issue-body)
@@ -630,6 +630,7 @@ gl_import_issues()
 
     #TODO comments
   done
+  rm -f gl-issue-body
 }
 
 gh_export_issues()
