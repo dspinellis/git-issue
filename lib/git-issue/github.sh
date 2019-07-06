@@ -546,11 +546,10 @@ gl_import_issues()
 
   user="$1"
   repo="$2"
-  repoid="$3"
+  endpoint="https://gitlab.com/api/v4/projects/$user%2F$repo/issues"
 
-  endpoint="https://gitlab.com/api/v4/projects/$repoid/issues"
   cdissues
- curl -s -o gl-issue-body "https://gitlab.com/api/v4/projects/$repoid/issues/"
+  curl -s -H "$GL_CURL_AUTH" -A "$USER_AGENT" -o gl-issue-body "$endpoint"
   # For each issue in the gh-issue-body file
   for i in $(seq 0 $(($(jq '. | length' gl-issue-body) - 1)) ) ; do
     issue_number=$(jq ".[$i].iid" gl-issue-body)
