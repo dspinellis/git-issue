@@ -615,6 +615,28 @@ gl_import_issues()
       git add "$path/duedate" || trans_abort
     fi
 
+    # Timespent
+    timespent=$(jq -r ".[$i].time_stats.total_time_spent" gl-issue-body)
+    if [ "$timespent" = '0' ] ; then
+      if [ -r "$path/timespent" ] ; then
+	git rm "$path/timespent" || trans_abort
+      fi
+    else
+      echo "$timespent" >"$path/timespent" || trans_abort
+      git add "$path/timespent" || trans_abort
+    fi
+
+    # Timeestimate
+    timeestimate=$(jq -r ".[$i].time_stats.time_estimate" gl-issue-body)
+    echo "$timeestimate" || trans_abort
+    if [ "$timeestimate" = '0' ] ; then
+      if [ -r "$path/timeestimate" ] ; then
+	git rm "$path/timeestimate" || trans_abort
+      fi
+    else
+      echo "$timeestimate" >"$path/timeestimate" || trans_abort
+      git add "$path/timeestimate" || trans_abort
+    fi
 
     # Create description
     jq -r ".[$i].title" gl-issue-body >/dev/null || trans_abort
