@@ -603,6 +603,19 @@ gl_import_issues()
       git add "$path/milestone" || trans_abort
     fi
 
+    # Due Date
+    duedate=$(jq -r ".[$i].due_date" gl-issue-body)
+    if [ "$duedate" = null ] ; then
+      if [ -r "$path/duedate" ] ; then
+	git rm "$path/duedate" || trans_abort
+      fi
+    else
+      # convert duedate to our format before saving
+      $DATEBIN --date="$duedate" --iso-8601=seconds >"$path/duedate" || trans_abort
+      git add "$path/duedate" || trans_abort
+    fi
+
+
     # Create description
     jq -r ".[$i].title" gl-issue-body >/dev/null || trans_abort
     desc=$(jq -r ".[$i].description" gl-issue-body) 
