@@ -628,7 +628,6 @@ gl_import_issues()
 
     # Timeestimate
     timeestimate=$(jq -r ".[$i].time_stats.time_estimate" gl-issue-body)
-    echo "$timeestimate" || trans_abort
     if [ "$timeestimate" = '0' ] ; then
       if [ -r "$path/timeestimate" ] ; then
 	git rm "$path/timeestimate" || trans_abort
@@ -636,6 +635,17 @@ gl_import_issues()
     else
       echo "$timeestimate" >"$path/timeestimate" || trans_abort
       git add "$path/timeestimate" || trans_abort
+    fi
+
+    # Weight
+    weight=$(jq -r ".[$i].weight" gl-issue-body)
+    if [ "$weight" = 'null' ] ; then
+      if [ -r "$path/weight" ] ; then
+        git rm "$path/weight" || trans_abort
+      fi
+    else
+      echo "$weight" > "$path/weight" || trans_abort
+      git add "$path/weight" || trans_abort
     fi
 
     # Create description
