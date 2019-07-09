@@ -191,7 +191,7 @@ gh_create_issue()
     # Milestones are separate entities in the GitHub API
     # They need to be created before use on an issue
     # get milestone list
-    gh_api_get "https://api.github.com/repos/$user/$repo/milestones" milestone
+    gh_api_get "https://api.github.com/repos/$user/$repo/milestones" milestone github
 
     for i in $(seq 0 $(($(jq '. | length' gh-milestone-body) - 1)) ) ; do
       milenum=$(jq -r ".[$i].number" gh-milestone-body)
@@ -241,7 +241,7 @@ gh_import_issue()
 {
   local path
   url=$1
-  gh_api_get "$url" issue
+  gh_api_get "$url" issue github
   path=$(mktemp -d)
   # Create tags (in sorted order to avoid gratuitous updates)
   {
@@ -410,7 +410,7 @@ gh_import_comments()
 
   endpoint="https://api.github.com/repos/$user/$repo/issues/$issue_number/comments"
   while true ; do
-    gh_api_get "$endpoint" comments
+    gh_api_get "$endpoint" comments github
 
     # For each comment in the gh-comments-body file
     for i in $(seq 0 $(($(jq '. | length' gh-comments-body) - 1)) ) ; do
@@ -793,4 +793,3 @@ sub_import()
     "Issues URL: https://$provider.com/$user/$repo/issues"
   fi
 }
-
