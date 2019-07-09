@@ -747,8 +747,9 @@ sub_import()
 
   test "$1" = github -o "$1" = gitlab -a -n "$2" -a -n "$3" || usage_import
   provider="$1"
-  user="$2"
-  repo="$3"
+  # convert to lowercase to avoid duplicates
+  user="$(echo "$2" | tr '[:upper:]' '[:lower:]')"
+  repo="$(echo "$3" | tr '[:upper:]' '[:lower:]')"
 
   cdissues
 
