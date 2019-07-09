@@ -1225,11 +1225,7 @@ fi
 
 shift
 case "$subcommand" in
-  #TODO remove debug cmds
 
-  glimpo)
-    gl_import_issues "$@"
-    ;;
   export) 
     gh_export_issues "$@"
     ;;

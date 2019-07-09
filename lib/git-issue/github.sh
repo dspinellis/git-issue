@@ -28,19 +28,29 @@ USAGE_export_EOF
 # Header is saved in the file gh-$prefix-header; body in gh-$prefix-body
 gh_api_get()
 {
-  local url prefix
+  local url prefix provider
 
   url="$1"
   prefix="$2"
+  provider="$3"
 
-  if ! curl -H "$GI_CURL_AUTH" -A "$USER_AGENT" -s \
+  # figure out the correct authentication token
+  if [ "$provider" = github ] ; then
+    authtoken="$GI_CURL_AUTH"
+  elif [ "$provider" = gitlab ] ; then
+    authtoken="$GL_CURL_AUTH"
+  else
+    trans_abort
+  fi
+
+  if ! curl -H "$authtoken" -A "$USER_AGENT" -s \
     -o "gh-$prefix-body" -D "gh-$prefix-header" "$url" ; then
     echo 'GitHub connection failed' 1>&2
     trans_abort
   fi
 
-  if ! grep -q '^Status: 200' "gh-$prefix-header" ; then
-    echo 'GitHub API communication failure' 1>&2
+  if ! grep -q '^\(Status: 200\|HTTP/1.1 200 OK\)' "gh-$prefix-header" ; then
+    echo "$provider API communication failure" 1>&2
     echo "URL: $url" 1>&2
     if grep -q '^Status: 4' "gh-$prefix-header" ; then
       jq -r '.message' "gh-$prefix-body" 1>&2
@@ -733,9 +743,10 @@ t again
 # Import issues from specified source (currently github)
 sub_import()
 {
-  local endpoint user repo begin_sha
+  local endpoint user repo begin_sha provider
 
-  test "$1" = github -a -n "$2" -a -n "$3" || usage_import
+  test "$1" = github -o "$1" = gitlab -a -n "$2" -a -n "$3" || usage_import
+  provider="$1"
   user="$2"
   repo="$3"
 
@@ -746,13 +757,21 @@ sub_import()
 
   begin_sha=$(git rev-parse HEAD)
 
+  mkdir -p "imports/$provider/$user/$repo"
   # Process GitHub issues page by page
   trans_start
-  mkdir -p "imports/github/$user/$repo"
-  endpoint="https://api.github.com/repos/$user/$repo/issues?state=all"
+    if [ "$provider" = github ] ; then
+      endpoint="https://api.github.com/repos/$user/$repo/issues?state=all"
+    else
+      endpoint="https://gitlab.com/api/v4/projects/$user%2F$repo/issues"
+    fi
   while true ; do
-    gh_api_get "$endpoint" issue
-    gh_import_issues "$user" "$repo"
+    gh_api_get "$endpoint" issue "$provider"
+    if [ "$provider" = github ] ; then
+      gh_import_issues "$user" "$repo"
+    else
+      gl_import_issues "$user" "$repo"
+    fi
 
     # Return if no more pages
     if ! grep -q '^Link:.*rel="next"' gh-issue-header ; then
@@ -767,11 +786,11 @@ sub_import()
 
   # Mark last import SHA, so we can use this for merging 
   if [ "$begin_sha" != "$(git rev-parse HEAD)" ] ; then
-    local checkpoint="imports/github/$user/$repo/checkpoint"
+    local checkpoint="imports/$provider/$user/$repo/checkpoint"
     git rev-parse HEAD >"$checkpoint"
     git add "$checkpoint"
     commit "gi: Import issues from GitHub checkpoint" \
-    "Issues URL: https://github.com/$user/$repo/issues"
+    "Issues URL: https://$provider.com/$user/$repo/issues"
   fi
 }
 
