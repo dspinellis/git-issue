@@ -558,19 +558,17 @@ gl_import_issues()
   repo="$2"
   endpoint="https://gitlab.com/api/v4/projects/$user%2F$repo/issues"
 
-  cdissues
-  curl -s -H "$GL_CURL_AUTH" -A "$USER_AGENT" -o gl-issue-body "$endpoint"
   # For each issue in the gh-issue-body file
-  for i in $(seq 0 $(($(jq '. | length' gl-issue-body) - 1)) ) ; do
-    issue_number=$(jq ".[$i].iid" gl-issue-body)
+  for i in $(seq 0 $(($(jq '. | length' gh-issue-body) - 1)) ) ; do
+    issue_number=$(jq ".[$i].iid" gh-issue-body)
 
     # See if issue already there
     import_dir="imports/gitlab/$user/$repo/$issue_number"
     if [ -d "$import_dir" ] ; then
       sha=$(cat "$import_dir/sha")
     else
-      name=$(jq -r ".[$i].author.username" gl-issue-body)
-      GIT_AUTHOR_DATE=$(jq -r ".[$i].updated_at" gl-issue-body) \
+      name=$(jq -r ".[$i].author.username" gh-issue-body)
+      GIT_AUTHOR_DATE=$(jq -r ".[$i].updated_at" gh-issue-body) \
       commit 'gi: Add issue' 'gi new mark' \
 	--author="$name <$name@users.noreply.gitlab.com>"
       sha=$(git rev-parse HEAD)
@@ -586,13 +584,13 @@ gl_import_issues()
     # Create tags (in sorted order to avoid gratuitous updates)
     {
       # convert to our format
-      jq -r ".[$i].state" gl-issue-body | sed 's/opened/open/'
-      jq -r ".[$i].labels[]" gl-issue-body
+      jq -r ".[$i].state" gh-issue-body | sed 's/opened/open/'
+      jq -r ".[$i].labels[]" gh-issue-body
     } |
     LC_ALL=C sort >"$path/tags" || trans_abort
 
     # Create assignees (in sorted order to avoid gratuitous updates)
-    jq -r ".[$i].assignees[] | .username" gl-issue-body |
+    jq -r ".[$i].assignees[] | .username" gh-issue-body |
     LC_ALL=C sort >"$path/assignee" || trans_abort
 
     if [ -s "$path/assignee" ] ; then
@@ -602,17 +600,17 @@ gl_import_issues()
     fi
 
     # Obtain milestone
-    if [ "$(jq ".[$i].milestone" gl-issue-body)" = null ] ; then
+    if [ "$(jq ".[$i].milestone" gh-issue-body)" = null ] ; then
       if [ -r "$path/milestone" ] ; then
 	git rm "$path/milestone" || trans_abort
       fi
     else
-      jq -r ".[$i].milestone.title" gl-issue-body >"$path/milestone" || trans_abort
+      jq -r ".[$i].milestone.title" gh-issue-body >"$path/milestone" || trans_abort
       git add "$path/milestone" || trans_abort
     fi
 
     # Due Date
-    duedate=$(jq -r ".[$i].due_date" gl-issue-body)
+    duedate=$(jq -r ".[$i].due_date" gh-issue-body)
     if [ "$duedate" = null ] ; then
       if [ -r "$path/duedate" ] ; then
 	git rm "$path/duedate" || trans_abort
@@ -624,7 +622,7 @@ gl_import_issues()
     fi
 
     # Timespent
-    timespent=$(jq -r ".[$i].time_stats.total_time_spent" gl-issue-body)
+    timespent=$(jq -r ".[$i].time_stats.total_time_spent" gh-issue-body)
     if [ "$timespent" = '0' ] ; then
       if [ -r "$path/timespent" ] ; then
 	git rm "$path/timespent" || trans_abort
@@ -635,7 +633,7 @@ gl_import_issues()
     fi
 
     # Timeestimate
-    timeestimate=$(jq -r ".[$i].time_stats.time_estimate" gl-issue-body)
+    timeestimate=$(jq -r ".[$i].time_stats.time_estimate" gh-issue-body)
     if [ "$timeestimate" = '0' ] ; then
       if [ -r "$path/timeestimate" ] ; then
 	git rm "$path/timeestimate" || trans_abort
@@ -646,7 +644,7 @@ gl_import_issues()
     fi
 
     # Weight
-    weight=$(jq -r ".[$i].weight" gl-issue-body)
+    weight=$(jq -r ".[$i].weight" gh-issue-body)
     if [ "$weight" = 'null' ] ; then
       if [ -r "$path/weight" ] ; then
         git rm "$path/weight" || trans_abort
@@ -657,14 +655,14 @@ gl_import_issues()
     fi
 
     # Create description
-    jq -r ".[$i].title" gl-issue-body >/dev/null || trans_abort
-    desc=$(jq -r ".[$i].description" gl-issue-body) 
+    jq -r ".[$i].title" gh-issue-body >/dev/null || trans_abort
+    desc=$(jq -r ".[$i].description" gh-issue-body) 
     if [ "$desc" = "null" ] ; then
       #no description
       desc="";
     fi
     {
-      jq -r ".[$i].title" gl-issue-body
+      jq -r ".[$i].title" gh-issue-body
       echo
       echo "$desc"
     } |
@@ -672,8 +670,8 @@ gl_import_issues()
 
     git add "$path/description" "$path/tags" imports || trans_abort
     if ! git diff --quiet HEAD ; then
-      name=${name:-$(jq -r ".[$i].user.login" gl-issue-body)}
-      GIT_AUTHOR_DATE=$(jq -r ".[$i].updated_at" gl-issue-body) \
+      name=${name:-$(jq -r ".[$i].user.login" gh-issue-body)}
+      GIT_AUTHOR_DATE=$(jq -r ".[$i].updated_at" gh-issue-body) \
 	commit "gi: Import issue #$issue_number from GitHub" \
 	"Issue URL: https://gitlab.com/$user/$repo/issues/$issue_number" \
 	--author="$name <$name@users.noreply.github.com>"
@@ -682,7 +680,7 @@ gl_import_issues()
 
     #TODO comments
   done
-  rm -f gl-issue-body
+  rm -f gh-issue-body
 }
 
 gh_export_issues()
