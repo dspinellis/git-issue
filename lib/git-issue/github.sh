@@ -485,109 +485,43 @@ Comment URL: $html_url" \
 # gh_import_issues user repo
 gh_import_issues()
 {
-  local user repo
+  local user repo provider
   local i issue_number import_dir sha path name
+  local jid 
+
 
   user="$1"
   repo="$2"
+  provider="$3"
+
+  # some json field names differ
+  if [ "$provider" = github ] ; then
+    jid='number'
+    juser='user.login'
+    jlogin='login'
+    jdesc='body'
+  elif [ "$provider" = gitlab ] ; then
+    jid='iid'
+    juser='author.username'
+    jlogin='username'
+    jdesc='description'
+  else
+    trans_abort
+  fi
 
   # For each issue in the gh-issue-body file
   for i in $(seq 0 $(($(jq '. | length' gh-issue-body) - 1)) ) ; do
-    issue_number=$(jq ".[$i].number" gh-issue-body)
+    issue_number=$(jq ".[$i].$jid" gh-issue-body)
 
     # See if issue already there
-    import_dir="imports/github/$user/$repo/$issue_number"
+    import_dir="imports/$provider/$user/$repo/$issue_number"
     if [ -d "$import_dir" ] ; then
       sha=$(cat "$import_dir/sha")
     else
-      name=$(jq -r ".[$i].user.login" gh-issue-body)
+      name=$(jq -r ".[$i].$juser" gh-issue-body)
       GIT_AUTHOR_DATE=$(jq -r ".[$i].updated_at" gh-issue-body) \
       commit 'gi: Add issue' 'gi new mark' \
-	--author="$name <$name@users.noreply.github.com>"
-      sha=$(git rev-parse HEAD)
-    fi
-
-    path=$(issue_path_full "$sha")
-    mkdir -p "$path" || trans_abort
-    mkdir -p "$import_dir" || trans_abort
-
-    # Add issue import number to allow future updates
-    echo "$sha" >"$import_dir/sha"
-
-    # Create tags (in sorted order to avoid gratuitous updates)
-    {
-      jq -r ".[$i].state" gh-issue-body
-      jq -r ".[$i].labels[] | .name" gh-issue-body
-    } |
-    LC_ALL=C sort >"$path/tags" || trans_abort
-
-    # Create assignees (in sorted order to avoid gratuitous updates)
-    jq -r ".[$i].assignees[] | .login" gh-issue-body |
-    LC_ALL=C sort >"$path/assignee" || trans_abort
-
-    if [ -s "$path/assignee" ] ; then
-      git add "$path/assignee" || trans_abort
-    else
-      rm -f "$path/assignee"
-    fi
-
-    # Obtain milestone
-    if [ "$(jq ".[$i].milestone" gh-issue-body)" = null ] ; then
-      if [ -r "$path/milestone" ] ; then
-	git rm "$path/milestone" || trans_abort
-      fi
-    else
-      jq -r ".[$i].milestone.title" gh-issue-body >"$path/milestone" || trans_abort
-      git add "$path/milestone" || trans_abort
-    fi
-
-    # Create description
-    jq -r ".[$i].title" gh-issue-body >/dev/null || trans_abort
-    jq -r ".[$i].body" gh-issue-body >/dev/null || trans_abort
-    {
-      jq -r ".[$i].title" gh-issue-body
-      echo
-      jq -r ".[$i].body" gh-issue-body
-    } |
-    tr -d \\r >"$path/description"
-
-    git add "$path/description" "$path/tags" imports || trans_abort
-    if ! git diff --quiet HEAD ; then
-      name=${name:-$(jq -r ".[$i].user.login" gh-issue-body)}
-      GIT_AUTHOR_DATE=$(jq -r ".[$i].updated_at" gh-issue-body) \
-	commit "gi: Import issue #$issue_number from GitHub" \
-	"Issue URL: https://github.com/$user/$repo/issues/$issue_number" \
-	--author="$name <$name@users.noreply.github.com>"
-      echo "Imported/updated issue #$issue_number as $(short_sha "$sha")"
-    fi
-
-    # Import issue comments
-    gh_import_comments "$user" "$repo" "$issue_number" "$sha" "$provider"
-  done
-}
-
-gl_import_issues()
-{
-  local user repo
-  local i issue_number import_dir sha path name desc milestone assignee
-
-  user="$1"
-  repo="$2"
-  endpoint="https://gitlab.com/api/v4/projects/$user%2F$repo/issues"
-
-  # For each issue in the gh-issue-body file
-  for i in $(seq 0 $(($(jq '. | length' gh-issue-body) - 1)) ) ; do
-    issue_number=$(jq ".[$i].iid" gh-issue-body)
-
-    # See if issue already there
-    import_dir="imports/gitlab/$user/$repo/$issue_number"
-    if [ -d "$import_dir" ] ; then
-      sha=$(cat "$import_dir/sha")
-    else
-      name=$(jq -r ".[$i].author.username" gh-issue-body)
-      GIT_AUTHOR_DATE=$(jq -r ".[$i].updated_at" gh-issue-body) \
-      commit 'gi: Add issue' 'gi new mark' \
-	--author="$name <$name@users.noreply.gitlab.com>"
+	--author="$name <$name@users.noreply.$provider.com>"
       sha=$(git rev-parse HEAD)
     fi
 
@@ -602,12 +536,16 @@ gl_import_issues()
     {
       # convert to our format
       jq -r ".[$i].state" gh-issue-body | sed 's/opened/open/'
-      jq -r ".[$i].labels[]" gh-issue-body
+      if [ "$provider" = github ] ; then
+        jq -r ".[$i].labels[] | .name" gh-issue-body
+      else
+        jq -r ".[$i].labels[]" gh-issue-body
+      fi
     } |
     LC_ALL=C sort >"$path/tags" || trans_abort
 
     # Create assignees (in sorted order to avoid gratuitous updates)
-    jq -r ".[$i].assignees[] | .username" gh-issue-body |
+    jq -r ".[$i].assignees[] | .$jlogin" gh-issue-body |
     LC_ALL=C sort >"$path/assignee" || trans_abort
 
     if [ -s "$path/assignee" ] ; then
@@ -626,79 +564,77 @@ gl_import_issues()
       git add "$path/milestone" || trans_abort
     fi
 
-    # Due Date
-    duedate=$(jq -r ".[$i].due_date" gh-issue-body)
-    if [ "$duedate" = null ] ; then
-      if [ -r "$path/duedate" ] ; then
-	git rm "$path/duedate" || trans_abort
-      fi
-    else
-      # convert duedate to our format before saving
-      $DATEBIN --date="$duedate" --iso-8601=seconds >"$path/duedate" || trans_abort
-      git add "$path/duedate" || trans_abort
-    fi
+    if [ "$provider" = gitlab ] ; then
 
-    # Timespent
-    timespent=$(jq -r ".[$i].time_stats.total_time_spent" gh-issue-body)
-    if [ "$timespent" = '0' ] ; then
-      if [ -r "$path/timespent" ] ; then
-	git rm "$path/timespent" || trans_abort
+      # Due Date
+      duedate=$(jq -r ".[$i].due_date" gh-issue-body)
+      if [ "$duedate" = null ] ; then
+        if [ -r "$path/duedate" ] ; then
+          git rm "$path/duedate" || trans_abort
+        fi
+      else
+        # convert duedate to our format before saving
+        $DATEBIN --date="$duedate" --iso-8601=seconds >"$path/duedate" || trans_abort
+        git add "$path/duedate" || trans_abort
       fi
-    else
-      echo "$timespent" >"$path/timespent" || trans_abort
-      git add "$path/timespent" || trans_abort
-    fi
 
-    # Timeestimate
-    timeestimate=$(jq -r ".[$i].time_stats.time_estimate" gh-issue-body)
-    if [ "$timeestimate" = '0' ] ; then
-      if [ -r "$path/timeestimate" ] ; then
-	git rm "$path/timeestimate" || trans_abort
+      # Timespent
+      timespent=$(jq -r ".[$i].time_stats.total_time_spent" gh-issue-body)
+      if [ "$timespent" = '0' ] ; then
+        if [ -r "$path/timespent" ] ; then
+          git rm "$path/timespent" || trans_abort
+        fi
+      else
+        echo "$timespent" >"$path/timespent" || trans_abort
+        git add "$path/timespent" || trans_abort
       fi
-    else
-      echo "$timeestimate" >"$path/timeestimate" || trans_abort
-      git add "$path/timeestimate" || trans_abort
-    fi
+      
+      # Timeestimate
+      timeestimate=$(jq -r ".[$i].time_stats.time_estimate" gh-issue-body)
+      if [ "$timeestimate" = '0' ] ; then
+        if [ -r "$path/timeestimate" ] ; then
+          git rm "$path/timeestimate" || trans_abort
+        fi
+      else
+        echo "$timeestimate" >"$path/timeestimate" || trans_abort
+        git add "$path/timeestimate" || trans_abort
+      fi
 
-    # Weight
-    weight=$(jq -r ".[$i].weight" gh-issue-body)
-    if [ "$weight" = 'null' ] ; then
-      if [ -r "$path/weight" ] ; then
-        git rm "$path/weight" || trans_abort
+      # Weight
+      weight=$(jq -r ".[$i].weight" gh-issue-body)
+      if [ "$weight" = 'null' ] ; then
+        if [ -r "$path/weight" ] ; then
+          git rm "$path/weight" || trans_abort
+        fi
+      else
+        echo "$weight" > "$path/weight" || trans_abort
+        git add "$path/weight" || trans_abort
       fi
-    else
-      echo "$weight" > "$path/weight" || trans_abort
-      git add "$path/weight" || trans_abort
     fi
 
     # Create description
     jq -r ".[$i].title" gh-issue-body >/dev/null || trans_abort
-    desc=$(jq -r ".[$i].description" gh-issue-body) 
-    if [ "$desc" = "null" ] ; then
-      #no description
-      desc="";
-    fi
+    jq -r ".[$i].$jdesc" gh-issue-body >/dev/null || trans_abort
     {
       jq -r ".[$i].title" gh-issue-body
       echo
-      echo "$desc"
+      jq -r ".[$i].$jdesc" gh-issue-body
     } |
     tr -d \\r >"$path/description"
 
     git add "$path/description" "$path/tags" imports || trans_abort
     if ! git diff --quiet HEAD ; then
-      name=${name:-$(jq -r ".[$i].user.login" gh-issue-body)}
+      name=${name:-$(jq -r ".[$i].$juser" gh-issue-body)}
       GIT_AUTHOR_DATE=$(jq -r ".[$i].updated_at" gh-issue-body) \
-	commit "gi: Import issue #$issue_number from GitHub" \
-	"Issue URL: https://gitlab.com/$user/$repo/issues/$issue_number" \
-	--author="$name <$name@users.noreply.github.com>"
+	commit "gi: Import issue #$issue_number from $provider" \
+	"Issue URL: https://$provider.com/$user/$repo/issues/$issue_number" \
+	--author="$name <$name@users.noreply.$provider.com>"
       echo "Imported/updated issue #$issue_number as $(short_sha "$sha")"
     fi
 
     # Import issue comments
     gh_import_comments "$user" "$repo" "$issue_number" "$sha" "$provider"
   done
-  rm -f gh-issue-body
 }
 
 gh_export_issues()
@@ -756,7 +692,7 @@ t again
 ' gh-"$1"-header
 }
 
-# Import issues from specified source (currently github)
+# Import issues from specified source (currently github and gitlab)
 sub_import()
 {
   local endpoint user repo begin_sha provider
@@ -775,7 +711,7 @@ sub_import()
   begin_sha=$(git rev-parse HEAD)
 
   mkdir -p "imports/$provider/$user/$repo"
-  # Process GitHub issues page by page
+  # Process issues page by page
   trans_start
     if [ "$provider" = github ] ; then
       endpoint="https://api.github.com/repos/$user/$repo/issues?state=all"
@@ -784,11 +720,7 @@ sub_import()
     fi
   while true ; do
     gh_api_get "$endpoint" issue "$provider"
-    if [ "$provider" = github ] ; then
-      gh_import_issues "$user" "$repo"
-    else
-      gl_import_issues "$user" "$repo"
-    fi
+    gh_import_issues "$user" "$repo" "$provider"
 
     # Return if no more pages
     if ! grep -q '^Link:.*rel="next"' gh-issue-header ; then
