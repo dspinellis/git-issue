@@ -397,7 +397,7 @@ gh_update_issue()
 gh_import_comments()
 {
   local user repo issue_number isha
-  local i endpoint comment_id import_dir csha
+  local i endpoint comment_id import_dir csha provider
 
   user="$1"
   shift
@@ -407,24 +407,33 @@ gh_import_comments()
   shift
   isha="$1"
   shift
+  provider="$1"
+  shift
 
-  endpoint="https://api.github.com/repos/$user/$repo/issues/$issue_number/comments"
+  if [ "$provider" = github ] ; then
+    endpoint="https://api.github.com/repos/$user/$repo/issues/$issue_number/comments"
+  elif [ "$provider" = gitlab ] ; then
+    endpoint="https://gitlab.com/api/v4/projects/$user%2F$repo/issues/$issue_number/notes"
+  else
+    trans_abort
+  fi
+
   while true ; do
-    gh_api_get "$endpoint" comments github
+    gh_api_get "$endpoint" comments "$provider"
 
     # For each comment in the gh-comments-body file
     for i in $(seq 0 $(($(jq '. | length' gh-comments-body) - 1)) ) ; do
       comment_id=$(jq ".[$i].id" gh-comments-body)
 
       # See if comment already there
-      import_dir="imports/github/$user/$repo/$issue_number/comments"
+      import_dir="imports/$provider/$user/$repo/$issue_number/comments"
       if [ -r "$import_dir/$comment_id" ] ; then
 	csha=$(cat "$import_dir/$comment_id")
       else
 	name=$(jq -r ".[$i].user.login" gh-comments-body)
 	GIT_AUTHOR_DATE=$(jq -r ".[$i].updated_at" gh-comments-body) \
 	  commit 'gi: Add comment' "gi comment mark $isha" \
-	  --author="$name <$name@users.noreply.github.com>"
+	  --author="$name <$name@users.noreply.$provider.com>"
 	csha=$(git rev-parse HEAD)
       fi
 
@@ -444,12 +453,20 @@ gh_import_comments()
       git add "$path/$csha" "$import_dir/$comment_id" || trans_abort
       if ! git diff --quiet HEAD ; then
 	local name html_url
-	name=$(jq -r ".[$i].user.login" gh-comments-body)
-	html_url=$(jq -r ".[$i].html_url" gh-comments-body)
-	GIT_AUTHOR_DATE=$(jq -r ".[$i].updated_at" gh-comments-body) \
-	  commit 'gi: Import comment message' "gi comment message $isha $csha
+        if [ "$provider" = github ] ; then
+          name=$(jq -r ".[$i].user.login" gh-comments-body)
+          html_url=$(jq -r ".[$i].html_url" gh-comments-body)
+          GIT_AUTHOR_DATE=$(jq -r ".[$i].updated_at" gh-comments-body) \
+	    commit 'gi: Import comment message' "gi comment message $isha $csha
 Comment URL: $html_url" \
-	  --author="$name <$name@users.noreply.github.com>"
+	    --author="$name <$name@users.noreply.github.com>"
+        else
+          name=$(jq -r ".[$i].author.username" gh-comments-body)
+          GIT_AUTHOR_DATE=$(jq -r ".[$i].updated_at" gh-comments-body) \
+	    commit 'gi: Import comment message' "gi comment message $isha $csha"\
+	    --author="$name <$name@users.noreply.gitlab.com>"
+        fi
+
 	echo "Imported/updated issue #$issue_number comment $comment_id as $(short_sha "$csha")"
       fi
     done # For all comments on page
@@ -545,7 +562,7 @@ gh_import_issues()
     fi
 
     # Import issue comments
-    gh_import_comments "$user" "$repo" "$issue_number" "$sha"
+    gh_import_comments "$user" "$repo" "$issue_number" "$sha" "$provider"
   done
 }
 
@@ -678,7 +695,8 @@ gl_import_issues()
       echo "Imported/updated issue #$issue_number as $(short_sha "$sha")"
     fi
 
-    #TODO comments
+    # Import issue comments
+    gh_import_comments "$user" "$repo" "$issue_number" "$sha" "$provider"
   done
   rm -f gh-issue-body
 }
