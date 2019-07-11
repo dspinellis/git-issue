@@ -487,7 +487,8 @@ gh_import_issues()
 {
   local user repo provider
   local i issue_number import_dir sha path name
-  local jid 
+  local duedate timeestimate timespent weight
+  local jid juser jlogin jdesc
 
 
   user="$1"
