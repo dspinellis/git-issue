@@ -410,7 +410,8 @@ if [ -z "$GI_CURL_AUTH" ] ; then
   echo "Skipping import/export tests due to lack of GitHub authentication token."
 else
   # Import
-  echo "Starting import tests..."
+  #GitHub
+  echo "Starting GitHub import tests..."
   try "$gi" import github dspinellis git-issue-test-issues
   start ; "$gi" list | try_grep 'An open issue on GitHub with a description and comments'
   # Closed issues
@@ -437,6 +438,34 @@ else
   try "$gi" import github dspinellis git-issue-test-issues
   after=$(cd .issues ; git rev-parse --short HEAD)
   try test x"$before" = x"$after"
+
+  #GitLab
+  echo "Starting GitLab import tests..."
+  try "$gi" import gitlab vyrondrosos git-issue-test-issues
+  start ; "$gi" list | try_grep 'An open issue on GitLab with a description and comments'
+  # Closed issues
+  start ; "$gi" list | try_grep -v 'A closed issue on GitLab without description'
+  start ; "$gi" list -a | try_grep 'A closed issue on GitLab without description'
+  # Description and comments
+  glissue=$("$gi" list | awk '/An open issue on GitLab with a description and comments/ {print $1}')
+  start ; "$gi" show "$glissue" | try_grep '^ *line 1$'
+  start ; "$gi" show "$glissue" | try_grep '^ *line 2$'
+  start ; "$gi" show "$glissue" | try_grep 'Line 3 with special characters "'\''<>|\$'
+  start ; "$gi" show -c "$glissue" | try_grep '^ *comment 2$'
+  start ; "$gi" show -c "$glissue" | try_grep '^ *comment 3$'
+  start ; "$gi" show -c "$glissue" | try_grep '^ *comment 4$'
+  # Assignees and tags
+  glissue=$("$gi" list | awk '/An open issue on GitLab with assignees and tags/ {print $1}')
+  start ; "$gi" show "$glissue" | try_grep 'good first issue'
+  start ; "$gi" show "$glissue" | header_continuation | try_grep 'Assigned-to:.*vyrondrosos'
+  # Milestone
+  try "$gi" list ver3
+  # Import should be idempotent
+  before=$(cd .issues ; git rev-parse --short HEAD)
+  try "$gi" import github dspinellis git-issue-test-issues
+  after=$(cd .issues ; git rev-parse --short HEAD)
+  try test x"$before" = x"$after"
+
 
   # Export
   # create new repository to test issue exporting
