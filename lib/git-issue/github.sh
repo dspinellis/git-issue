@@ -690,7 +690,7 @@ t
 # Remove first element of the Link header and retry
 s/^Link: <[^>]*>; rel="[^"]*", */Link: /
 t again
-' gh-"$1"-header
+' "$1"-header
 }
 
 # Import issues from specified source (currently github and gitlab)
