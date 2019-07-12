@@ -132,7 +132,7 @@ trans_abort()
   git reset "$start_sha"
   git clean -qfd
   git checkout -- .
-  rm -f gh-issue-header gh-issue-body gh-comments-header gh-comments-body
+  rm -f issue-header issue-body comments-header comments-body
   echo 'Operation aborted' 1>&2
   exit 1
 }

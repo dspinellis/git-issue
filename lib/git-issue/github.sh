@@ -34,7 +34,7 @@ rest_api_get()
   prefix="$2"
   provider="$3"
 
-  # figure out the correct authentication token
+  # use the correct authentication token
   if [ "$provider" = github ] ; then
     authtoken="$GI_CURL_AUTH"
   elif [ "$provider" = gitlab ] ; then
