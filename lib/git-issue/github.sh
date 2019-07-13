@@ -412,8 +412,10 @@ import_comments()
 
   if [ "$provider" = github ] ; then
     endpoint="https://api.github.com/repos/$user/$repo/issues/$issue_number/comments"
+    jlogin='user.login'
   elif [ "$provider" = gitlab ] ; then
     endpoint="https://gitlab.com/api/v4/projects/$user%2F$repo/issues/$issue_number/notes"
+    jlogin='author.username'
   else
     trans_abort
   fi
@@ -430,7 +432,7 @@ import_comments()
       if [ -r "$import_dir/$comment_id" ] ; then
 	csha=$(cat "$import_dir/$comment_id")
       else
-	name=$(jq -r ".[$i].user.login" comments-body)
+	name=$(jq -r ".[$i].$jlogin" comments-body)
 	GIT_AUTHOR_DATE=$(jq -r ".[$i].updated_at" comments-body) \
 	  commit 'gi: Add comment' "gi comment mark $isha" \
 	  --author="$name <$name@users.noreply.$provider.com>"
@@ -453,15 +455,14 @@ import_comments()
       git add "$path/$csha" "$import_dir/$comment_id" || trans_abort
       if ! git diff --quiet HEAD ; then
 	local name html_url
+        name=$(jq -r ".[$i].$jlogin" comments-body)
         if [ "$provider" = github ] ; then
-          name=$(jq -r ".[$i].user.login" comments-body)
           html_url=$(jq -r ".[$i].html_url" comments-body)
           GIT_AUTHOR_DATE=$(jq -r ".[$i].updated_at" comments-body) \
 	    commit 'gi: Import comment message' "gi comment message $isha $csha
 Comment URL: $html_url" \
 	    --author="$name <$name@users.noreply.github.com>"
         else
-          name=$(jq -r ".[$i].author.username" comments-body)
           GIT_AUTHOR_DATE=$(jq -r ".[$i].updated_at" comments-body) \
 	    commit 'gi: Import comment message' "gi comment message $isha $csha"\
 	    --author="$name <$name@users.noreply.gitlab.com>"
