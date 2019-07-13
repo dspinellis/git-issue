@@ -49,7 +49,7 @@ rest_api_get()
     trans_abort
   fi
 
-  if ! grep -q '^\(Status: 200\|HTTP/1.1 200 OK\)' "$prefix-header" ; then
+  if ! grep -q '^\(Status: 200\|HTTP/[[:digit:]].[[:digit:]] 200 OK\)' "$prefix-header" ; then
     echo "$provider API communication failure" 1>&2
     echo "URL: $url" 1>&2
     if grep -q '^Status: 4' "$prefix-header" ; then
