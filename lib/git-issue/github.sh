@@ -397,7 +397,7 @@ gh_update_issue()
 import_comments()
 {
   local user repo issue_number isha
-  local i endpoint comment_id import_dir csha provider
+  local i endpoint comment_id import_dir csha provider juser
 
   user="$1"
   shift
@@ -412,10 +412,10 @@ import_comments()
 
   if [ "$provider" = github ] ; then
     endpoint="https://api.github.com/repos/$user/$repo/issues/$issue_number/comments"
-    jlogin='user.login'
+    juser='user.login'
   elif [ "$provider" = gitlab ] ; then
     endpoint="https://gitlab.com/api/v4/projects/$user%2F$repo/issues/$issue_number/notes"
-    jlogin='author.username'
+    juser='author.username'
   else
     trans_abort
   fi
@@ -432,7 +432,7 @@ import_comments()
       if [ -r "$import_dir/$comment_id" ] ; then
 	csha=$(cat "$import_dir/$comment_id")
       else
-	name=$(jq -r ".[$i].$jlogin" comments-body)
+	name=$(jq -r ".[$i].$juser" comments-body)
 	GIT_AUTHOR_DATE=$(jq -r ".[$i].updated_at" comments-body) \
 	  commit 'gi: Add comment' "gi comment mark $isha" \
 	  --author="$name <$name@users.noreply.$provider.com>"
@@ -455,7 +455,7 @@ import_comments()
       git add "$path/$csha" "$import_dir/$comment_id" || trans_abort
       if ! git diff --quiet HEAD ; then
 	local name html_url
-        name=$(jq -r ".[$i].$jlogin" comments-body)
+        name=$(jq -r ".[$i].$juser" comments-body)
         if [ "$provider" = github ] ; then
           html_url=$(jq -r ".[$i].html_url" comments-body)
           GIT_AUTHOR_DATE=$(jq -r ".[$i].updated_at" comments-body) \
@@ -547,8 +547,10 @@ import_issues()
     LC_ALL=C sort >"$path/tags" || trans_abort
 
     # Create assignees (in sorted order to avoid gratuitous updates)
-    jq -r ".[$i].assignees[] | .$jlogin" issue-body |
-    LC_ALL=C sort >"$path/assignee" || trans_abort
+    if [ "$(jq -r ".[$i].assignees | length" issue-body)" != 0 ] ; then
+      jq -r ".[$i].assignees[] | .$jlogin" issue-body |
+      LC_ALL=C sort >"$path/assignee" || trans_abort
+    fi
 
     if [ -s "$path/assignee" ] ; then
       git add "$path/assignee" || trans_abort
