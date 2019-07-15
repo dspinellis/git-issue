@@ -134,6 +134,7 @@ You use _git issue_ with the following sub-commands.
   [GitHub settings](https://github.com/settings/tokens/new).
   For GitLab: `export GL_CURL_AUTH="PRIVATE-TOKEN: JvHLsdnDmD7rjUXzT-Ea"`
   Use the [GitLab settings](https://gitlab.com/profile/personal_access_tokens) to create the token.
+  In case the repository is part of a GitLab group, specify repository as groupname/reponame.
 * `git issue create`: Create the issue in the provided GitHub repository.
   With the `-e` option any escape sequences for the attributes present in the description, will be replaced as above.
   This can be used to e.g export an unsupported attribute to GitHub as text.

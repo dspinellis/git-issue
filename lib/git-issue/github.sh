@@ -414,7 +414,10 @@ import_comments()
     endpoint="https://api.github.com/repos/$user/$repo/issues/$issue_number/comments"
     juser='user.login'
   elif [ "$provider" = gitlab ] ; then
-    endpoint="https://gitlab.com/api/v4/projects/$user%2F$repo/issues/$issue_number/notes"
+    # if $repo contains '/' then it's part of a group and needs to be escaped
+    local escrepo
+    escrepo=$(echo "$repo" | sed 's:/:%2F:')
+    endpoint="https://gitlab.com/api/v4/projects/$user%2F$escrepo/issues/$issue_number/notes"
     juser='author.username'
   else
     trans_abort
@@ -720,7 +723,10 @@ sub_import()
     if [ "$provider" = github ] ; then
       endpoint="https://api.github.com/repos/$user/$repo/issues?state=all"
     else
-      endpoint="https://gitlab.com/api/v4/projects/$user%2F$repo/issues"
+      # if $repo contains '/' then it's part of a group and needs to be escaped
+      local escrepo
+      escrepo=$(echo "$repo" | sed 's:/:%2F:')
+      endpoint="https://gitlab.com/api/v4/projects/$user%2F$escrepo/issues"
     fi
   while true ; do
     rest_api_get "$endpoint" issue "$provider"
