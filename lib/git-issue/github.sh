@@ -2,7 +2,7 @@
 # shellcheck disable=2039
 # SC2039: In POSIX sh, 'local' is undefined
 
-# import: import issues from GitHub {{{1
+# import: import issues from GitHub/GitLab {{{1
 usage_import()
 {
   cat <<\USAGE_import_EOF
@@ -24,26 +24,36 @@ USAGE_export_EOF
   exit 2
 }
 
-# Get a page using the GitHub API; abort transaction on error
-# Header is saved in the file gh-$prefix-header; body in gh-$prefix-body
-gh_api_get()
+# Get a page using the GitHub/GitLab API; abort transaction on error
+# Header is saved in the file $prefix-header; body in $prefix-body
+rest_api_get()
 {
-  local url prefix
+  local url prefix provider
 
   url="$1"
   prefix="$2"
+  provider="$3"
 
-  if ! curl -H "$GI_CURL_AUTH" -A "$USER_AGENT" -s \
-    -o "gh-$prefix-body" -D "gh-$prefix-header" "$url" ; then
-    echo 'GitHub connection failed' 1>&2
+  # use the correct authentication token
+  if [ "$provider" = github ] ; then
+    authtoken="$GI_CURL_AUTH"
+  elif [ "$provider" = gitlab ] ; then
+    authtoken="$GL_CURL_AUTH"
+  else
     trans_abort
   fi
 
-  if ! grep -q '^Status: 200' "gh-$prefix-header" ; then
-    echo 'GitHub API communication failure' 1>&2
+  if ! curl -H "$authtoken" -A "$USER_AGENT" -s \
+    -o "$prefix-body" -D "$prefix-header" "$url" ; then
+    echo "$provider connection failed" 1>&2
+    trans_abort
+  fi
+
+  if ! grep -q '^\(Status: 200\|HTTP/[[:digit:]].[[:digit:]] 200 OK\)' "$prefix-header" ; then
+    echo "$provider API communication failure" 1>&2
     echo "URL: $url" 1>&2
-    if grep -q '^Status: 4' "gh-$prefix-header" ; then
-      jq -r '.message' "gh-$prefix-body" 1>&2
+    if grep -q '^Status: 4' "$prefix-header" ; then
+      jq -r '.message' "$prefix-body" 1>&2
     fi
     trans_abort
   fi
@@ -181,11 +191,11 @@ gh_create_issue()
     # Milestones are separate entities in the GitHub API
     # They need to be created before use on an issue
     # get milestone list
-    gh_api_get "https://api.github.com/repos/$user/$repo/milestones" milestone
+    rest_api_get "https://api.github.com/repos/$user/$repo/milestones" milestone github
 
-    for i in $(seq 0 $(($(jq '. | length' gh-milestone-body) - 1)) ) ; do
-      milenum=$(jq -r ".[$i].number" gh-milestone-body)
-      miletitle=$(jq -r ".[$i].title" gh-milestone-body)
+    for i in $(seq 0 $(($(jq '. | length' milestone-body) - 1)) ) ; do
+      milenum=$(jq -r ".[$i].number" milestone-body)
+      miletitle=$(jq -r ".[$i].title" milestone-body)
       if [ "$miletitle" = "$milestone" ] ; then
         # it already exists
         found=$milenum
@@ -221,7 +231,7 @@ gh_create_issue()
   cd ..
   # delete temp files
   test -z $nodelete && rm -f gh-create-body gh-create-header
-  rm -f gh-milestone-body gh-milestone-header
+  rm -f milestone-body milestone-header
   # dont inherit `test` exit status
   cdissues
 }
@@ -231,38 +241,38 @@ gh_import_issue()
 {
   local path
   url=$1
-  gh_api_get "$url" issue
+  rest_api_get "$url" issue github
   path=$(mktemp -d)
   # Create tags (in sorted order to avoid gratuitous updates)
   {
-    jq -r ".state" gh-issue-body
-    jq -r ".labels[] | .name" gh-issue-body
+    jq -r ".state" issue-body
+    jq -r ".labels[] | .name" issue-body
   } |
     LC_ALL=C sort >"$path/tags" || trans_abort
 
     # Create assignees (in sorted order to avoid gratuitous updates)
-    jq -r ".assignees[] | .login" gh-issue-body |
+    jq -r ".assignees[] | .login" issue-body |
       LC_ALL=C sort >"$path/assignee" || trans_abort
     # Obtain milestone
-    if [ "$(jq ".milestone" gh-issue-body)" = null ] ; then
+    if [ "$(jq ".milestone" issue-body)" = null ] ; then
       if [ -r "$path/milestone" ] ; then
         rm "$path/milestone" || trans_abort
       fi
     else
-      jq -r ".milestone.title" gh-issue-body >"$path/milestone" || trans_abort
+      jq -r ".milestone.title" issue-body >"$path/milestone" || trans_abort
     fi
 
     # Create description
-    jq -r ".title" gh-issue-body >/dev/null || trans_abort
-    jq -r ".body" gh-issue-body >/dev/null || trans_abort
+    jq -r ".title" issue-body >/dev/null || trans_abort
+    jq -r ".body" issue-body >/dev/null || trans_abort
     {
-      jq -r ".title" gh-issue-body
+      jq -r ".title" issue-body
       echo
-      jq -r ".body" gh-issue-body
+      jq -r ".body" issue-body
     } |
       tr -d \\r >"$path/description"
     TEMP_ISSUE_DIR=$path
-    rm -f gh-issue-body gh-issue-header
+    rm -f issue-body issue-header
 }
 # update a remote GitHub issue, based on a local one
 gh_update_issue()
@@ -329,11 +339,11 @@ gh_update_issue()
       # Milestones are separate entities in the GitHub API
       # They need to be created before use on an issue
       # get milestone list
-      gh_api_get "https://api.github.com/repos/$user/$repo/milestones" milestone
+      rest_api_get "https://api.github.com/repos/$user/$repo/milestones" milestone
 
-      for i in $(seq 0 $(($(jq '. | length' gh-milestone-body) - 1)) ) ; do
-        milenum=$(jq -r ".[$i].number" gh-milestone-body)
-        miletitle=$(jq -r ".[$i].title" gh-milestone-body)
+      for i in $(seq 0 $(($(jq '. | length' milestone-body) - 1)) ) ; do
+        milenum=$(jq -r ".[$i].number" milestone-body)
+        miletitle=$(jq -r ".[$i].title" milestone-body)
         if [ "$miletitle" = "$milestone" ] ; then
           # it already exists
           found=$milenum
@@ -382,12 +392,12 @@ gh_update_issue()
 
 }
 
-# Import GitHub comments for the specified issue
-# gh_import_comments  <user> <repo> <issue_number> <issue_sha>
-gh_import_comments()
+# Import GitHub/GitLab comments for the specified issue
+# import_comments <user> <repo> <issue_number> <issue_sha> <provider>
+import_comments()
 {
   local user repo issue_number isha
-  local i endpoint comment_id import_dir csha
+  local i endpoint comment_id import_dir csha provider juser
 
   user="$1"
   shift
@@ -397,24 +407,38 @@ gh_import_comments()
   shift
   isha="$1"
   shift
+  provider="$1"
+  shift
 
-  endpoint="https://api.github.com/repos/$user/$repo/issues/$issue_number/comments"
+  if [ "$provider" = github ] ; then
+    endpoint="https://api.github.com/repos/$user/$repo/issues/$issue_number/comments"
+    juser='user.login'
+  elif [ "$provider" = gitlab ] ; then
+    # if $repo contains '/' then it's part of a group and needs to be escaped
+    local escrepo
+    escrepo=$(echo "$repo" | sed 's:/:%2F:')
+    endpoint="https://gitlab.com/api/v4/projects/$user%2F$escrepo/issues/$issue_number/notes"
+    juser='author.username'
+  else
+    trans_abort
+  fi
+
   while true ; do
-    gh_api_get "$endpoint" comments
+    rest_api_get "$endpoint" comments "$provider"
 
-    # For each comment in the gh-comments-body file
-    for i in $(seq 0 $(($(jq '. | length' gh-comments-body) - 1)) ) ; do
-      comment_id=$(jq ".[$i].id" gh-comments-body)
+    # For each comment in the comments-body file
+    for i in $(seq 0 $(($(jq '. | length' comments-body) - 1)) ) ; do
+      comment_id=$(jq ".[$i].id" comments-body)
 
       # See if comment already there
-      import_dir="imports/github/$user/$repo/$issue_number/comments"
+      import_dir="imports/$provider/$user/$repo/$issue_number/comments"
       if [ -r "$import_dir/$comment_id" ] ; then
 	csha=$(cat "$import_dir/$comment_id")
       else
-	name=$(jq -r ".[$i].user.login" gh-comments-body)
-	GIT_AUTHOR_DATE=$(jq -r ".[$i].updated_at" gh-comments-body) \
+	name=$(jq -r ".[$i].$juser" comments-body)
+	GIT_AUTHOR_DATE=$(jq -r ".[$i].updated_at" comments-body) \
 	  commit 'gi: Add comment' "gi comment mark $isha" \
-	  --author="$name <$name@users.noreply.github.com>"
+	  --author="$name <$name@users.noreply.$provider.com>"
 	csha=$(git rev-parse HEAD)
       fi
 
@@ -427,25 +451,32 @@ gh_import_comments()
       echo "$csha" >"$import_dir/$comment_id"
 
       # Create comment body
-      jq -r ".[$i].body" gh-comments-body >/dev/null || trans_abort
-      jq -r ".[$i].body" gh-comments-body |
+      jq -r ".[$i].body" comments-body >/dev/null || trans_abort
+      jq -r ".[$i].body" comments-body |
       tr -d \\r >"$path/$csha"
 
       git add "$path/$csha" "$import_dir/$comment_id" || trans_abort
       if ! git diff --quiet HEAD ; then
 	local name html_url
-	name=$(jq -r ".[$i].user.login" gh-comments-body)
-	html_url=$(jq -r ".[$i].html_url" gh-comments-body)
-	GIT_AUTHOR_DATE=$(jq -r ".[$i].updated_at" gh-comments-body) \
-	  commit 'gi: Import comment message' "gi comment message $isha $csha
+        name=$(jq -r ".[$i].$juser" comments-body)
+        if [ "$provider" = github ] ; then
+          html_url=$(jq -r ".[$i].html_url" comments-body)
+          GIT_AUTHOR_DATE=$(jq -r ".[$i].updated_at" comments-body) \
+	    commit 'gi: Import comment message' "gi comment message $isha $csha
 Comment URL: $html_url" \
-	  --author="$name <$name@users.noreply.github.com>"
+	    --author="$name <$name@users.noreply.github.com>"
+        else
+          GIT_AUTHOR_DATE=$(jq -r ".[$i].updated_at" comments-body) \
+	    commit 'gi: Import comment message' "gi comment message $isha $csha"\
+	    --author="$name <$name@users.noreply.gitlab.com>"
+        fi
+
 	echo "Imported/updated issue #$issue_number comment $comment_id as $(short_sha "$csha")"
       fi
     done # For all comments on page
 
     # Return if no more pages
-    if ! grep -q '^Link:.*rel="next"' gh-comments-header ; then
+    if ! grep -q '^Link:.*rel="next"' comments-header ; then
       break
     fi
 
@@ -454,29 +485,48 @@ Comment URL: $html_url" \
   done
 }
 
-# Import GitHub issues stored in the file gh-issue-body as JSON data
-# gh_import_issues user repo
-gh_import_issues()
+# Import GitHub or GitLab issues stored in the file issue-body as JSON data
+# import_issues user repo provider
+import_issues()
 {
-  local user repo
+  local user repo provider
   local i issue_number import_dir sha path name
+  local duedate timeestimate timespent weight
+  local jid juser jlogin jdesc
+
 
   user="$1"
   repo="$2"
+  provider="$3"
 
-  # For each issue in the gh-issue-body file
-  for i in $(seq 0 $(($(jq '. | length' gh-issue-body) - 1)) ) ; do
-    issue_number=$(jq ".[$i].number" gh-issue-body)
+  # some json field names differ
+  if [ "$provider" = github ] ; then
+    jid='number'
+    juser='user.login'
+    jlogin='login'
+    jdesc='body'
+  elif [ "$provider" = gitlab ] ; then
+    jid='iid'
+    juser='author.username'
+    jlogin='username'
+    jdesc='description'
+  else
+    trans_abort
+  fi
+
+  # For each issue in the issue-body file
+  for i in $(seq 0 $(($(jq '. | length' issue-body) - 1)) ) ; do
+    issue_number=$(jq ".[$i].$jid" issue-body)
 
     # See if issue already there
-    import_dir="imports/github/$user/$repo/$issue_number"
+    import_dir="imports/$provider/$user/$repo/$issue_number"
     if [ -d "$import_dir" ] ; then
       sha=$(cat "$import_dir/sha")
     else
-      name=$(jq -r ".[$i].user.login" gh-issue-body)
-      GIT_AUTHOR_DATE=$(jq -r ".[$i].updated_at" gh-issue-body) \
+      name=$(jq -r ".[$i].$juser" issue-body)
+      GIT_AUTHOR_DATE=$(jq -r ".[$i].updated_at" issue-body) \
       commit 'gi: Add issue' 'gi new mark' \
-	--author="$name <$name@users.noreply.github.com>"
+	--author="$name <$name@users.noreply.$provider.com>"
       sha=$(git rev-parse HEAD)
     fi
 
@@ -489,14 +539,21 @@ gh_import_issues()
 
     # Create tags (in sorted order to avoid gratuitous updates)
     {
-      jq -r ".[$i].state" gh-issue-body
-      jq -r ".[$i].labels[] | .name" gh-issue-body
+      # convert to our format
+      jq -r ".[$i].state" issue-body | sed 's/opened/open/'
+      if [ "$provider" = github ] ; then
+        jq -r ".[$i].labels[] | .name" issue-body
+      else
+        jq -r ".[$i].labels[]" issue-body
+      fi
     } |
     LC_ALL=C sort >"$path/tags" || trans_abort
 
     # Create assignees (in sorted order to avoid gratuitous updates)
-    jq -r ".[$i].assignees[] | .login" gh-issue-body |
-    LC_ALL=C sort >"$path/assignee" || trans_abort
+    if [ "$(jq -r ".[$i].assignees | length" issue-body)" != 0 ] ; then
+      jq -r ".[$i].assignees[] | .$jlogin" issue-body |
+      LC_ALL=C sort >"$path/assignee" || trans_abort
+    fi
 
     if [ -s "$path/assignee" ] ; then
       git add "$path/assignee" || trans_abort
@@ -505,37 +562,85 @@ gh_import_issues()
     fi
 
     # Obtain milestone
-    if [ "$(jq ".[$i].milestone" gh-issue-body)" = null ] ; then
+    if [ "$(jq ".[$i].milestone" issue-body)" = null ] ; then
       if [ -r "$path/milestone" ] ; then
 	git rm "$path/milestone" || trans_abort
       fi
     else
-      jq -r ".[$i].milestone.title" gh-issue-body >"$path/milestone" || trans_abort
+      jq -r ".[$i].milestone.title" issue-body >"$path/milestone" || trans_abort
       git add "$path/milestone" || trans_abort
     fi
 
+    if [ "$provider" = gitlab ] ; then
+
+      # Due Date
+      duedate=$(jq -r ".[$i].due_date" issue-body)
+      if [ "$duedate" = null ] ; then
+        if [ -r "$path/duedate" ] ; then
+          git rm "$path/duedate" || trans_abort
+        fi
+      else
+        # convert duedate to our format before saving
+        $DATEBIN --date="$duedate" --iso-8601=seconds >"$path/duedate" || trans_abort
+        git add "$path/duedate" || trans_abort
+      fi
+
+      # Timespent
+      timespent=$(jq -r ".[$i].time_stats.total_time_spent" issue-body)
+      if [ "$timespent" = '0' ] ; then
+        if [ -r "$path/timespent" ] ; then
+          git rm "$path/timespent" || trans_abort
+        fi
+      else
+        echo "$timespent" >"$path/timespent" || trans_abort
+        git add "$path/timespent" || trans_abort
+      fi
+      
+      # Timeestimate
+      timeestimate=$(jq -r ".[$i].time_stats.time_estimate" issue-body)
+      if [ "$timeestimate" = '0' ] ; then
+        if [ -r "$path/timeestimate" ] ; then
+          git rm "$path/timeestimate" || trans_abort
+        fi
+      else
+        echo "$timeestimate" >"$path/timeestimate" || trans_abort
+        git add "$path/timeestimate" || trans_abort
+      fi
+
+      # Weight
+      weight=$(jq -r ".[$i].weight" issue-body)
+      if [ "$weight" = 'null' ] ; then
+        if [ -r "$path/weight" ] ; then
+          git rm "$path/weight" || trans_abort
+        fi
+      else
+        echo "$weight" > "$path/weight" || trans_abort
+        git add "$path/weight" || trans_abort
+      fi
+    fi
+
     # Create description
-    jq -r ".[$i].title" gh-issue-body >/dev/null || trans_abort
-    jq -r ".[$i].body" gh-issue-body >/dev/null || trans_abort
+    jq -r ".[$i].title" issue-body >/dev/null || trans_abort
+    jq -r ".[$i].$jdesc" issue-body >/dev/null || trans_abort
     {
-      jq -r ".[$i].title" gh-issue-body
+      jq -r ".[$i].title" issue-body
       echo
-      jq -r ".[$i].body" gh-issue-body
+      jq -r ".[$i].$jdesc" issue-body
     } |
     tr -d \\r >"$path/description"
 
     git add "$path/description" "$path/tags" imports || trans_abort
     if ! git diff --quiet HEAD ; then
-      name=${name:-$(jq -r ".[$i].user.login" gh-issue-body)}
-      GIT_AUTHOR_DATE=$(jq -r ".[$i].updated_at" gh-issue-body) \
-	commit "gi: Import issue #$issue_number from GitHub" \
-	"Issue URL: https://github.com/$user/$repo/issues/$issue_number" \
-	--author="$name <$name@users.noreply.github.com>"
+      name=${name:-$(jq -r ".[$i].$juser" issue-body)}
+      GIT_AUTHOR_DATE=$(jq -r ".[$i].updated_at" issue-body) \
+	commit "gi: Import issue #$issue_number from $provider" \
+	"Issue URL: https://$provider.com/$user/$repo/issues/$issue_number" \
+	--author="$name <$name@users.noreply.$provider.com>"
       echo "Imported/updated issue #$issue_number as $(short_sha "$sha")"
     fi
 
     # Import issue comments
-    gh_import_comments "$user" "$repo" "$issue_number" "$sha"
+    import_comments "$user" "$repo" "$issue_number" "$sha" "$provider"
   done
 }
 
@@ -550,7 +655,7 @@ gh_export_issues()
       attr_expand=1    
       ;;    
     ?)    
-      error "gh_export_issues(): unknown option"
+      error "gl_export_issues(): unknown option"
       ;;    
     esac    
   done    
@@ -591,17 +696,19 @@ t
 # Remove first element of the Link header and retry
 s/^Link: <[^>]*>; rel="[^"]*", */Link: /
 t again
-' gh-"$1"-header
+' "$1"-header
 }
 
-# Import issues from specified source (currently github)
+# Import issues from specified source (currently github and gitlab)
 sub_import()
 {
-  local endpoint user repo begin_sha
+  local endpoint user repo begin_sha provider
 
-  test "$1" = github -a -n "$2" -a -n "$3" || usage_import
-  user="$2"
-  repo="$3"
+  test "$1" = github -o "$1" = gitlab -a -n "$2" -a -n "$3" || usage_import
+  provider="$1"
+  # convert to lowercase to avoid duplicates
+  user="$(echo "$2" | tr '[:upper:]' '[:lower:]')"
+  repo="$(echo "$3" | tr '[:upper:]' '[:lower:]')"
 
   cdissues
 
@@ -610,16 +717,23 @@ sub_import()
 
   begin_sha=$(git rev-parse HEAD)
 
-  # Process GitHub issues page by page
+  mkdir -p "imports/$provider/$user/$repo"
+  # Process issues page by page
   trans_start
-  mkdir -p "imports/github/$user/$repo"
-  endpoint="https://api.github.com/repos/$user/$repo/issues?state=all"
+    if [ "$provider" = github ] ; then
+      endpoint="https://api.github.com/repos/$user/$repo/issues?state=all"
+    else
+      # if $repo contains '/' then it's part of a group and needs to be escaped
+      local escrepo
+      escrepo=$(echo "$repo" | sed 's:/:%2F:')
+      endpoint="https://gitlab.com/api/v4/projects/$user%2F$escrepo/issues"
+    fi
   while true ; do
-    gh_api_get "$endpoint" issue
-    gh_import_issues "$user" "$repo"
+    rest_api_get "$endpoint" issue "$provider"
+    import_issues "$user" "$repo" "$provider"
 
     # Return if no more pages
-    if ! grep -q '^Link:.*rel="next"' gh-issue-header ; then
+    if ! grep -q '^Link:.*rel="next"' issue-header ; then
       break
     fi
 
@@ -627,15 +741,14 @@ sub_import()
     endpoint=$(gh_next_page_url issue)
   done
 
-  rm -f gh-issue-header gh-issue-body gh-comments-header gh-comments-body
+  rm -f issue-header issue-body comments-header comments-body
 
   # Mark last import SHA, so we can use this for merging 
   if [ "$begin_sha" != "$(git rev-parse HEAD)" ] ; then
-    local checkpoint="imports/github/$user/$repo/checkpoint"
+    local checkpoint="imports/$provider/$user/$repo/checkpoint"
     git rev-parse HEAD >"$checkpoint"
     git add "$checkpoint"
-    commit "gi: Import issues from GitHub checkpoint" \
-    "Issues URL: https://github.com/$user/$repo/issues"
+    commit "gi: Import issues from $provider checkpoint" \
+    "Issues URL: https://$provider.com/$user/$repo/issues"
   fi
 }
-

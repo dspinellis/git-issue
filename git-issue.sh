@@ -27,7 +27,7 @@
 # User agent string
 # shellcheck disable=SC2034
 # SC2034 : USER_AGENT appears unused. Verify use (or export if used externally)
-USER_AGENT=https://github.com/dspinellis/git-issue/tree/8d22071
+USER_AGENT=https://github.com/dspinellis/git-issue/tree/f6ae6c4
 
 # Determine our script library path
 my_IFS=$IFS
@@ -132,7 +132,7 @@ trans_abort()
   git reset "$start_sha"
   git clean -qfd
   git checkout -- .
-  rm -f gh-issue-header gh-issue-body gh-comments-header gh-comments-body
+  rm -f issue-header issue-body comments-header comments-body
   echo 'Operation aborted' 1>&2
   exit 1
 }
@@ -1204,7 +1204,7 @@ Show multiple issues
 Synchronize with remote repositories
    push       Update remote Git repository with local changes
    pull       Update local Git repository with remote changes
-   import     Import/update GitHub issues from the specified project
+   import     Import/update GitHub/GitLab issues from the specified project
    create     Create the issue in the provided GitHub repository
    export     Export issues for the specified project
 

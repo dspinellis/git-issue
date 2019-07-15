@@ -171,14 +171,15 @@ Update local Git repository with remote changes.
 .PP
 \fBgit issue import\fP
 .RS 4
-Import/update GitHub issues from the specified project.
+Import/update GitHub/GitLab issues from the specified project.
   If the import involves more than a dozen of issues or if the repository
-  is private, set the environment variable \fCGI_CURL_AUTH\fP to an argument
-  that when passed to the \fIcurl\fP program will supply GitHub the appropriate
-  API authentication.
-  For example, run the following command: \fCexport GI_CURL_AUTH="badf00ddead9bfee8f3c19afc3c97c6db55fcfde"\fP
+  is private, set the environment variable \fCGI_CURL_AUTH\fP (GitHub) or \fCGL_CURL_AUTH\fP (GitLab) to the authentication token.
+  For example, run the following command: \fCexport GI_CURL_AUTH="Authorization: token badf00ddead9bfee8f3c19afc3c97c6db55fcfde"\fP
   You can create the authorization token through
   GitHub settings <https://github.com/settings/tokens/new>.
+  For GitLab: \fCexport GL_CURL_AUTH="PRIVATE-TOKEN: JvHLsdnDmD7rjUXzT-Ea"\fP
+  Use the GitLab settings <https://gitlab.com/profile/personal\fIaccess\fPtokens> to create the token.
+  In case the repository is part of a GitLab group, specify repository as groupname/reponame.
 .RE
 .PP
 \fBgit issue create\fP
@@ -236,9 +237,10 @@ An \fCimports\fP directory contains details about imported issues.
 .IP "" 8
 The \fCsha\fP file under \fCimport/github/<user>/<repo>/<number>\fP contains the
     \fIgit-issue\fP SHA corresponding to an imported GitHub \fInumber\fP issue.
+    Likewise for GitLab.
 .IP "" 8
 The \fCsha\fP file under \fCimport/github/<user>/<repo>/<number>/comments/<number>\fP
-    contains the \fIgit-issue\fP comment SHA corresponding to an imported GitHub
+    contains the \fIgit-issue\fP comment SHA corresponding to an imported GitHub/GitLab
     \fInumber\fP comment.
 .IP "" 8
 The file \fCimport/github/<user>/<repo>/checkpoint\fP contains the SHA

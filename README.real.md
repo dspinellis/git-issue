@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/eellak/gsoc2019-git-issue.svg?branch=gsoc-2019)](https://travis-ci.org/eellak/gsoc2019-git-issue)
+[![Build Status](https://travis-ci.org/eellak/gsoc2019-git-issue.svg?branch=gitlab_import)](https://travis-ci.org/eellak/gsoc2019-git-issue)
 # git-issue
 
 This is a minimalist decentralized issue management system based on Git.
@@ -126,14 +126,15 @@ You use _git issue_ with the following sub-commands.
 ### Synchronize with remote repositories
 * `git issue push`: Update remote Git repository with local changes.
 * `git issue pull`: Update local Git repository with remote changes.
-* `git issue import`: Import/update GitHub issues from the specified project.
+* `git issue import`: Import/update GitHub/GitLab issues from the specified project.
   If the import involves more than a dozen of issues or if the repository
-  is private, set the environment variable `GI_CURL_AUTH` to an argument
-  that when passed to the _curl_ program will supply GitHub the appropriate
-  API authentication.
-  For example, run the following command: `export GI_CURL_AUTH="badf00ddead9bfee8f3c19afc3c97c6db55fcfde"`
+  is private, set the environment variable `GI_CURL_AUTH` (GitHub) or `GL_CURL_AUTH` (GitLab) to the authentication token.
+  For example, run the following command: `export GI_CURL_AUTH="Authorization: token badf00ddead9bfee8f3c19afc3c97c6db55fcfde"`
   You can create the authorization token through
   [GitHub settings](https://github.com/settings/tokens/new).
+  For GitLab: `export GL_CURL_AUTH="PRIVATE-TOKEN: JvHLsdnDmD7rjUXzT-Ea"`
+  Use the [GitLab settings](https://gitlab.com/profile/personal_access_tokens) to create the token.
+  In case the repository is part of a GitLab group, specify repository as groupname/reponame.
 * `git issue create`: Create the issue in the provided GitHub repository.
   With the `-e` option any escape sequences for the attributes present in the description, will be replaced as above.
   This can be used to e.g export an unsupported attribute to GitHub as text.
@@ -161,8 +162,9 @@ The directory contains the following elements.
 * An `imports` directory contains details about imported issues.
   * The `sha` file under `import/github/<user>/<repo>/<number>` contains the
     _git-issue_ SHA corresponding to an imported GitHub _number_ issue.
+    Likewise for GitLab.
   * The `sha` file under `import/github/<user>/<repo>/<number>/comments/<number>`
-    contains the _git-issue_ comment SHA corresponding to an imported GitHub
+    contains the _git-issue_ comment SHA corresponding to an imported GitHub/GitLab
     _number_ comment.
   * The file `import/github/<user>/<repo>/checkpoint` contains the SHA
     of the last imported or updated issue.  This can be used for merging
