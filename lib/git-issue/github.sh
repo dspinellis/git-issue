@@ -114,8 +114,10 @@ usage_create_issue()
   cat <<\USAGE_create_issue_EOF
 gi create usage: git issue create id provider user repo
 -e        Expand escape attribute sequences before exporting(see gi list -l)
+-n        Keep HTTP transaction files 
+-u num    Update issue #num instead of creating a new one
 
-Example: git issue create id github torvalds linux
+Example: git issue create 0123 github torvalds linux
 USAGE_create_issue_EOF
   exit 2
 }
@@ -138,16 +140,16 @@ create_issue()
       attr_expand=1    
       ;;
     ?)    
-      error "create_issue(): unknown option"
+      usage_create_issue
       ;;    
     esac    
   done    
   shift $((OPTIND - 1));    
     
-  test -n "$1" || error "create_issue(): No SHA given"
-  test "$2" = github -o "$2" = gitlab || error "create_issue(): Unknown provider given"
-  test -n "$3" || error "create_issue(): no repo given"
-  test -n "$4" || error "create_issue(): no user given"
+  test -n "$1" || usage_create_issue
+  test "$2" = github -o "$2" = gitlab || usage_create_issue
+  test -n "$3" || usage_create_issue
+  test -n "$4" || usage_create_issue
   cdissues
   path=$(issue_path_part "$1") || exit
   isha=$(issue_sha "$path")
