@@ -206,31 +206,45 @@ create_issue()
   fi
 
   # Milestone
-  #TODO gitlab milestones
-  if [ -s "$path/milestone" ] && [ "$provider" = github ] ; then
+  if [ -s "$path/milestone" ] ; then
 
     milestone=$(fmt "$path/milestone")
     # Milestones are separate entities in the GitHub API
     # They need to be created before use on an issue
     # get milestone list
-    rest_api_get "https://api.github.com/repos/$user/$repo/milestones" milestone github
+    local mileurl jmileid
+    if [ "$provider" = github ] ; then
+      mileurl="https://api.github.com/repos/$user/$repo/milestones"
+      jmileid='number'
+    else
+      local escrepo
+      escrepo=$(echo "$repo" | sed 's:/:%2F:')
+      mileurl="https://gitlab.com/api/v4/projects/$user%2F$escrepo/milestones"
+      jmileid='id'
+    fi
+    rest_api_get "$mileurl" milestone "$provider"
 
     for i in $(seq 0 $(($(jq '. | length' milestone-body) - 1)) ) ; do
-      milenum=$(jq -r ".[$i].number" milestone-body)
+      milenum=$(jq -r ".[$i].$jmileid" milestone-body)
       miletitle=$(jq -r ".[$i].title" milestone-body)
       if [ "$miletitle" = "$milestone" ] ; then
         # it already exists
         found=$milenum
+        break
       fi
     done
 
     if ! [[ "$found" ]] ; then
       # we need to create it
-      rest_api_send "https://api.github.com/repos/$user/$repo/milestones" mileres "{ \"title\": \"$milestone\",
-      \"state\": \"open\", \"description\":\"\"}" POST github
-      found=$(jq '.number' mileres-body)
+      rest_api_send "$mileurl" mileres "{ \"title\": \"$milestone\",
+      \"state\": \"open\", \"description\":\"\"}" POST "$provider"
+      found=$(jq ".$jmileid" mileres-body)
     fi
-    jstring=$(echo "$jstring" | jq --arg A "$found" -r '. + { milestone: $A }')
+    if [ "$provider" = github ] ; then
+      jstring=$(echo "$jstring" | jq --arg A "$found" -r '. + { milestone: $A }')
+    else
+      jstring=$(echo "$jstring" | jq --arg A "$found" -r '. + { milestone_id: $A }')
+    fi
   fi
  
   cd ..
