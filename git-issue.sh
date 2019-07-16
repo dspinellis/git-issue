@@ -311,7 +311,7 @@ sub_new()
   if [ -n "$create" ] ; then
     # shellcheck disable=SC2086
     # Rationale: We want word splitting
-    gh_create_issue -n "$sha" github $create
+    create_issue -n "$sha" github $create
   fi
 }
 
@@ -1230,7 +1230,7 @@ case "$subcommand" in
     gh_export_issues "$@"
     ;;
   create) 
-    gh_create_issue "$@"
+    create_issue "$@"
     ;;
 
   update) 

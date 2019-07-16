@@ -60,9 +60,9 @@ rest_api_get()
 }
 
 # POST, PATCH, PUT or DELETE data using the GitHub API; abort transaction on error
-# Header is saved in the file gh-$prefix-header; body in gh-$prefix-body
+# Header is saved in the file $prefix-header; body in $prefix-body
 
-gh_api_send()
+rest_api_send()
 {
   local url prefix data mode
 
@@ -80,7 +80,7 @@ gh_api_send()
   elif [ "$mode" = 'POST' ] ; then
     curl_mode=''
   else
-    error "incorrect gh_api_send() mode: $mode"
+    error "incorrect rest_api_send() mode: $mode"
   fi
 
   # use the correct authentication token
@@ -93,22 +93,22 @@ gh_api_send()
   fi
 
   if ! curl --header "Content-Type: application/json" -H "$authtoken" -A "$USER_AGENT" -s \
-    -o "gh-$prefix-body" -D "gh-$prefix-header" $curl_mode --data "$data" "$url" ; then
+    -o "$prefix-body" -D "$prefix-header" $curl_mode --data "$data" "$url" ; then
     echo 'GitHub connection failed' 1>&2
     trans_abort
   fi
 
-  if ! grep -q '^\(Status: 20[0-9]\|HTTP/[[:digit:]].[[:digit:]] 20[1-9] Created\)' "gh-$prefix-header" ; then
+  if ! grep -q '^\(Status: 20[0-9]\|HTTP/[[:digit:]].[[:digit:]] 20[1-9] Created\)' "$prefix-header" ; then
     echo 'GitHub API communication failure' 1>&2
     echo "URL: $url" 1>&2
     echo "Data: $data" 1>&2
-    if grep -q '^Status: 4' "gh-$prefix-header" ; then
-      jq -r '.message' "gh-$prefix-body" 1>&2
+    if grep -q '^Status: 4' "$prefix-header" ; then
+      jq -r '.message' "$prefix-body" 1>&2
     fi
     trans_abort
   fi
 }
-# gh_create_issue: export issues to GitHub {{{1
+# create_issue: export issues to GitHub {{{1
 usage_create_issue()
 {
   cat <<\USAGE_create_issue_EOF
@@ -121,8 +121,8 @@ USAGE_create_issue_EOF
 }
 
 
-# Create an issue in Github, based on a local one
-gh_create_issue()
+# Create an issue in GitHub/GitLab, based on a local one
+create_issue()
 {
   local isha path assignee description url provider user repo nodelete OPTIND
      
@@ -138,16 +138,16 @@ gh_create_issue()
       attr_expand=1    
       ;;
     ?)    
-      error "gh_create_issue(): unknown option"
+      error "create_issue(): unknown option"
       ;;    
     esac    
   done    
   shift $((OPTIND - 1));    
     
-  test -n "$1" || error "gh_create_issue(): No SHA given"
-  test "$2" = github -o "$2" = gitlab || error "gh_create_issue(): Unknown provider given"
-  test -n "$3" || error "gh_create_issue(): no repo given"
-  test -n "$4" || error "gh_create_issue(): no user given"
+  test -n "$1" || error "create_issue(): No SHA given"
+  test "$2" = github -o "$2" = gitlab || error "create_issue(): Unknown provider given"
+  test -n "$3" || error "create_issue(): no repo given"
+  test -n "$4" || error "create_issue(): no user given"
   cdissues
   path=$(issue_path_part "$1") || exit
   isha=$(issue_sha "$path")
@@ -224,9 +224,9 @@ gh_create_issue()
 
     if ! [[ "$found" ]] ; then
       # we need to create it
-      gh_api_send "https://api.github.com/repos/$user/$repo/milestones" mileres "{ \"title\": \"$milestone\",
+      rest_api_send "https://api.github.com/repos/$user/$repo/milestones" mileres "{ \"title\": \"$milestone\",
       \"state\": \"open\", \"description\":\"\"}" POST github
-      found=$(jq '.number' gh-mileres-body)
+      found=$(jq '.number' mileres-body)
     fi
     jstring=$(echo "$jstring" | jq --arg A "$found" -r '. + { milestone: $A }')
   fi
@@ -234,7 +234,7 @@ gh_create_issue()
   cd ..
   if [ -n "$num" ] ; then
     url="https://api.github.com/repos/$user/$repo/issues/$num"
-    gh_api_send "$url" update "$jstring" PATCH github
+    rest_api_send "$url" update "$jstring" PATCH github
   else
     if [ "$provider" = github ] ; then
       url="https://api.github.com/repos/$user/$repo/issues"
@@ -243,8 +243,8 @@ gh_create_issue()
       escrepo=$(echo "$repo" | sed 's:/:%2F:')
       url="https://gitlab.com/api/v4/projects/$user%2F$escrepo/issues"
     fi
-    gh_api_send "$url" create "$jstring" POST "$provider"
-    num=$(jq '.number' < gh-create-body)
+    rest_api_send "$url" create "$jstring" POST "$provider"
+    num=$(jq '.number' < create-body)
   fi
   import_dir="imports/github/$user/$repo/$num"
 
@@ -255,7 +255,7 @@ gh_create_issue()
   commit "gi: Add $import_dir" 'gi new mark'
   cd ..
   # delete temp files
-  test -z $nodelete && rm -f gh-create-body gh-create-header
+  test -z $nodelete && rm -f create-body create-header
   rm -f milestone-body milestone-header
   # dont inherit `test` exit status
   cdissues
@@ -377,9 +377,9 @@ gh_update_issue()
 
       if ! [[ "$found" ]] ; then
         # we need to create it
-        gh_api_send "https://api.github.com/repos/$user/$repo/milestones" mileres "{ \"title\": \"$milestone\",
+        rest_api_send "https://api.github.com/repos/$user/$repo/milestones" mileres "{ \"title\": \"$milestone\",
         \"state\": \"open\", \"description\":\"\"}" POST github
-        found=$(jq '.number' gh-mileres-body)
+        found=$(jq '.number' mileres-body)
       fi
       jstring=$(echo "$jstring" | jq --arg A "$found" -r '. + { milestone: $A }')
 
@@ -407,7 +407,7 @@ gh_update_issue()
     jstring=$(echo "$jstring" | jq --arg desc "$description" -r '. + {body: $desc}')
   fi
   if [ "$jstring" != '{}' ] ; then
-    gh_api_send "$url" update "$jstring" PATCH github
+    rest_api_send "$url" update "$jstring" PATCH github
   fi
   import_dir="imports/github/$user/$repo/$num"
   test -d "$import_dir" || mkdir -p "$import_dir"
@@ -506,7 +506,7 @@ Comment URL: $html_url" \
     fi
 
     # Move to next point
-    endpoint=$(gh_next_page_url comments)
+    endpoint=$(rest_next_page_url comments)
   done
 }
 
@@ -700,8 +700,8 @@ gh_export_issues()
     num=$(echo "$i" | grep -o '/[1-9].*$' | tr -d '/')
     echo "Exporting issue $sha as #$num"
     url="https://api.github.com/repos/$user/$repo/issues/$num"
-    gh_create_issue -u "$num" "$sha" github "$user" "$repo"
-    rm -f gh-create-body gh-create-header
+    create_issue -u "$num" "$sha" github "$user" "$repo"
+    rm -f create-body create-header
 
   done
 }
@@ -709,7 +709,7 @@ gh_export_issues()
 # Header examples (easy and tricky)
 # Link: <https://api.github.com/repositories/146456308/issues?state=all&per_page=1&page=3>; rel="next", <https://api.github.com/repositories/146456308/issues?state=all&per_page=1&page=3>; rel="last", <https://api.github.com/repositories/146456308/issues?state=all&per_page=1&page=1>; rel="first"
 # Link: <https://api.github.com/repositories/146456308/issues?state=all&per_page=1&page=1>; rel="prev", <https://api.github.com/repositories/146456308/issues?state=all&per_page=1&page=3>; rel="next", <https://api.github.com/repositories/146456308/issues?state=all&per_page=1&page=3>; rel="last", <https://api.github.com/repositories/146456308/issues?state=all&per_page=1&page=1>; rel="first"
-gh_next_page_url()
+rest_next_page_url()
 {
   sed -n '
 :again
@@ -763,7 +763,7 @@ sub_import()
     fi
 
     # Move to next point
-    endpoint=$(gh_next_page_url issue)
+    endpoint=$(rest_next_page_url issue)
   done
 
   rm -f issue-header issue-body comments-header comments-body

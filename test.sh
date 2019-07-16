@@ -481,7 +481,7 @@ else
     "$gi" assign -r "$issue" louridas > /dev/null 2>&1
     try "$gi" create -n "$issue" github $ghrepo
     # Get the created issue
-    try "$gi" update "$issue" $ghrepo "$(jq -r '.number' gh-create-body)"
+    try "$gi" update "$issue" $ghrepo "$(jq -r '.number' create-body)"
     # modify and export
     try "$gi" create -n "$issue2" github $ghrepo
     try "$gi" new -c "$ghrepo" -s "Issue exported directly"
