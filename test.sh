@@ -479,11 +479,11 @@ else
     # remove assignees to prevent notifications about test issues on GitHub
     "$gi" assign -r "$issue" dspinellis > /dev/null 2>&1
     "$gi" assign -r "$issue" louridas > /dev/null 2>&1
-    try "$gi" create -n "$issue" $ghrepo
+    try "$gi" create -n "$issue" github $ghrepo
     # Get the created issue
     try "$gi" update "$issue" $ghrepo "$(jq -r '.number' gh-create-body)"
     # modify and export
-    try "$gi" create -n "$issue2" $ghrepo
+    try "$gi" create -n "$issue2" github $ghrepo
     try "$gi" new -c "$ghrepo" -s "Issue exported directly"
     "$gi" assign "$issue2" "$ghuser" > /dev/null 2>&1
     try "$gi" export github $ghrepo
@@ -493,7 +493,7 @@ else
     "$gi" milestone "$issue3" worldpeace > /dev/null 2>&1
     "$gi" duedate "$issue3" week > /dev/null 2>&1
     "$gi" timeestimate "$issue3" 3hours > /dev/null 2>&1
-    try "$gi" create "$issue3" $ghrepo
+    try "$gi" create "$issue3" github $ghrepo
     # delete repo
     curl -H "$GI_CURL_AUTH" -s --request DELETE $ghrepourl | grep "{" && printf "Couldn't delete repository.\nYou probably don't have delete permittions activated on the OAUTH token.\nPlease delete %s manually." $ghrepo
 

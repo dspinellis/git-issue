@@ -70,6 +70,7 @@ gh_api_send()
   prefix="$2"
   data="$3"
   mode=${4:-"POST"}
+  provider="$5"
   if [ "$mode" = 'PATCH' ] ; then
     curl_mode='--request PATCH'
   elif [ "$mode" = 'PUT' ] ; then
@@ -82,13 +83,22 @@ gh_api_send()
     error "incorrect gh_api_send() mode: $mode"
   fi
 
-  if ! curl -H "$GI_CURL_AUTH" -A "$USER_AGENT" -s \
+  # use the correct authentication token
+  if [ "$provider" = github ] ; then
+    authtoken="$GI_CURL_AUTH"
+  elif [ "$provider" = gitlab ] ; then
+    authtoken="$GL_CURL_AUTH"
+  else
+    trans_abort
+  fi
+
+  if ! curl --header "Content-Type: application/json" -H "$authtoken" -A "$USER_AGENT" -s \
     -o "gh-$prefix-body" -D "gh-$prefix-header" $curl_mode --data "$data" "$url" ; then
     echo 'GitHub connection failed' 1>&2
     trans_abort
   fi
 
-  if ! grep -q '^Status: 20[0-9]' "gh-$prefix-header" ; then
+  if ! grep -q '^\(Status: 20[0-9]\|HTTP/[[:digit:]].[[:digit:]] 20[1-9] Created\)' "gh-$prefix-header" ; then
     echo 'GitHub API communication failure' 1>&2
     echo "URL: $url" 1>&2
     echo "Data: $data" 1>&2
@@ -114,7 +124,7 @@ USAGE_create_issue_EOF
 # Create an issue in Github, based on a local one
 gh_create_issue()
 {
-  local isha path assignee description url user repo nodelete OPTIND
+  local isha path assignee description url provider user repo nodelete OPTIND
      
   while getopts neu: flag ; do    
     case $flag in    
@@ -135,19 +145,21 @@ gh_create_issue()
   shift $((OPTIND - 1));    
     
   test -n "$1" || error "gh_create_issue(): No SHA given"
-  test -n "$2" || error "gh_create_issue(): no repo given"
-  test -n "$3" || error "gh_create_issue(): no user given"
+  test "$2" = github -o "$2" = gitlab || error "gh_create_issue(): Unknown provider given"
+  test -n "$3" || error "gh_create_issue(): no repo given"
+  test -n "$4" || error "gh_create_issue(): no user given"
   cdissues
   path=$(issue_path_part "$1") || exit
   isha=$(issue_sha "$path")
-  user="$2"
-  repo="$3"
+  provider="$2"
+  user="$3"
+  repo="$4"
 
   # initialize the string
   jstring='{}'
   # Get the attributes
-  # Assignee
-  if [ -r "$path/assignee" ] ; then
+  # Assignee #TODO gitlab assignee
+  if [ -r "$path/assignee" ] && [ "$provider" = github ] ; then
     assignee=$(fmt "$path/assignee")
     jstring=$(echo "$jstring" | jq --arg A "$assignee" -r '. + { assignee: $A }')
   fi
@@ -158,7 +170,11 @@ gh_create_issue()
     tags=$(head "$path/tags" | jq --slurp --raw-input 'split("\n")')
     # Process state (open or closed)
     if grep '\bopen\b' >/dev/null < "$path/tags"; then
-      jstring=$(echo "$jstring" | jq -r '. + { state: "open" }')
+      if [ "$provider" = github ] ; then
+        jstring=$(echo "$jstring" | jq -r '. + { state: "open" }')
+      else
+        jstring=$(echo "$jstring" | jq -r '. + { state: "opened" }')
+      fi
     elif grep '\bclosed\b' > /dev/null; then
       jstring=$(echo "$jstring" | jq -r '. + { state: "closed" }')
     fi
@@ -181,11 +197,15 @@ gh_create_issue()
   fi
 
   # jq handles properly escaping the string if passed as variable
-  jstring=$(echo "$jstring" | jq --arg desc "$description" --arg tit "$title" -r '. + {title: $tit, body: $desc}')
+  if [ "$provider" = github ] ; then
+    jstring=$(echo "$jstring" | jq --arg desc "$description" --arg tit "$title" -r '. + {title: $tit, body: $desc}')
+  else
+    jstring=$(echo "$jstring" | jq --arg desc "$description" --arg tit "$title" -r '. + {title: $tit, description: $desc}')
+  fi
 
- # Milestone
-
-  if [ -s "$path/milestone" ] ; then
+  # Milestone
+  #TODO gitlab milestones
+  if [ -s "$path/milestone" ] && [ "$provider" = github ] ; then
 
     milestone=$(fmt "$path/milestone")
     # Milestones are separate entities in the GitHub API
@@ -204,21 +224,26 @@ gh_create_issue()
 
     if ! [[ "$found" ]] ; then
       # we need to create it
-        gh_api_send "https://api.github.com/repos/$user/$repo/milestones" mileres "{ \"title\": \"$milestone\",
-        \"state\": \"open\", \"description\":\"\"}" POST
-        found=$(jq '.number' gh-mileres-body)
-      fi
-      jstring=$(echo "$jstring" | jq --arg A "$found" -r '. + { milestone: $A }')
-
+      gh_api_send "https://api.github.com/repos/$user/$repo/milestones" mileres "{ \"title\": \"$milestone\",
+      \"state\": \"open\", \"description\":\"\"}" POST github
+      found=$(jq '.number' gh-mileres-body)
     fi
+    jstring=$(echo "$jstring" | jq --arg A "$found" -r '. + { milestone: $A }')
+  fi
  
   cd ..
   if [ -n "$num" ] ; then
     url="https://api.github.com/repos/$user/$repo/issues/$num"
-    gh_api_send "$url" update "$jstring" PATCH
+    gh_api_send "$url" update "$jstring" PATCH github
   else
-    url="https://api.github.com/repos/$user/$repo/issues"
-    gh_api_send "$url" create "$jstring" POST
+    if [ "$provider" = github ] ; then
+      url="https://api.github.com/repos/$user/$repo/issues"
+    else
+      local escrepo
+      escrepo=$(echo "$repo" | sed 's:/:%2F:')
+      url="https://gitlab.com/api/v4/projects/$user%2F$escrepo/issues"
+    fi
+    gh_api_send "$url" create "$jstring" POST "$provider"
     num=$(jq '.number' < gh-create-body)
   fi
   import_dir="imports/github/$user/$repo/$num"
@@ -353,7 +378,7 @@ gh_update_issue()
       if ! [[ "$found" ]] ; then
         # we need to create it
         gh_api_send "https://api.github.com/repos/$user/$repo/milestones" mileres "{ \"title\": \"$milestone\",
-        \"state\": \"open\", \"description\":\"\"}" POST
+        \"state\": \"open\", \"description\":\"\"}" POST github
         found=$(jq '.number' gh-mileres-body)
       fi
       jstring=$(echo "$jstring" | jq --arg A "$found" -r '. + { milestone: $A }')
@@ -382,7 +407,7 @@ gh_update_issue()
     jstring=$(echo "$jstring" | jq --arg desc "$description" -r '. + {body: $desc}')
   fi
   if [ "$jstring" != '{}' ] ; then
-    gh_api_send "$url" update "$jstring" PATCH
+    gh_api_send "$url" update "$jstring" PATCH github
   fi
   import_dir="imports/github/$user/$repo/$num"
   test -d "$import_dir" || mkdir -p "$import_dir"
@@ -675,7 +700,7 @@ gh_export_issues()
     num=$(echo "$i" | grep -o '/[1-9].*$' | tr -d '/')
     echo "Exporting issue $sha as #$num"
     url="https://api.github.com/repos/$user/$repo/issues/$num"
-    gh_create_issue -u "$num" "$sha" "$user" "$repo"
+    gh_create_issue -u "$num" "$sha" github "$user" "$repo"
     rm -f gh-create-body gh-create-header
 
   done
