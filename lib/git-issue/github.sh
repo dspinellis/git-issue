@@ -160,17 +160,28 @@ create_issue()
   # initialize the string
   jstring='{}'
   # Get the attributes
-  # Assignee #TODO gitlab assignee
-  if [ -r "$path/assignee" ] && [ "$provider" = github ] ; then
+  # Assignee
+  if [ -r "$path/assignee" ] ; then
     assignee=$(fmt "$path/assignee")
-    jstring=$(echo "$jstring" | jq --arg A "$assignee" -r '. + { assignee: $A }')
+    if [ "$provider" = github ] ; then
+      jstring=$(echo "$jstring" | jq --arg A "$assignee" -r '. + { assignee: $A }')
+    else
+      rest_api_get "https://gitlab.com/api/v4/users?username=$assignee" assignee gitlab
+      if [ "$(fmt assignee-body)" = '[]' ] ; then
+        echo "Couldn't find assignee in GitLab, skipping assignment."
+      else
+        jstring=$(echo "$jstring" | jq -r ". + { assignee_ids: [$(jq -r '.[0].id' assignee-body)]}")
+      fi
+    fi
+
+
   fi
 
   # Tags
   if [ -s "$path/tags" ] ; then
     # format tags as json array
     tags=$(head "$path/tags" | jq --slurp --raw-input 'split("\n")')
-    # Process state (open or closed)
+    # Process state (open--opened or closed)
     if grep '\bopen\b' >/dev/null < "$path/tags"; then
       if [ "$provider" = github ] ; then
         jstring=$(echo "$jstring" | jq -r '. + { state: "open" }')
@@ -211,7 +222,6 @@ create_issue()
     milestone=$(fmt "$path/milestone")
     # Milestones are separate entities in the GitHub API
     # They need to be created before use on an issue
-    # get milestone list
     local mileurl jmileid
     if [ "$provider" = github ] ; then
       mileurl="https://api.github.com/repos/$user/$repo/milestones"
@@ -222,6 +232,7 @@ create_issue()
       mileurl="https://gitlab.com/api/v4/projects/$user%2F$escrepo/milestones"
       jmileid='id'
     fi
+    # get milestone list
     rest_api_get "$mileurl" milestone "$provider"
 
     for i in $(seq 0 $(($(jq '. | length' milestone-body) - 1)) ) ; do
