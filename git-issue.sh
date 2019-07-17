@@ -1232,11 +1232,6 @@ case "$subcommand" in
   create) 
     create_issue "$@"
     ;;
-
-  update) 
-    gh_update_issue "$@"
-    ;;
-
   init) # Initialize a new issue repository.
     sub_init "$@"
     ;;
