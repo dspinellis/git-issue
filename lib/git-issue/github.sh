@@ -217,12 +217,18 @@ create_issue()
   fi
 
   # Due Date (not supported on github)
-
   if [ -s "$path/duedate" ] && [ "$provider" = gitlab ] ; then
     local duedate
     # gitlab date must be in YYYY-MM-DD format
     duedate=$($DATEBIN --iso-8601 --date="$(fmt "$path/duedate")")
     jstring=$(echo "$jstring" | jq --arg D "$duedate" -r '. + { due_date: $D }')
+  fi
+
+  # Weight (only supported on gitlab starter+)
+  if [ -s "$path/weight" ] && [ "$provider" = gitlab ] ; then
+    local weight
+    weight=$(fmt "$path/weight")
+    jstring=$(echo "$jstring" | jq --arg W "$weight" -r '. + { weight: $W }')
   fi
 
   # Milestone
