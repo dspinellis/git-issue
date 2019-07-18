@@ -1,4 +1,4 @@
-#! /bin/sh
+#!/bin/sh
 # shellcheck disable=2039
 # SC2039: In POSIX sh, 'local' is undefined
 
@@ -214,6 +214,15 @@ create_issue()
     jstring=$(echo "$jstring" | jq --arg desc "$description" --arg tit "$title" -r '. + {title: $tit, body: $desc}')
   else
     jstring=$(echo "$jstring" | jq --arg desc "$description" --arg tit "$title" -r '. + {title: $tit, description: $desc}')
+  fi
+
+  # Due Date (not supported on github)
+
+  if [ -s "$path/duedate" ] && [ "$provider" = gitlab ] ; then
+    local duedate
+    # gitlab date must be in YYYY-MM-DD format
+    duedate=$($DATEBIN --iso-8601 --date="$(fmt "$path/duedate")")
+    jstring=$(echo "$jstring" | jq --arg D "$duedate" -r '. + { due_date: $D }')
   fi
 
   # Milestone
