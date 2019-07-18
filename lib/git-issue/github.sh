@@ -98,7 +98,7 @@ rest_api_send()
     trans_abort
   fi
 
-  if ! grep -q '^\(Status: 20[0-9]\|HTTP/[[:digit:]].[[:digit:]] 20[1-9] Created\)' "$prefix-header" ; then
+  if ! grep -q '^\(Status: 20[0-9]\|HTTP/[[:digit:]].[[:digit:]] 20[1-9] Created\|HTTP/[[:digit:]].[[:digit:]] 200 OK\)' "$prefix-header" ; then
     echo 'GitHub API communication failure' 1>&2
     echo "URL: $url" 1>&2
     echo "Data: $data" 1>&2
@@ -173,8 +173,6 @@ create_issue()
         jstring=$(echo "$jstring" | jq -r ". + { assignee_ids: [$(jq -r '.[0].id' assignee-body)]}")
       fi
     fi
-
-
   fi
 
   # Tags
@@ -290,10 +288,30 @@ create_issue()
     if [ "$provider" = github ] ; then
       num=$(jq '.number' < create-body)
     else
-      num=$(jq '.id' < create-body)
+      num=$(jq '.iid' < create-body)
     fi
+    # update url to created issue
+    url="https://gitlab.com/api/v4/projects/$user%2F$escrepo/issues/$num"
   fi
   import_dir="imports/$provider/$user/$repo/$num"
+
+  # Time estimate/time spent
+
+  cdissues
+  if [ -s "$path/timeestimate" ] && [ "$provider" = gitlab ] ; then
+    timeestimate=$(fmt "$path/timeestimate")
+    rest_api_send "$url/time_estimate?duration=${timeestimate}s" timeestimate "" POST gitlab
+  fi
+
+  if [ -s "$path/timespent" ] && [ "$provider" = gitlab ] ; then
+    timespent=$(fmt "$path/timespent")
+    rest_api_send "$url/add_spent_time?duration=${timespent}s" timespent "" POST gitlab
+  fi
+ 
+  cd ..
+
+
+  import_dir="imports/github/$user/$repo/$num"
 
   cdissues
   test -d "$import_dir" || mkdir -p "$import_dir"
