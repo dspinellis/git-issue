@@ -274,6 +274,7 @@ create_issue()
   fi
  
   cd ..
+  #TODO
   if [ -n "$num" ] ; then
     url="https://api.github.com/repos/$user/$repo/issues/$num"
     rest_api_send "$url" update "$jstring" PATCH github
@@ -286,9 +287,13 @@ create_issue()
       url="https://gitlab.com/api/v4/projects/$user%2F$escrepo/issues"
     fi
     rest_api_send "$url" create "$jstring" POST "$provider"
-    num=$(jq '.number' < create-body)
+    if [ "$provider" = github ] ; then
+      num=$(jq '.number' < create-body)
+    else
+      num=$(jq '.id' < create-body)
+    fi
   fi
-  import_dir="imports/github/$user/$repo/$num"
+  import_dir="imports/$provider/$user/$repo/$num"
 
   cdissues
   test -d "$import_dir" || mkdir -p "$import_dir"
