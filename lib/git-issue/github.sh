@@ -273,8 +273,10 @@ create_issue()
   cd ..
   #TODO
   if [ -n "$num" ] ; then
-    url="https://api.github.com/repos/$user/$repo/issues/$num"
-    rest_api_send "$url" update "$jstring" PATCH github
+    if [ "$provider" = github ] ; then
+      url="https://api.github.com/repos/$user/$repo/issues/$num"
+      rest_api_send "$url" update "$jstring" PATCH github
+    fi
   else
     if [ "$provider" = github ] ; then
       url="https://api.github.com/repos/$user/$repo/issues"
