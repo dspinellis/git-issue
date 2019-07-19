@@ -189,10 +189,18 @@ create_issue()
       if [ "$provider" = github ] ; then
         jstring=$(echo "$jstring" | jq -r '. + { state: "open" }')
       else
-        jstring=$(echo "$jstring" | jq -r '. + { state: "opened" }')
+        if [ -n "$num" ] ; then
+          jstring=$(echo "$jstring" | jq -r '. + { state_event: "reopen" }')
+        else
+          jstring=$(echo "$jstring" | jq -r '. + { state: "opened" }')
+        fi
       fi
-    elif grep '\bclosed\b' > /dev/null; then
-      jstring=$(echo "$jstring" | jq -r '. + { state: "closed" }')
+    elif grep '\bclosed\b' > /dev/null < "$path/tags"; then
+      if [ -n "$num" ] && [ "$provider" = gitlab ] ; then
+        jstring=$(echo "$jstring" | jq -r '. + { state_event: "close" }')
+      else
+        jstring=$(echo "$jstring" | jq -r '. + { state: "closed" }')
+      fi
     fi
     tags=$(echo "$tags" | jq 'map(select(. != "open"))')
     tags=$(echo "$tags" | jq 'map(select(. != "closed"))')
