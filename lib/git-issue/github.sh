@@ -126,7 +126,7 @@ USAGE_create_issue_EOF
 # Create an issue in GitHub/GitLab, based on a local one
 create_issue()
 {
-  local isha path assignee description url provider user repo nodelete OPTIND
+  local isha path assignee tags title description url provider user repo nodelete OPTIND
      
   while getopts neu: flag ; do    
     case $flag in    
@@ -231,16 +231,14 @@ create_issue()
 
   # Milestone
   if [ -s "$path/milestone" ] ; then
-
+    local mileurl jmileid milestone escrepo milenum miletitle found
     milestone=$(fmt "$path/milestone")
     # Milestones are separate entities in the GitHub API
     # They need to be created before use on an issue
-    local mileurl jmileid
     if [ "$provider" = github ] ; then
       mileurl="https://api.github.com/repos/$user/$repo/milestones"
       jmileid='number'
     else
-      local escrepo
       escrepo=$(echo "$repo" | sed 's:/:%2F:')
       mileurl="https://gitlab.com/api/v4/projects/$user%2F$escrepo/milestones"
       jmileid='id'
@@ -307,23 +305,16 @@ create_issue()
     timespent=$(fmt "$path/timespent")
     rest_api_send "$url/add_spent_time?duration=${timespent}s" timespent "" POST gitlab
   fi
- 
-  cd ..
-
 
   import_dir="imports/github/$user/$repo/$num"
-
-  cdissues
   test -d "$import_dir" || mkdir -p "$import_dir"
   echo "$isha" > "$import_dir/sha"
   git add "$import_dir"
   commit "gi: Add $import_dir" 'gi new mark'
-  cd ..
   # delete temp files
-  test -z $nodelete && rm -f create-body create-header
-  rm -f milestone-body milestone-header
+  test -z $nodelete && rm -f ../create-body ../create-header
+  rm -f milestone-body milestone-header mileres-body mileres-header timeestimate-body timeestimate-header timespent-body timespent-header
   # dont inherit `test` exit status
-  cdissues
 }
 
 # Import GitHub/GitLab comments for the specified issue
