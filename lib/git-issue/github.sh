@@ -126,7 +126,7 @@ USAGE_create_issue_EOF
 # Create an issue in GitHub/GitLab, based on a local one
 create_issue()
 {
-  local isha path assignee tags title description url provider user repo nodelete OPTIND
+  local isha path assignee tags title description url provider user repo nodelete OPTIND escrepo
      
   while getopts neu: flag ; do    
     case $flag in    
@@ -157,6 +157,11 @@ create_issue()
   user="$3"
   repo="$4"
 
+  if [ "$provider" = gitlab ] ; then
+    # if the repo belongs to a group, repo will be in the format groupname/reponame
+    # we need to escape the / for URLs
+    escrepo=$(echo "$repo" | sed 's:/:%2F:')
+  fi
   # initialize the string
   jstring='{}'
   # Get the attributes
@@ -231,7 +236,7 @@ create_issue()
 
   # Milestone
   if [ -s "$path/milestone" ] ; then
-    local mileurl jmileid milestone escrepo milenum miletitle found
+    local mileurl jmileid milestone milenum miletitle found
     milestone=$(fmt "$path/milestone")
     # Milestones are separate entities in the GitHub and GitLab API
     # They need to be created before use on an issue
@@ -239,7 +244,6 @@ create_issue()
       mileurl="https://api.github.com/repos/$user/$repo/milestones"
       jmileid='number'
     else
-      escrepo=$(echo "$repo" | sed 's:/:%2F:')
       mileurl="https://gitlab.com/api/v4/projects/$user%2F$escrepo/milestones"
       jmileid='id'
     fi
@@ -276,13 +280,14 @@ create_issue()
     if [ "$provider" = github ] ; then
       url="https://api.github.com/repos/$user/$repo/issues/$num"
       rest_api_send "$url" update "$jstring" PATCH github
+    else
+      url="https://gitlab.com/api/v4/projects/$user%2F$escrepo/issues/$num"
+      rest_api_send "$url" update "$jstring" PUT gitlab
     fi
   else
     if [ "$provider" = github ] ; then
       url="https://api.github.com/repos/$user/$repo/issues"
     else
-      local escrepo
-      escrepo=$(echo "$repo" | sed 's:/:%2F:')
       url="https://gitlab.com/api/v4/projects/$user%2F$escrepo/issues"
     fi
     rest_api_send "$url" create "$jstring" POST "$provider"
@@ -290,9 +295,9 @@ create_issue()
       num=$(jq '.number' < create-body)
     else
       num=$(jq '.iid' < create-body)
+      # update url to that of created issue
+      url="https://gitlab.com/api/v4/projects/$user%2F$escrepo/issues/$num"
     fi
-    # update url to created issue
-    url="https://gitlab.com/api/v4/projects/$user%2F$escrepo/issues/$num"
   fi
   import_dir="imports/$provider/$user/$repo/$num"
 
