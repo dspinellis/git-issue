@@ -233,7 +233,7 @@ create_issue()
   if [ -s "$path/milestone" ] ; then
     local mileurl jmileid milestone escrepo milenum miletitle found
     milestone=$(fmt "$path/milestone")
-    # Milestones are separate entities in the GitHub API
+    # Milestones are separate entities in the GitHub and GitLab API
     # They need to be created before use on an issue
     if [ "$provider" = github ] ; then
       mileurl="https://api.github.com/repos/$user/$repo/milestones"
@@ -258,6 +258,7 @@ create_issue()
 
     if ! [[ "$found" ]] ; then
       # we need to create it
+      echo "Creating new Milestone $milestone..."
       rest_api_send "$mileurl" mileres "{ \"title\": \"$milestone\",
       \"state\": \"open\", \"description\":\"\"}" POST "$provider"
       found=$(jq ".$jmileid" mileres-body)
@@ -298,11 +299,13 @@ create_issue()
   cdissues
   if [ -s "$path/timeestimate" ] && [ "$provider" = gitlab ] ; then
     timeestimate=$(fmt "$path/timeestimate")
+    echo "Adding Time Estimate..."
     rest_api_send "$url/time_estimate?duration=${timeestimate}s" timeestimate "" POST gitlab
   fi
 
   if [ -s "$path/timespent" ] && [ "$provider" = gitlab ] ; then
     timespent=$(fmt "$path/timespent")
+    echo "Adding Time Spent..."
     rest_api_send "$url/add_spent_time?duration=${timespent}s" timespent "" POST gitlab
   fi
 
@@ -314,7 +317,6 @@ create_issue()
   # delete temp files
   test -z $nodelete && rm -f ../create-body ../create-header
   rm -f milestone-body milestone-header mileres-body mileres-header timeestimate-body timeestimate-header timespent-body timespent-header
-  # dont inherit `test` exit status
 }
 
 # Import GitHub/GitLab comments for the specified issue
