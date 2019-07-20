@@ -285,7 +285,6 @@ create_issue()
   fi
  
   cd ..
-  #TODO
   if [ -n "$num" ] ; then
     if [ "$provider" = github ] ; then
       url="https://api.github.com/repos/$user/$repo/issues/$num"
@@ -326,7 +325,6 @@ create_issue()
     rest_api_send "$url/add_spent_time?duration=${timespent}s" timespent "" POST gitlab
   fi
 
-  import_dir="imports/github/$user/$repo/$num"
   test -d "$import_dir" || mkdir -p "$import_dir"
   echo "$isha" > "$import_dir/sha"
   git add "$import_dir"

@@ -822,8 +822,11 @@ file_add_rm()
 
       trans_start
       git add "$path/$file" || trans_abort
-      commit "gi: Remove $name" "gi $name remove $entry"
       echo "Removed $name $entry"
+      if ! [ -s "$path/$file" ] ; then
+        git rm -f "$path/$file" >/dev/null || trans_abort
+      fi
+      commit "gi: Remove $name" "gi $name remove $entry"
     else
       if grep -Fx "$entry" "$path/$file" >/dev/null ; then
 	echo "Entry $entry already exists" 1>&2
