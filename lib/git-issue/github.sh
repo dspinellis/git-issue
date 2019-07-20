@@ -586,9 +586,9 @@ import_issues()
   done
 }
 
-gh_export_issues()
+export_issues()
 {
-  local user repo i import_dir sha url
+  local user repo i import_dir sha url provider
 
   while getopts e flag ; do    
     case $flag in    
@@ -597,27 +597,28 @@ gh_export_issues()
       attr_expand=1    
       ;;    
     ?)    
-      error "gl_export_issues(): unknown option"
+      usage_export
       ;;    
     esac    
   done    
   shift $((OPTIND - 1));    
  
-  test "$1" = github -a -n "$2" -a -n "$3" || usage_export
+  test -n "$2" -a -n "$3" || usage_export
+  test "$1" = github -o "$1" = gitlab || usage_export
+  provider=$1
   user="$2"
   repo="$3"
 
   cdissues
-  test -d imports/github/"$user/$repo" || error "No local issues found for this repository."
+  test -d "imports/$provider/$user/$repo" || error "No local issues found for this repository."
 
   # For each issue in the respective import dir
-  for i in imports/github/"$user/$repo"/[1-9]* ; do
+  for i in "imports/$provider/$user/$repo"/[1-9]* ; do
     sha=$(cat "$i/sha")
     # extract number
     num=$(echo "$i" | grep -o '/[1-9].*$' | tr -d '/')
     echo "Exporting issue $sha as #$num"
-    url="https://api.github.com/repos/$user/$repo/issues/$num"
-    create_issue -u "$num" "$sha" github "$user" "$repo"
+    create_issue -u "$num" "$sha" "$provider" "$user" "$repo"
     rm -f create-body create-header
 
   done

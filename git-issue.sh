@@ -1230,7 +1230,7 @@ shift
 case "$subcommand" in
 
   export) 
-    gh_export_issues "$@"
+    export_issues "$@"
     ;;
   create) 
     create_issue "$@"
