@@ -311,7 +311,7 @@ sub_new()
   if [ -n "$create" ] ; then
     # shellcheck disable=SC2086
     # Rationale: We want word splitting
-    create_issue -n "$sha" github $create
+    create_issue -n "$sha" $create
   fi
 }
 
@@ -1185,7 +1185,7 @@ Start an issue repository
    init       Create a new issues repository in the current directory
 
 Work with an issue
-   new        Create a new open issue (with optional -s summary and -c "user repo" for github export)
+   new        Create a new open issue (with optional -s summary and -c "provider user repo" for github/gitlab export)
    show       Show specified issue (and its comments with -c)
    comment    Add an issue comment
    edit       Edit the specified issue's description
