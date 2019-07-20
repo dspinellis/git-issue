@@ -15,3 +15,5 @@ script: make test
 os:
   - linux
   - osx
+
+osx_image: xcode11
