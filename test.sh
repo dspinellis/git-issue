@@ -467,7 +467,7 @@ else
     "$gi" timeestimate "$issue3" 3hours > /dev/null 2>&1
     try "$gi" create "$issue3" github $ghrepo
     # delete repo
-    curl -H "$GI_CURL_AUTH" -s --request DELETE $ghrepourl | grep "{" && printf "Couldn't delete repository.\nYou probably don't have delete permittions activated on the OAUTH token.\nPlease delete %s manually." $ghrepo
+    curl -H "$GI_CURL_AUTH" -s --request DELETE $ghrepourl | grep "{" && printf "Couldn't delete repository.\nYou probably don't have delete permittions activated on the OAUTH token.\nPlease delete %s manually." "$ghrepo"
 
   else
     echo "Couldn't create test repository. Skipping export tests."
@@ -478,7 +478,7 @@ fi
 if [ -z "$GL_CURL_AUTH" ] ; then
   echo "Skipping GitLab import/export tests due to lack of GitLab authentication token."
 else
-  #Import
+  # Import
   echo "Starting GitLab import tests..."
   try "$gi" import gitlab vyrondrosos git-issue-test-issues
   start ; "$gi" list | try_grep 'An open issue on GitLab with a description and comments'
@@ -533,7 +533,7 @@ else
     "$gi" timeestimate "$issue3" 3hours > /dev/null 2>&1
     try "$gi" create "$issue3" gitlab $glrepo
     # delete repo
-    curl -H "$GL_CURL_AUTH" -s --request DELETE $glrepourl | grep "{" && printf "Couldn't delete repository.\nYou probably don't have delete permittions activated on the OAUTH token.\nPlease delete %s manually." $glrepo
+    curl -H "$GL_CURL_AUTH" -s --request DELETE $glrepourl | grep "Accepted" > /dev/null || printf "Couldn't delete repository.\nYou probably don't have delete permittions activated on the OAUTH token.\nPlease delete %s manually." "$glrepo"
   else
     echo "Couldn't create test repository. Skipping export tests."
   fi
