@@ -407,7 +407,7 @@ try "$gi" pull
 cd ../testdir
 
 if [ -z "$GI_CURL_AUTH" ] ; then
-  echo "Skipping import/export tests due to lack of GitHub authentication token."
+  echo "Skipping GitHub import/export tests due to lack of GitHub authentication token."
 else
   # Import
   #GitHub
@@ -439,7 +439,46 @@ else
   after=$(cd .issues ; git rev-parse --short HEAD)
   try test x"$before" = x"$after"
 
-  #GitLab
+  # Export
+  # create new repository to test issue exporting
+  echo "Trying to create GitHub repository..."
+  curl -H "$GI_CURL_AUTH" -s --data '{"name": "git-issue-test-export-'"$RANDOM"'", "private": true}' --output ghrepo https://api.github.com/user/repos
+  if  grep "git-issue-test-export" > /dev/null < ghrepo ; then
+    echo "Starting export tests..."
+    ghrepo=$(jq --raw-output '.full_name' < ghrepo | tr '/' ' ')
+    ghrepourl=$(jq --raw-output '.url' < ghrepo)
+    ghuser=$(jq --raw-output '.owner.login' < ghrepo)
+    # remove assignees to prevent notifications about test issues on GitHub
+    "$gi" assign -r "$issue" dspinellis > /dev/null 2>&1
+    "$gi" assign -r "$issue" louridas > /dev/null 2>&1
+    try "$gi" create -n "$issue" github $ghrepo
+    # Get the created issue
+    try "$gi" create -u "$(jq -r '.number' create-body)" "$issue" github $ghrepo 
+    # modify and export
+    try "$gi" create -n "$issue2" github $ghrepo
+    try "$gi" new -c "github $ghrepo" -s "Issue exported directly"
+    "$gi" assign "$issue2" "$ghuser" > /dev/null 2>&1
+    try "$gi" export github $ghrepo
+    # test milestone creation
+    "$gi" new -s "milestone issue" > /dev/null 2>&1
+    issue3=$("$gi" list | awk '/milestone issue/{print $1}')
+    "$gi" milestone "$issue3" worldpeace > /dev/null 2>&1
+    "$gi" duedate "$issue3" week > /dev/null 2>&1
+    "$gi" timeestimate "$issue3" 3hours > /dev/null 2>&1
+    try "$gi" create "$issue3" github $ghrepo
+    # delete repo
+    curl -H "$GI_CURL_AUTH" -s --request DELETE $ghrepourl | grep "{" && printf "Couldn't delete repository.\nYou probably don't have delete permittions activated on the OAUTH token.\nPlease delete %s manually." $ghrepo
+
+  else
+    echo "Couldn't create test repository. Skipping export tests."
+  fi
+fi
+
+# shellcheck disable=2153
+if [ -z "$GL_CURL_AUTH" ] ; then
+  echo "Skipping GitLab import/export tests due to lack of GitLab authentication token."
+else
+  #Import
   echo "Starting GitLab import tests..."
   try "$gi" import gitlab vyrondrosos git-issue-test-issues
   start ; "$gi" list | try_grep 'An open issue on GitLab with a description and comments'
@@ -466,40 +505,40 @@ else
   after=$(cd .issues ; git rev-parse --short HEAD)
   try test x"$before" = x"$after"
 
-
   # Export
   # create new repository to test issue exporting
-  echo "Trying to create repository..."
-  curl -H "$GI_CURL_AUTH" -s --data '{"name": "git-issue-test-export-'"$RANDOM"'", "private": true}' --output ghrepo https://api.github.com/user/repos
-  if  grep "git-issue-test-export" > /dev/null < ghrepo ; then
+  echo "Trying to create GitLab repository..."
+  curl -H "$GL_CURL_AUTH" -s --header "Content-Type: application/json" --data '{"name": "git-issue-test-export-'"$RANDOM"'", "visibility": "private"}' --output glrepo https://gitlab.com/api/v4/projects
+  if  grep "git-issue-test-export" > /dev/null < glrepo ; then
     echo "Starting export tests..."
-    ghrepo=$(jq --raw-output '.full_name' < ghrepo | tr '/' ' ')
-    ghrepourl=$(jq --raw-output '.url' < ghrepo)
-    ghuser=$(jq --raw-output '.owner.login' < ghrepo)
-    # remove assignees to prevent notifications about test issues on GitHub
+    glrepo=$(jq --raw-output '.path_with_namespace' < glrepo | tr '/' ' ')
+    glrepourl=$(jq --raw-output '._links.self' < glrepo)
+    gluser=$(jq --raw-output '.owner.username' < glrepo)
+    # remove assignees to prevent notifications about test issues on GitLab
     "$gi" assign -r "$issue" dspinellis > /dev/null 2>&1
     "$gi" assign -r "$issue" louridas > /dev/null 2>&1
-    try "$gi" create -n "$issue" github $ghrepo
+    try "$gi" create -n "$issue" gitlab $glrepo
     # Get the created issue
-    try "$gi" create -u "$(jq -r '.number' create-body)" "$issue" github $ghrepo 
+    try "$gi" create -u "$(jq -r '.iid' create-body)" "$issue" gitlab $glrepo 
     # modify and export
-    try "$gi" create -n "$issue2" github $ghrepo
-    try "$gi" new -c "$ghrepo" -s "Issue exported directly"
-    "$gi" assign "$issue2" "$ghuser" > /dev/null 2>&1
-    try "$gi" export github $ghrepo
+    try "$gi" create -n "$issue2" gitlab $glrepo
+    try "$gi" new -c "gitlab $glrepo" -s "Issue exported directly"
+    "$gi" assign "$issue2" "$gluser" > /dev/null 2>&1
+    try "$gi" export gitlab $glrepo
     # test milestone creation
     "$gi" new -s "milestone issue" > /dev/null 2>&1
     issue3=$("$gi" list | awk '/milestone issue/{print $1}')
     "$gi" milestone "$issue3" worldpeace > /dev/null 2>&1
     "$gi" duedate "$issue3" week > /dev/null 2>&1
     "$gi" timeestimate "$issue3" 3hours > /dev/null 2>&1
-    try "$gi" create "$issue3" github $ghrepo
+    try "$gi" create "$issue3" gitlab $glrepo
     # delete repo
-    curl -H "$GI_CURL_AUTH" -s --request DELETE $ghrepourl | grep "{" && printf "Couldn't delete repository.\nYou probably don't have delete permittions activated on the OAUTH token.\nPlease delete %s manually." $ghrepo
-
+    curl -H "$GL_CURL_AUTH" -s --request DELETE $glrepourl | grep "{" && printf "Couldn't delete repository.\nYou probably don't have delete permittions activated on the OAUTH token.\nPlease delete %s manually." $glrepo
   else
     echo "Couldn't create test repository. Skipping export tests."
   fi
+
+
 fi
 
 if ! [ -r "$TopDir/failure" ]; then
