@@ -514,9 +514,6 @@ else
     glrepo=$(jq --raw-output '.path_with_namespace' < glrepo | tr '/' ' ')
     glrepourl=$(jq --raw-output '._links.self' < glrepo)
     gluser=$(jq --raw-output '.owner.username' < glrepo)
-    # remove assignees to prevent notifications about test issues on GitLab
-    "$gi" assign -r "$issue" dspinellis > /dev/null 2>&1
-    "$gi" assign -r "$issue" louridas > /dev/null 2>&1
     try "$gi" create -n "$issue" gitlab $glrepo
     # Get the created issue
     try "$gi" create -u "$(jq -r '.iid' create-body)" "$issue" gitlab $glrepo 
@@ -527,10 +524,12 @@ else
     try "$gi" export gitlab $glrepo
     # test milestone creation
     "$gi" new -s "milestone issue" > /dev/null 2>&1
-    issue3=$("$gi" list | awk '/milestone issue/{print $1}')
-    "$gi" milestone "$issue3" worldpeace > /dev/null 2>&1
-    "$gi" duedate "$issue3" week > /dev/null 2>&1
-    "$gi" timeestimate "$issue3" 3hours > /dev/null 2>&1
+    if [ -z "$issue3" ] ; then
+      issue3=$("$gi" list | awk '/milestone issue/{print $1}')
+      "$gi" milestone "$issue3" worldpeace > /dev/null 2>&1
+      "$gi" duedate "$issue3" week > /dev/null 2>&1
+      "$gi" timeestimate "$issue3" 3hours > /dev/null 2>&1
+    fi
     try "$gi" create "$issue3" gitlab $glrepo
     # delete repo
     curl -H "$GL_CURL_AUTH" -s --request DELETE $glrepourl | grep "Accepted" > /dev/null || printf "Couldn't delete repository.\nYou probably don't have delete permittions activated on the OAUTH token.\nPlease delete %s manually." "$glrepo"
