@@ -78,7 +78,7 @@ You use _git issue_ with the following sub-commands.
 * `git issue init`: Create a new issues repository in the current directory.
   The `-e` option uses an existing Git project repository.
 ### Work with an issue
-* `git issue new`: Create a new open issue (with optional `-s` summary and -c "user repo" for github export).
+* `git issue new`: Create a new open issue (with optional `-s` summary and -c "provider user repo" for github/gitlab export).
 * `git issue show`: Show specified issue (and its comments with `-c`).
 * `git issue comment`: Add an issue comment.
 * `git issue edit`: Edit the specified issue's description
@@ -160,13 +160,13 @@ The directory contains the following elements.
 * A `.git` directory contains the Git data associated with the issues.
 * A `config` file with configuration data.
 * An `imports` directory contains details about imported issues.
-  * The `sha` file under `import/github/<user>/<repo>/<number>` contains the
+  * The `sha` file under `import/<provider>/<user>/<repo>/<number>` contains the
     _git-issue_ SHA corresponding to an imported GitHub _number_ issue.
     Likewise for GitLab.
-  * The `sha` file under `import/github/<user>/<repo>/<number>/comments/<number>`
+  * The `sha` file under `import/<provider>/<user>/<repo>/<number>/comments/<number>`
     contains the _git-issue_ comment SHA corresponding to an imported GitHub/GitLab
     _number_ comment.
-  * The file `import/github/<user>/<repo>/checkpoint` contains the SHA
+  * The file `import/<provider>/<user>/<repo>/checkpoint` contains the SHA
     of the last imported or updated issue.  This can be used for merging
     future updates.
 * An `issues` directory contains the individual issues.
