@@ -465,7 +465,8 @@ else
     "$gi" milestone "$issue3" worldpeace > /dev/null 2>&1
     "$gi" duedate "$issue3" week > /dev/null 2>&1
     "$gi" timeestimate "$issue3" 3hours > /dev/null 2>&1
-    try "$gi" create "$issue3" github $ghrepo
+    try "$gi" create -e "$issue3" github $ghrepo
+
     # delete repo
     curl -H "$GI_CURL_AUTH" -s --request DELETE $ghrepourl | grep "{" && printf "Couldn't delete repository.\nYou probably don't have delete permittions activated on the OAUTH token.\nPlease delete %s manually." "$ghrepo"
 
@@ -523,14 +524,15 @@ else
     "$gi" assign "$issue2" "$gluser" > /dev/null 2>&1
     try "$gi" export gitlab $glrepo
     # test milestone creation
-    "$gi" new -s "milestone issue" > /dev/null 2>&1
+    "$gi" new -s "milestone issue : %M" > /dev/null 2>&1
     if [ -z "$issue3" ] ; then
       issue3=$("$gi" list | awk '/milestone issue/{print $1}')
       "$gi" milestone "$issue3" worldpeace > /dev/null 2>&1
       "$gi" duedate "$issue3" week > /dev/null 2>&1
       "$gi" timeestimate "$issue3" 3hours > /dev/null 2>&1
     fi
-    try "$gi" create "$issue3" gitlab $glrepo
+    try "$gi" create -e "$issue3" gitlab $glrepo
+    start ; "$gi" show "$issue3" | try_grep 'worldpeace'
     # delete repo
     curl -H "$GL_CURL_AUTH" -s --request DELETE $glrepourl | grep "Accepted" > /dev/null || printf "Couldn't delete repository.\nYou probably don't have delete permittions activated on the OAUTH token.\nPlease delete %s manually." "$glrepo"
   else

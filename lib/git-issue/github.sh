@@ -217,7 +217,18 @@ create_issue()
 
   # Handle formatting indicators
   if [ -n "$attr_expand" ] ; then
+    title=$(shortshow "$path" "$title" 'i' "$isha" | sed 's/^.*\x02//' | tr '\001' '\n')
     description=$(shortshow "$path" "$description" 'i' "$isha" | sed 's/^.*\x02//' | tr '\001' '\n')
+    # update description
+    {
+      echo "$title"
+      echo
+      echo "$description"
+    } >"$path/description"
+    git add "$path/description" || trans_abort
+    if ! git diff --quiet HEAD ; then
+      commit "gi: expand attributes in description of issue $isha" "gi description attribute expand $isha"
+    fi
   fi
 
   # jq handles properly escaping the string if passed as variable
