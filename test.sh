@@ -501,7 +501,7 @@ else
   try "$gi" list ver3
   # Import should be idempotent
   before=$(cd .issues ; git rev-parse --short HEAD)
-  try "$gi" import github dspinellis git-issue-test-issues
+  try "$gi" import gitlab vyrondrosos git-issue-test-issues
   after=$(cd .issues ; git rev-parse --short HEAD)
   try test x"$before" = x"$after"
 
