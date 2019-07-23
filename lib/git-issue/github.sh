@@ -326,6 +326,17 @@ create_issue()
       rest_api_send "$url" update "$jstring" PUT gitlab
     fi
   else
+    #check if issue already exists
+    for i in ".issues/imports/$provider/$user/$repo"/[1-9]* ; do
+      local sha
+      sha=$(cat "$i/sha")
+      if [ "$sha" = "$isha" ] ; then
+        local num
+        num=$(echo "$i" | grep -o '/[1-9].*$' | tr -d '/')
+        error "Error: Local issue $sha is linked with $provider issue #$num.Cannot create duplicate."
+      fi
+    done
+
     if [ "$provider" = github ] ; then
       url="https://api.github.com/repos/$user/$repo/issues"
     else

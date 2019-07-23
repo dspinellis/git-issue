@@ -533,6 +533,8 @@ else
     fi
     try "$gi" create -e "$issue3" gitlab $glrepo
     start ; "$gi" show "$issue3" | try_grep 'worldpeace'
+    # Try to create duplicate
+    ntry "$gi" create -e "$issue3" gitlab $glrepo
     # delete repo
     curl -H "$GL_CURL_AUTH" -s --request DELETE $glrepourl | grep "Accepted" > /dev/null || printf "Couldn't delete repository.\nYou probably don't have delete permittions activated on the OAUTH token.\nPlease delete %s manually." "$glrepo"
   else
