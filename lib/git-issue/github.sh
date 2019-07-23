@@ -24,6 +24,27 @@ USAGE_export_EOF
   exit 2
 }
 
+
+# Escape special URL characters in argument string using Percent-encoding
+urlescape()
+{
+  echo "$1" |
+  sed 's.%.%25.' |
+  sed -e 's./.%2F.' \
+  -e 's.!.%21.' \
+  -e 's.#.%23.' \
+  -e 's.\$.%24.' \
+  -e 's.&.%26.' \
+  -e 's.'\''.%27.' \
+  -e 's.(.%28.' \
+  -e 's.).%29.' \
+  -e 's.*.%2A.' \
+  -e 's.+.%2B.' \
+  -e 's.,.%2C.' \
+  -e 's.:.%3A.' \
+  -e 's.;.%3B.'
+
+}
 # Get a page using the GitHub/GitLab API; abort transaction on error
 # Header is saved in the file $prefix-header; body in $prefix-body
 rest_api_get()
@@ -160,7 +181,7 @@ create_issue()
   if [ "$provider" = gitlab ] ; then
     # if the repo belongs to a group, repo will be in the format groupname/reponame
     # we need to escape the / for URLs
-    escrepo=$(echo "$repo" | sed 's:/:%2F:')
+    escrepo=$(urlescape "$repo")
   fi
   # initialize the string
   jstring='{}'
@@ -369,7 +390,7 @@ import_comments()
   elif [ "$provider" = gitlab ] ; then
     # if $repo contains '/' then it's part of a group and needs to be escaped
     local escrepo
-    escrepo=$(echo "$repo" | sed 's:/:%2F:')
+    escrepo=$(urlescape "$repo")
     endpoint="https://gitlab.com/api/v4/projects/$user%2F$escrepo/issues/$issue_number/notes"
     juser='author.username'
   else
@@ -679,7 +700,7 @@ sub_import()
     else
       # if $repo contains '/' then it's part of a group and needs to be escaped
       local escrepo
-      escrepo=$(echo "$repo" | sed 's:/:%2F:')
+      escrepo=$(urlescape "$repo")
       endpoint="https://gitlab.com/api/v4/projects/$user%2F$escrepo/issues"
     fi
   while true ; do
