@@ -352,6 +352,31 @@ sub_show()
     git show --no-patch --format='Author:	%an <%ae>
 Date:	%aD' "$isha"
 
+    # Imports
+    for i in "imports/github/"*/*/[1-9]* ; do
+      local sha
+      if [ -r "$i/sha" ] ; then
+        sha=$(cat "$i/sha")
+        if [ "$sha" = "$isha" ] ; then
+          local num
+          num=$(echo "$i" | grep -o '/[1-9].*$' | tr -d '/')
+          echo "GitHub issue: #$num at $i" | sed -e 's:imports/github/::' -e 's:/[1-9]*$::'
+        fi
+      fi
+    done
+
+    for i in "imports/gitlab/"*/*/[1-9]* "imports/gitlab/"*/*/*/[1-9]* ; do
+      local sha
+      if [ -r "$i/sha" ] ; then
+        sha=$(cat "$i/sha")
+        if [ "$sha" = "$isha" ] ; then
+          local num
+          num=$(echo "$i" | grep -o '/[1-9].*$' | tr -d '/')
+          echo "GitLab issue: #$num at $i" | sed -e 's:imports/gitlab/::' -e 's:/[1-9]*$::'
+        fi
+      fi
+    done
+
     # Due Date
     if [ -s "$path/duedate" ] ; then
       printf 'Due Date: '
