@@ -506,6 +506,10 @@ else
   after=$(cd .issues ; git rev-parse --short HEAD)
   try test x"$before" = x"$after"
 
+  #Import repo belonging to group
+  try "$gi" import gitlab git-issue-test-group git-issue-subgroup-test/git-issue-group-test
+  start ; "$gi" list | try_grep 'Issue in group repo'
+
   # Export
   # create new repository to test issue exporting
   echo "Trying to create GitLab repository..."

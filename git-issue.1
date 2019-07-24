@@ -235,15 +235,15 @@ A \fCconfig\fP file with configuration data.
 .IP "" 4
 An \fCimports\fP directory contains details about imported issues.
 .IP "" 8
-The \fCsha\fP file under \fCimport/github/<user>/<repo>/<number>\fP contains the
+The \fCsha\fP file under \fCimport/<provider>/<user>/<repo>/<number>\fP contains the
     \fIgit-issue\fP SHA corresponding to an imported GitHub \fInumber\fP issue.
     Likewise for GitLab.
 .IP "" 8
-The \fCsha\fP file under \fCimport/github/<user>/<repo>/<number>/comments/<number>\fP
+The \fCsha\fP file under \fCimport/<provider>/<user>/<repo>/<number>/comments/<number>\fP
     contains the \fIgit-issue\fP comment SHA corresponding to an imported GitHub/GitLab
     \fInumber\fP comment.
 .IP "" 8
-The file \fCimport/github/<user>/<repo>/checkpoint\fP contains the SHA
+The file \fCimport/<provider>/<user>/<repo>/checkpoint\fP contains the SHA
     of the last imported or updated issue.  This can be used for merging
     future updates.
 .IP "" 4
