@@ -426,6 +426,7 @@ else
   start ; "$gi" show -c "$issue" | try_grep '^ *comment 1 line 2$'
   start ; "$gi" show -c "$issue" | try_grep '^ *comment 2$'
   start ; "$gi" show -c "$issue" | try_grep '^ *comment 4$'
+  start ; "$gi" show "$issue" | try_grep '^GitHub issue: #[1-9]* at dspinellis/git-issue-test-issues$'
   # Assignees and tags
   issue=$("$gi" list | awk '/An open issue on GitHub with assignees and tags/ {print $1}')
   start ; "$gi" show "$issue" | try_grep 'good first issue'
@@ -494,6 +495,7 @@ else
   start ; "$gi" show -c "$glissue" | try_grep '^ *comment 2$'
   start ; "$gi" show -c "$glissue" | try_grep '^ *comment 3$'
   start ; "$gi" show -c "$glissue" | try_grep '^ *comment 4$'
+  start ; "$gi" show "$glissue" | try_grep '^GitLab issue: #[1-9]* at vyrondrosos/git-issue-test-issues$'
   # Assignees and tags
   glissue=$("$gi" list | awk '/An open issue on GitLab with assignees and tags/ {print $1}')
   start ; "$gi" show "$glissue" | try_grep 'good first issue'
@@ -509,6 +511,8 @@ else
   #Import repo belonging to group
   try "$gi" import gitlab git-issue-test-group git-issue-subgroup-test/git-issue-group-test
   start ; "$gi" list | try_grep 'Issue in group repo'
+  glissue2=$("$gi" list | awk '/Issue in group repo/ {print $1}')
+  start ; "$gi" show "$glissue2" | try_grep '^GitLab issue: #1 at git-issue-test-group/git-issue-subgroup-test/git-issue-group-test$'
 
   # Export
   # create new repository to test issue exporting
