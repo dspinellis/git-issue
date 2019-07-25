@@ -257,7 +257,7 @@ create_issue()
     jstring=$(echo "$jstring" | jq --arg desc "$description" --arg tit "$title" -r '. + {title: $tit, body: $desc}')
   else
     # add trailing spaces if needed, or gitlab will ignore the newline
-    description=$(echo "$description" | sed 's/[^ ] \?$/&  /')
+    description=$(echo "$description" | sed '$!s/[^ ] \?$/&  /')
     jstring=$(echo "$jstring" | jq --arg desc "$description" --arg tit "$title" -r '. + {title: $tit, description: $desc}')
   fi
 
