@@ -364,8 +364,24 @@ create_issue()
 
   if [ -s "$path/timespent" ] && [ "$provider" = gitlab ] ; then
     timespent=$(fmt "$path/timespent")
-    echo "Adding Time Spent..."
-    rest_api_send "$url/add_spent_time?duration=${timespent}s" timespent "" POST gitlab
+    if [ -n "$num" ] ; then
+      local oldspent
+      # get existing timestats
+      rest_api_get "$url/time_stats" timestats gitlab
+      oldspent=$(jq -r '.total_time_spent' timestats-body)
+      if [ "$oldspent" -lt "$timespent" ] ; then
+        echo "Adding Time Spent..."
+        rest_api_send "$url/add_spent_time?duration=$((timespent - oldspent))s" timespent "" POST gitlab
+      elif [ "$oldspent" -gt "$timespent" ] ; then
+        # we need to reset time first
+        echo "Local Time Spent less than remote. Resetting and adding Time Spent..."
+        rest_api_send "$url/reset_spent_time" timespent "" POST gitlab
+        rest_api_send "$url/add_spent_time?duration=${timespent}s" timespent "" POST gitlab
+      fi
+    else
+        rest_api_send "$url/add_spent_time?duration=${timespent}s" timespent "" POST gitlab
+    fi
+
   fi
 
   test -d "$import_dir" || mkdir -p "$import_dir"
