@@ -329,7 +329,7 @@ create_issue()
     #check if issue already exists
     for i in ".issues/imports/$provider/$user/$repo"/[1-9]* ; do
       local sha
-      sha=$(cat "$i/sha")
+      sha=$(cat "$i/sha") 2> /dev/null
       if [ "$sha" = "$isha" ] ; then
         local num
         num=$(echo "$i" | grep -o '/[1-9].*$' | tr -d '/')
@@ -344,9 +344,9 @@ create_issue()
     fi
     rest_api_send "$url" create "$jstring" POST "$provider"
     if [ "$provider" = github ] ; then
-      num=$(jq '.number' < create-body)
+      num=$(jq '.number' create-body)
     else
-      num=$(jq '.iid' < create-body)
+      num=$(jq '.iid' create-body)
       # update url to that of created issue
       url="https://gitlab.com/api/v4/projects/$user%2F$escrepo/issues/$num"
     fi
@@ -390,7 +390,8 @@ create_issue()
   commit "gi: Add $import_dir" 'gi new mark'
   # delete temp files
   test -z $nodelete && rm -f ../create-body ../create-header
-  rm -f milestone-body milestone-header mileres-body mileres-header timeestimate-body timeestimate-header timespent-body timespent-header
+  rm -f milestone-body milestone-header mileres-body mileres-header
+  rm -f timeestimate-body timeestimate-header timespent-body timespent-header timestats-body timestats-header
 }
 
 # Import GitHub/GitLab comments for the specified issue
@@ -429,7 +430,7 @@ import_comments()
 
     # For each comment in the comments-body file
     for i in $(seq 0 $(($(jq '. | length' comments-body) - 1)) ) ; do
-      comment_id=$(jq ".[$i].id" comments-body)
+      comment_id=$(jq -r ".[$i].id" comments-body)
 
       # See if comment already there
       import_dir="imports/$provider/$user/$repo/$issue_number/comments"
@@ -517,7 +518,7 @@ import_issues()
 
   # For each issue in the issue-body file
   for i in $(seq 0 $(($(jq '. | length' issue-body) - 1)) ) ; do
-    issue_number=$(jq ".[$i].$jid" issue-body)
+    issue_number=$(jq -r ".[$i].$jid" issue-body)
 
     # See if issue already there
     import_dir="imports/$provider/$user/$repo/$issue_number"
@@ -563,7 +564,7 @@ import_issues()
     fi
 
     # Obtain milestone
-    if [ "$(jq ".[$i].milestone" issue-body)" = null ] ; then
+    if [ "$(jq -r ".[$i].milestone" issue-body)" = null ] ; then
       if [ -r "$path/milestone" ] ; then
 	git rm "$path/milestone" || trans_abort
       fi
