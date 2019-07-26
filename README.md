@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/eellak/gsoc2019-git-issue.svg?branch=gitlab_export)](https://travis-ci.org/eellak/gsoc2019-git-issue)
+[![Build Status](https://travis-ci.org/eellak/gsoc2019-git-issue.svg?branch=gsoc-2019)](https://travis-ci.org/eellak/gsoc2019-git-issue)
 #  <img src="https://developers.google.com/open-source/gsoc/resources/downloads/GSoC-icon-192.png" width="40"> GSoC 2019 Project - Git Issue <img src="https://developers.google.com/open-source/gsoc/resources/downloads/GSoC-icon-192.png" width="40">
 This is the home repository of the GSoC 2019 project, aiming to extend git-issue with full import and export capabilities towards GitHub and GitLab. The project is supervised by the Open Technologies Aliance - GFOSS, and the following mentors: Diomidis Spinellis, Kostas Papadimas, Alexios Zavras. For the actual README, see [README.real.md](https://github.com/eellak/gsoc2019-git-issue/blob/gsoc-2019/README.real.md).
 
@@ -30,13 +30,13 @@ Thus, adding export capabilities would complete the round-trip integration betwe
 ## ~~June 28-July 11~~ :heavy_check_mark:
 - Work shifts towards GitLab integration.
 - Implement GitLab import functionality. :heavy_check_mark:
-## July 12-July 19 :alarm_clock:
+## ~~July 12-July 19~~ :heavy_check_mark:
 - Test and debug GitLab import :heavy_check_mark:
 - Write documentation and automated tests on GitLab import :heavy_check_mark:
 - [gitlab_import branch](https://github.com/eellak/gsoc2019-git-issue/tree/gitlab_import) **[merged]**
-## July 26-August 10
-- Implement GitLab export functionality. :alarm_clock:
-- Test and debug GitLab import/export functionality.
+## July 26-August 10 :alarm_clock:
+- Implement GitLab export functionality. :heavy_check_mark:
+- Test and debug GitLab import/export functionality. :alarm_clock:
 ## August 11-August 19
 - Final integration testing, ensuring with the help of my mentor that the code quality is up to standard
 - Ensure interface consistency between the GitLab and GitHub implementations

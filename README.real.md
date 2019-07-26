@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/eellak/gsoc2019-git-issue.svg?branch=gitlab_export)](https://travis-ci.org/eellak/gsoc2019-git-issue)
+[![Build Status](https://travis-ci.org/eellak/gsoc2019-git-issue.svg?branch=gsoc-2019)](https://travis-ci.org/eellak/gsoc2019-git-issue)
 # git-issue
 
 This is a minimalist decentralized issue management system based on Git.
