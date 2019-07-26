@@ -73,7 +73,7 @@ rest_api_get()
   if ! grep -q '^\(Status: 200\|HTTP/[[:digit:]].[[:digit:]] 200 OK\)' "$prefix-header" ; then
     echo "$provider API communication failure" 1>&2
     echo "URL: $url" 1>&2
-    if grep -q '^Status: 4' "$prefix-header" ; then
+    if grep -q '^\(Status: 4\|HTTP/[0-9].[0-9] 4\)' "$prefix-header" ; then
       jq -r '.message' "$prefix-body" 1>&2
     fi
     trans_abort
@@ -123,7 +123,7 @@ rest_api_send()
     echo 'GitHub API communication failure' 1>&2
     echo "URL: $url" 1>&2
     echo "Data: $data" 1>&2
-    if grep -q '^Status: 4' "$prefix-header" ; then
+    if grep -q '^\(Status: 4\|HTTP/[0-9].[0-9] 4\)' "$prefix-header" ; then
       jq -r '.message' "$prefix-body" 1>&2
     fi
     trans_abort
@@ -329,7 +329,7 @@ create_issue()
     #check if issue already exists
     for i in ".issues/imports/$provider/$user/$repo"/[1-9]* ; do
       local sha
-      sha=$(cat "$i/sha") 2> /dev/null
+      sha=$(cat "$i/sha" 2> /dev/null)
       if [ "$sha" = "$isha" ] ; then
         local num
         num=$(echo "$i" | grep -o '/[1-9].*$' | tr -d '/')

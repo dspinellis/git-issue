@@ -129,10 +129,12 @@ trans_start()
 # Abort an issue transaction and exit with an error
 trans_abort()
 {
-  git reset "$start_sha"
-  git clean -qfd
-  git checkout -- .
-  rm -f issue-header issue-body comments-header comments-body
+  if [ -d .git ] || git rev-parse --git-dir > /dev/null 2>&1 ; then
+    git reset "$start_sha"
+    git clean -qfd
+    git checkout -- .
+    rm -f issue-header issue-body comments-header comments-body
+  fi
   echo 'Operation aborted' 1>&2
   exit 1
 }
