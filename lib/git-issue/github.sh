@@ -381,17 +381,55 @@ create_issue()
     else
         rest_api_send "$url/add_spent_time?duration=${timespent}s" timespent "" POST gitlab
     fi
-
   fi
 
   test -d "$import_dir" || mkdir -p "$import_dir"
   echo "$isha" > "$import_dir/sha"
   git add "$import_dir"
   commit "gi: Add $import_dir" 'gi new mark'
+
+  # Comments
+  if [ -d "$path/comments" ] ; then
+    for i in "$path/comments"/* ; do
+      local csha num cbody cfound cjstring
+      csha=$(echo "$i" | sed 's:.*comments/\(.*\)$:\1:')
+      cbody=$(cat "$i")
+      echo "body:" "$cbody"
+      cfound=
+      for j in "$import_dir"/comments/* ; do
+        if [ "$(cat "$j")" = "$csha" ] ; then
+          cfound=$(echo "$j" | sed 's:.*comments/\(.*\)$:\1:')
+          break
+        fi
+      done
+      cjstring=$(echo '{}' | jq --arg desc "$cbody" '{body: $desc}')
+      if [ -n "$cfound" ] ; then
+        # the comment exists already
+        echo "Updating comment $csha..."
+        if [ "$provider" = github ] ; then
+          rest_api_send "https://api.github.com/repos/$user/$repo/issues/comments/$cfound" commentupdate "$cjstring" PATCH github
+        else
+          rest_api_send "$url/notes/$cfound" commentupdate "$cjstring" PUT gitlab
+        fi
+      else
+        # we need to create it
+        echo "Creating comment $csha..."
+        if [ "$provider" = github ] ; then
+          rest_api_send "$url/comments" commentcreate "$cjstring" POST github
+        else
+          rest_api_send "$url/notes" commentcreate "$cjstring" POST gitlab
+        fi
+        test -d "$import_dir/comments" || mkdir -p "$import_dir/comments"
+        echo "$csha" > "$import_dir/comments/$(jq -r '.id' commentcreate-body)"
+      fi
+    done
+  fi
+
   # delete temp files
   test -z $nodelete && rm -f ../create-body ../create-header
   rm -f milestone-body milestone-header mileres-body mileres-header
   rm -f timeestimate-body timeestimate-header timespent-body timespent-header timestats-body timestats-header
+  rm -f commentupdate-header commentupdate-body commentcreate-header commentcreate-body
 }
 
 # Import GitHub/GitLab comments for the specified issue
