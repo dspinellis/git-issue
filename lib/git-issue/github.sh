@@ -467,6 +467,8 @@ import_comments()
 
     # For each comment in the comments-body file
     for i in $(seq 0 $(($(jq '. | length' comments-body) - 1)) ) ; do
+      # Dont import automated system comments
+      test ! "$(jq -r ".[$i].system" comments-body)" = true || continue
       comment_id=$(jq -r ".[$i].id" comments-body)
 
       # See if comment already there
