@@ -391,13 +391,12 @@ create_issue()
   # Comments
   if [ -d "$path/comments" ] ; then
     for i in "$path/comments"/* ; do
-      local csha num cbody cfound cjstring
+      local csha cbody cfound cjstring
       csha=$(echo "$i" | sed 's:.*comments/\(.*\)$:\1:')
-      cbody=$(cat "$i")
-      echo "body:" "$cbody"
+      cbody=$(sed '$!s/[^ ] \?$/&  /' < "$i")
       cfound=
       for j in "$import_dir"/comments/* ; do
-        if [ "$(cat "$j")" = "$csha" ] ; then
+        if [ "$(cat "$j" 2> /dev/null)" = "$csha" ] ; then
           cfound=$(echo "$j" | sed 's:.*comments/\(.*\)$:\1:')
           break
         fi
