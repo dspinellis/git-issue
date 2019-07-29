@@ -942,19 +942,47 @@ USAGE_edit_EOF
 
 sub_edit()
 {
-  local isha csha path
+  local isha csha path comment
 
+  while getopts c flag ; do
+    case $flag in
+    c)
+      comment=1
+      ;;
+    ?)
+      usage_edit
+      ;;
+    esac
+  done
+ 
+  shift $((OPTIND - 1));
   test -n "$1" || usage_edit
 
   cdissues
-  path=$(issue_path_part "$1") || exit
-  isha=$(issue_sha "$path")
+  if [ -z "$comment" ] ; then
+    # Edit Issue
+    path=$(issue_path_part "$1") || exit
+    isha=$(issue_sha "$path")
 
-  trans_start
-  edit "$path/description" || trans_abort
-  git add "$path/description" || trans_abort
-  commit 'gi: Edit issue description' "gi edit description $isha"
-  echo "Edited issue $(short_sha "$isha")"
+    trans_start
+    edit "$path/description" || trans_abort
+    git add "$path/description" || trans_abort
+    commit 'gi: Edit issue description' "gi edit description $isha"
+    echo "Edited issue $(short_sha "$isha")"
+  else
+    # Edit Comment
+    commit=$(git show --format='%b' "$1" 2> /dev/null ) || error "Unknown or ambigious comment specification $1"
+    # get issue sha
+    isha=$(echo "$commit" | sed 's/gi comment mark //')
+    path=$(issue_path_part "$isha")
+    #shellcheck disable=SC2206
+    fullpath=($path/comments/${1}*)
+    #shellcheck disable=SC2128
+    echo "$fullpath" | grep ' ' && error "Ambigious comment specification $1"
+    #shellcheck disable=SC2128
+    edit "$fullpath"
+  fi
+
 }
 
 
