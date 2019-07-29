@@ -976,14 +976,9 @@ sub_edit()
     isha=$(echo "$commit" | sed 's/gi comment mark //')
     path=$(issue_path_part "$isha")
     #shellcheck disable=SC2206
-    fullpath=($path/comments/${1}*)
-    #shellcheck disable=SC2128
     #SC2128: Expanding an array without an index only gives the first element.
-    echo "$fullpath" | grep ' ' && error "Ambigious comment specification $1"
-    #shellcheck disable=SC2128
-    edit "$fullpath"
-    #shellcheck disable=SC2128
-    git add "$fullpath" || trans_abort
+    edit "$path/comments/$1"*
+    git add "$path/comments/$1"* || trans_abort
     commit 'gi: Edit comment' "gi edit comment $isha"
     echo "Edited comment $(short_sha "$isha")"
   fi
