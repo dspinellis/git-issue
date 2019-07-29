@@ -942,7 +942,7 @@ USAGE_edit_EOF
 
 sub_edit()
 {
-  local isha csha path comment
+  local isha csha path comment fullpath
 
   while getopts c flag ; do
     case $flag in
@@ -978,9 +978,14 @@ sub_edit()
     #shellcheck disable=SC2206
     fullpath=($path/comments/${1}*)
     #shellcheck disable=SC2128
+    #SC2128: Expanding an array without an index only gives the first element.
     echo "$fullpath" | grep ' ' && error "Ambigious comment specification $1"
     #shellcheck disable=SC2128
     edit "$fullpath"
+    #shellcheck disable=SC2128
+    git add "$fullpath" || trans_abort
+    commit 'gi: Edit comment' "gi edit comment $isha"
+    echo "Edited comment $(short_sha "$isha")"
   fi
 
 }
