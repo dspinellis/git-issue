@@ -27,7 +27,7 @@
 # User agent string
 # shellcheck disable=SC2034
 # SC2034 : USER_AGENT appears unused. Verify use (or export if used externally)
-USER_AGENT=https://github.com/dspinellis/git-issue/tree/34a2670
+USER_AGENT=https://github.com/dspinellis/git-issue/tree/6d4040b
 
 # Determine our script library path
 my_IFS=$IFS
@@ -935,7 +935,7 @@ sub_comment()
 usage_edit()
 {
   cat <<\USAGE_edit_EOF
-gi comment usage: git issue edit <sha>
+gi edit usage: git issue edit [-c] <sha>
 USAGE_edit_EOF
   exit 2
 }
@@ -1248,7 +1248,7 @@ Work with an issue
    new        Create a new open issue (with optional -s summary and -c "provider user repo" for github/gitlab export)
    show       Show specified issue (and its comments with -c)
    comment    Add an issue comment
-   edit       Edit the specified issue's description
+   edit       Edit the specified issue's (or comment's with -c) description
    tag        Add (or remove with -r) a tag
    milestone  Specify (or remove with -r) the issue's milestone
    weight     Specify (or remove with -r) the issue's weight

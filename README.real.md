@@ -81,7 +81,7 @@ You use _git issue_ with the following sub-commands.
 * `git issue new`: Create a new open issue (with optional `-s` summary and -c "provider user repo" for github/gitlab export).
 * `git issue show`: Show specified issue (and its comments with `-c`).
 * `git issue comment`: Add an issue comment.
-* `git issue edit`: Edit the specified issue's description
+* `git issue edit`: Edit the specified issue's (or comment's with -c) description
 * `git issue tag`: Add (or remove with `-r`) a tag.
 * `git issue milestone`: Specify (or remove with `-r`) the issue's milestone.
 * `git issue weight`: Specify (or remove with `-r`) the issue's weight.

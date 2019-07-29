@@ -254,12 +254,24 @@ export VISUAL=
 # Comment
 start
 cat <<EOF >comment
-Comment first line
-comment second line
+Comment line
+another line
 EOF
 export VISUAL='mv ../comment '; try "$gi" comment "$issue"
 export VISUAL=
+start ; "$gi" show -c "$issue" | try_grep 'another line'
+
+# Comment editing
+start
+cat <<EOF >comment
+Comment first line
+comment second line
+EOF
+commentsha=$("$gi" show -c "$issue" | awk '/comment/{print $2}')
+export VISUAL='mv ../comment '; try "$gi" edit -c "$commentsha"
+export VISUAL=
 start ; "$gi" show -c "$issue" | try_grep 'comment second line'
+#start ; "$gi" show -c "$issue" | try_ngrep 'another comment line'
 
 # Assign
 try "$gi" assign "$issue" joe@example.com
