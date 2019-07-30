@@ -147,7 +147,7 @@ USAGE_create_issue_EOF
 # Create an issue in GitHub/GitLab, based on a local one
 create_issue()
 {
-  local isha path assignee tags title description url provider user repo nodelete OPTIND escrepo
+  local isha path assignee tags title description url provider user repo nodelete OPTIND escrepo update
      
   while getopts neu: flag ; do    
     case $flag in    
@@ -156,6 +156,7 @@ create_issue()
       ;;    
     u)
       num=$OPTARG
+      update=1
       ;;
     e)
       attr_expand=1    
@@ -205,22 +206,20 @@ create_issue()
   if [ -s "$path/tags" ] ; then
     # format tags as json array
     tags=$(head "$path/tags" | jq --slurp --raw-input 'split("\n")')
-    # Process state (open--opened or closed)
-    if grep '\bopen\b' >/dev/null < "$path/tags"; then
-      if [ "$provider" = github ] ; then
-        jstring=$(echo "$jstring" | jq -r '. + { state: "open" }')
-      else
-        if [ -n "$num" ] ; then
-          jstring=$(echo "$jstring" | jq -r '. + { state_event: "reopen" }')
+    # Process state (open--opened-- or closed)
+    if [ -n "$num" ] ; then
+      if grep '^open$' >/dev/null < "$path/tags"; then
+        if [ "$provider" = github ] ; then
+          jstring=$(echo "$jstring" | jq -r '. + { state: "open" }')
         else
-          jstring=$(echo "$jstring" | jq -r '. + { state: "opened" }')
+          jstring=$(echo "$jstring" | jq -r '. + { state_event: "reopen" }')
         fi
-      fi
-    elif grep '\bclosed\b' > /dev/null < "$path/tags"; then
-      if [ -n "$num" ] && [ "$provider" = gitlab ] ; then
-        jstring=$(echo "$jstring" | jq -r '. + { state_event: "close" }')
       else
-        jstring=$(echo "$jstring" | jq -r '. + { state: "closed" }')
+        if [ "$provider" = gitlab ] ; then
+          jstring=$(echo "$jstring" | jq -r '. + { state_event: "close" }')
+        else
+          jstring=$(echo "$jstring" | jq -r '. + { state: "closed" }')
+        fi
       fi
     fi
     tags=$(echo "$tags" | jq 'map(select(. != "open"))')
@@ -381,6 +380,15 @@ create_issue()
       fi
     else
         rest_api_send "$url/add_spent_time?duration=${timespent}s" timespent "" POST gitlab
+    fi
+  fi
+
+  # Update issue state if we create a closed issue
+  if grep -q '^closed$' "$path/tags" && [ -z "$update" ] ; then
+    if [ "$provider" = github ] ; then
+      rest_api_send "$url" update "{ \"state\": \"closed\" }" PATCH github
+    else
+      rest_api_send "$url" update "{ \"state_event\": \"close\" }" PUT gitlab
     fi
   fi
 
