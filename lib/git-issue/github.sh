@@ -391,10 +391,12 @@ create_issue()
 
   # Comments
   if [ -d "$path/comments" ] ; then
-    for i in "$path/comments"/* ; do
-      local csha cbody cfound cjstring
-      csha=$(echo "$i" | sed 's:.*comments/\(.*\)$:\1:')
-      cbody=$(sed '$!s/[^ ] \?$/&  /' < "$i")
+
+    local csha
+    git log --reverse --grep="^gi comment mark $isha" --format='%H' |
+    while read -r csha ; do
+      local cbody cfound cjstring
+      cbody=$(sed '$!s/[^ ] \?$/&  /' < "$path/comments/$csha")
       cfound=
       for j in "$import_dir"/comments/* ; do
         if [ "$(cat "$j" 2> /dev/null)" = "$csha" ] ; then
