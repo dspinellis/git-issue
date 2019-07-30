@@ -345,6 +345,7 @@ create_issue()
     rest_api_send "$url" create "$jstring" POST "$provider"
     if [ "$provider" = github ] ; then
       num=$(jq '.number' create-body)
+      url="https://api.github.com/repos/$user/$repo/issues/$num"
     else
       num=$(jq '.iid' create-body)
       # update url to that of created issue
