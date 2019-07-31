@@ -147,7 +147,7 @@ USAGE_create_issue_EOF
 # Create an issue in GitHub/GitLab, based on a local one
 create_issue()
 {
-  local isha path assignee tags title description url provider user repo nodelete OPTIND escrepo update
+  local isha path assignee tags title description url provider user repo nodelete OPTIND escrepo update num import_dir
      
   while getopts neu: flag ; do    
     case $flag in    
