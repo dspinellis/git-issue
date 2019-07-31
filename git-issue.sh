@@ -1088,7 +1088,7 @@ shortshow()
 
 sub_list()
 {
-  local all tag path id sortrev
+  local all tag path id sortrev OPTIND
 
   while getopts al:o:r flag ; do
     case "$flag" in
@@ -1284,6 +1284,9 @@ fi
 shift
 case "$subcommand" in
 
+  exportall)
+    sub_exportall "$@"
+    ;;
   export) 
     export_issues "$@"
     ;;

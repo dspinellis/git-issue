@@ -805,3 +805,50 @@ sub_import()
     "Issues URL: https://$provider.com/$user/$repo/issues"
   fi
 }
+
+usage_exportall()
+{
+  cat <<\USAGE_exportall_EOF
+gi new usage: git issue list [-a] provider user repo
+USAGE_exportall_EOF
+  exit 2
+}
+
+#Export all not already present issues to GitHub/GitLab repo
+sub_exportall()
+{
+  local all provider user repo flag OPTIND
+  while getopts a flag ; do
+    case "$flag" in
+    a)
+      all='-a'
+      ;;
+    ?)
+      usage_exportall
+      ;;
+  esac
+done
+shift $((OPTIND - 1));
+
+test "$1" = github -o "$1" = gitlab || usage_exportall
+test -n "$2" -a -n "$3" || usage_exportall
+provider="$1"
+user="$2"
+repo="$3"
+
+# Create list of relevant shas
+shas=$(sub_list "$all" | cut -f1 -d ' ' | tr '\n' ' ')
+
+# Remove already exported issues
+#TODO
+if [ -d ".issues/imports/$provider/$user/$repo" ] ; then
+  for i in ".issues/imports/$provider/$user/$repo/"[1-9]* ; do
+    shas=$(echo "$shas" | sed "s/$(head -c 7 "$i/sha")//")
+  done
+fi
+
+for i in $shas ; do
+  echo "Creating issue $i..."
+  create_issue "$i" "$provider" "$user" "$repo"
+done
+}
