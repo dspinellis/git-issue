@@ -836,8 +836,8 @@ provider="$1"
 user="$2"
 repo="$3"
 
-# Create list of relevant shas
-shas=$(sub_list "$all" | cut -f1 -d ' ' | tr '\n' ' ')
+# Create list of relevant shas sorted by date
+shas=$(sub_list -l %i -o %c "$all"| sed '/^$/d' | tr '\n' ' ')
 
 # Remove already exported issues
 #TODO
