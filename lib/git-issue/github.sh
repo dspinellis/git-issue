@@ -146,26 +146,29 @@ USAGE_create_issue_EOF
 # Create an issue in GitHub/GitLab, based on a local one
 create_issue()
 {
-  local isha path assignee tags title description url provider user repo 
+  local isha path assignee tags title description url provider user repo updaterefs
   local nodelete OPTIND escrepo update num import_dir attr_expand jstring
      
-  while getopts neu: flag ; do    
-    case $flag in    
-    n)    
+  while getopts neu:r: flag ; do
+    case $flag in
+    n)
       nodelete=1    
       ;;    
     u)
       num=$OPTARG
       update=1
       ;;
-    e)
-      attr_expand=1    
+    r)
+      updaterefs=$OPTARG
       ;;
-    ?)    
+    e)
+      attr_expand=1
+      ;;
+    ?)
       usage_create_issue
-      ;;    
-    esac    
-  done    
+      ;;
+    esac
+  done
   shift $((OPTIND - 1));    
     
   test -n "$1" || usage_create_issue
@@ -353,6 +356,7 @@ create_issue()
   fi
   import_dir="imports/$provider/$user/$repo/$num"
 
+
   # Time estimate/time spent
 
   cdissues
@@ -398,6 +402,15 @@ create_issue()
   git add "$import_dir"
   commit "gi: Add $import_dir" 'gi new mark'
 
+  if [ -n "$updaterefs" ] ; then
+    if [ "$provider" = github ] ; then
+      rest_api_send "$url" update "$(echo '{}' | jq --arg desc "$(replacerefs "$description" "$updaterefs" "$provider/$user/$repo")" -r '. + { body: $desc}')" PATCH github
+
+    else
+      rest_api_send "$url" update "$(echo '{}' | jq --arg desc "$(replacerefs "$description" "$updaterefs" "$provider/$user/$repo")" -r '. + { description: $desc}')" PUT gitlab
+    fi
+  fi
+
   # Comments
   if [ -d "$path/comments" ] ; then
 
@@ -406,6 +419,10 @@ create_issue()
     while read -r csha ; do
       local cbody cfound cjstring
       cbody=$(sed '$!s/[^ ] \?$/&  /' < "$path/comments/$csha")
+      if [ -n "$updaterefs" ] ; then
+        cbody=$(replacerefs "$cbody" "$updaterefs" "$provider/$user/$repo")
+      fi
+
       cfound=
       for j in "$import_dir"/comments/* ; do
         if [ "$(cat "$j" 2> /dev/null)" = "$csha" ] ; then
@@ -844,10 +861,13 @@ USAGE_exportall_EOF
 sub_exportall()
 {
   local all provider user repo flag OPTIND shas
-  while getopts a flag ; do
+  while getopts ar flag ; do
     case "$flag" in
     a)
       all='-a'
+      ;;
+    r)
+      updaterefs=1
       ;;
     ?)
       usage_exportall
@@ -877,4 +897,5 @@ for i in $shas ; do
   echo "Creating issue $i..."
   create_issue "$i" "$provider" "$user" "$repo"
 done
+
 }

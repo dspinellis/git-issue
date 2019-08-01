@@ -329,7 +329,7 @@ USAGE_show_EOF
 
 sub_show()
 {
-  local isha path comments rawdate rawest rawspent
+  local isha path comments rawdate rawest rawspent OPTIND
 
   while getopts c flag ; do
     case $flag in
