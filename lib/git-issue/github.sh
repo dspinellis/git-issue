@@ -143,7 +143,6 @@ USAGE_create_issue_EOF
   exit 2
 }
 
-
 # Create an issue in GitHub/GitLab, based on a local one
 create_issue()
 {
@@ -442,6 +441,31 @@ create_issue()
   rm -f milestone-body milestone-header mileres-body mileres-header
   rm -f timeestimate-body timeestimate-header timespent-body timespent-header timestats-body timestats-header
   rm -f commentupdate-header commentupdate-body commentcreate-header commentcreate-body
+}
+
+# Transform a string by replacing all references to issues in repo source to references in repo target
+# replacerefs string "provider/sourceuser/sourcerepo" "provider/targetuser/targetrepo"
+
+replacerefs()
+{
+  local sourcerepo targetrepo string refs ref sha
+  expr "$2" : '.*/.*' > /dev/null || error "Replacerefs: Bad sourcerepo"
+  expr "$3" : '.*/.*' > /dev/null || error "Replacerefs: Bad targetrepo"
+  string=$1
+  sourcerepo=$2
+  targetrepo=$3
+  refs=$(echo "$string" | grep -o '\(\W\|^\)#[0-9]\+\(\W\|$\)' | grep -o '[0-9]\+')
+  
+  cdissues
+  for ref in $refs ; do
+    test -d "imports/$sourcerepo/$ref" || error "Replacerefs(): Couldn't find $sourcerepo/$ref"
+    newref=$(sub_show "$(cat "imports/$sourcerepo/$ref/sha")" | grep -i "$provider issue: #[0-9]\+ at ${targetrepo#*/}" | grep -o '#[0-9]\+')
+    test -n "$newref" || error "Replacerefs(): Couldn't find $sourcerepo/$ref issue in $targetrepo"
+    string=$(echo "$string" | sed "s/\(\W\|^\)#$ref\(\W\|$\)/\1$newref\2/")
+  done
+  echo "$string"
+    
+
 }
 
 # Import GitHub/GitLab comments for the specified issue

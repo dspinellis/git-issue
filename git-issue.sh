@@ -1284,6 +1284,11 @@ fi
 shift
 case "$subcommand" in
 
+  #DEBUG
+  replacerefs)
+    replacerefs "$@"
+    ;;
+
   exportall)
     sub_exportall "$@"
     ;;
