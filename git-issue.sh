@@ -503,7 +503,7 @@ USAGE_tag_EOF
 
 sub_milestone()
 {
-  local isha tag remove path milestone
+  local isha tag remove path milestone OPTIND
 
   while getopts r flag ; do
     case $flag in
@@ -556,7 +556,7 @@ USAGE_tag_EOF
 
 sub_weight()
 {
-  local isha tag remove path weight
+  local isha tag remove path weight OPTIND
 
   while getopts r flag ; do
     case $flag in
@@ -613,7 +613,7 @@ USAGE_tag_EOF
 
 sub_duedate()
 {
-  local isha tag remove path duedate
+  local isha tag remove path duedate OPTIND
 
   while getopts r flag ; do
     case $flag in
@@ -673,7 +673,7 @@ USAGE_tag_EOF
 
 sub_timespent()
 {
-  local isha tag remove path timespent add
+  local isha tag remove path timespent add OPTIND
 
   while getopts ra flag ; do
     case $flag in
@@ -743,7 +743,7 @@ USAGE_tag_EOF
 
 sub_timeestimate()
 {
-  local isha tag remove path timeestimate rawspent
+  local isha tag remove path timeestimate rawspent OPTIND
 
   while getopts r flag ; do
     case $flag in
@@ -810,7 +810,7 @@ sub_assign()
 # file_add_rm [-r] entry-name filename sha entry ...
 file_add_rm()
 {
-  local usage name file isha tag remove path
+  local usage name file isha tag remove path OPTIND
 
   name=$1
   shift
@@ -942,7 +942,7 @@ USAGE_edit_EOF
 
 sub_edit()
 {
-  local isha csha path comment fullpath
+  local isha csha path comment fullpath OPTIND
 
   while getopts c flag ; do
     case $flag in

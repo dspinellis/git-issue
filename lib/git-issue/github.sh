@@ -49,7 +49,7 @@ urlescape()
 # Header is saved in the file $prefix-header; body in $prefix-body
 rest_api_get()
 {
-  local url prefix provider
+  local url prefix provider authtoken
 
   url="$1"
   prefix="$2"
@@ -85,7 +85,7 @@ rest_api_get()
 
 rest_api_send()
 {
-  local url prefix data mode
+  local url prefix data mode curl_mode authtoken
 
   url="$1"
   prefix="$2"
@@ -147,7 +147,8 @@ USAGE_create_issue_EOF
 # Create an issue in GitHub/GitLab, based on a local one
 create_issue()
 {
-  local isha path assignee tags title description url provider user repo nodelete OPTIND escrepo update num import_dir
+  local isha path assignee tags title description url provider user repo 
+  local nodelete OPTIND escrepo update num import_dir attr_expand jstring
      
   while getopts neu: flag ; do    
     case $flag in    
@@ -356,6 +357,7 @@ create_issue()
   # Time estimate/time spent
 
   cdissues
+  local timeestimate timespent
   if [ -s "$path/timeestimate" ] && [ "$provider" = gitlab ] ; then
     timeestimate=$(fmt "$path/timeestimate")
     echo "Adding Time Estimate..."
@@ -698,7 +700,7 @@ import_issues()
 
 export_issues()
 {
-  local user repo i import_dir sha url provider
+  local i import_dir sha url provider user repo flag attr_expand OPTIND sha num
 
   while getopts e flag ; do    
     case $flag in    
@@ -817,7 +819,7 @@ USAGE_exportall_EOF
 #Export all not already present issues to GitHub/GitLab repo
 sub_exportall()
 {
-  local all provider user repo flag OPTIND
+  local all provider user repo flag OPTIND shas
   while getopts a flag ; do
     case "$flag" in
     a)
