@@ -329,7 +329,7 @@ USAGE_show_EOF
 
 sub_show()
 {
-  local isha path comments rawdate rawest rawspent
+  local isha path comments rawdate rawest rawspent OPTIND
 
   while getopts c flag ; do
     case $flag in
@@ -986,8 +986,8 @@ sub_edit()
 }
 
 
-# shellcheck source=lib/git-issue/github.sh
-. "$MY_LIB/github.sh"
+# shellcheck source=lib/git-issue/import-export.sh
+. "$MY_LIB/import-export.sh"
 
 # list: Show issues matching a tag {{{1
 usage_list()
