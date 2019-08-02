@@ -234,7 +234,7 @@ create_issue()
  # Description
   # Title is the first line of description
   title=$(head -n 1 "$path/description")
-  description=$(tail --lines=+3 < "$path/description")
+  description=$(tail --lines=+3 "$path/description" | head -c -1 ; echo x)
 
   # Handle formatting indicators
   if [ -n "$attr_expand" ] ; then
@@ -254,11 +254,11 @@ create_issue()
 
   # jq handles properly escaping the string if passed as variable
   if [ "$provider" = github ] ; then
-    jstring=$(echo "$jstring" | jq --arg desc "$description" --arg tit "$title" -r '. + {title: $tit, body: $desc}')
+    jstring=$(echo "$jstring" | jq --arg desc "${description%x}" --arg tit "$title" -r '. + {title: $tit, body: $desc}')
   else
     # add trailing spaces if needed, or gitlab will ignore the newline
     description=$(echo "$description" | sed '$!s/[^ ] \?$/&  /')
-    jstring=$(echo "$jstring" | jq --arg desc "$description" --arg tit "$title" -r '. + {title: $tit, description: $desc}')
+    jstring=$(echo "$jstring" | jq --arg desc "${description%x}" --arg tit "$title" -r '. + {title: $tit, description: $desc}')
   fi
 
   # Due Date (not supported on github)
@@ -406,7 +406,7 @@ create_issue()
     git log --reverse --grep="^gi comment mark $isha" --format='%H' |
     while read -r csha ; do
       local cbody cfound cjstring
-      cbody=$(sed '$!s/[^ ] \?$/&  /' < "$path/comments/$csha")
+      cbody=$(sed '$!s/[^ ] \?$/&  /' "$path/comments/$csha" | head -c -1 ; echo x)
       cfound=
       for j in "$import_dir"/comments/* ; do
         if [ "$(cat "$j" 2> /dev/null)" = "$csha" ] ; then
@@ -414,7 +414,7 @@ create_issue()
           break
         fi
       done
-      cjstring=$(echo '{}' | jq --arg desc "$cbody" '{body: $desc}')
+      cjstring=$(echo '{}' | jq --arg desc "${cbody%x}" '{body: $desc}')
       if [ -n "$cfound" ] ; then
         # the comment exists already
         echo "Updating comment $csha..."
