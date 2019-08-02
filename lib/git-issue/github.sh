@@ -471,14 +471,20 @@ replacerefs()
   string=$1
   sourcerepo=$2
   targetrepo=$3
-  refs=$(echo "$string" | grep -o '\(\W\|^\)#[0-9]\+\(\W\|$\)' | grep -o '[0-9]\+')
+  #TODO better regexp ( e.g don't replace links )
+  refs=$(echo "$string" | grep -o '\(\W\|^\)#[0-9]\+\(\W\|$\)' | grep -o '[0-9]\+' | sort | uniq)
   
   cdissues
   for ref in $refs ; do
-    test -d "imports/$sourcerepo/$ref" || error "Replacerefs(): Couldn't find $sourcerepo/$ref"
-    newref=$(sub_show "$(cat "imports/$sourcerepo/$ref/sha")" | grep -i "$provider issue: #[0-9]\+ at ${targetrepo#*/}" | grep -o '#[0-9]\+')
-    test -n "$newref" || error "Replacerefs(): Couldn't find $sourcerepo/$ref issue in $targetrepo"
-    string=$(echo "$string" | sed "s/\(\W\|^\)#$ref\(\W\|$\)/\1$newref\2/")
+    test -d "imports/$sourcerepo/$ref" || echo "Warning: Couldn't find $sourcerepo/$ref" 1>&2
+    newref=$(sub_show "$(cat "imports/$sourcerepo/$ref/sha")" | grep -i "${targetrepo%%/*} issue: #[0-9]\+ at ${targetrepo#*/}" | grep -o '#[0-9]\+')
+    # if not found, replace the ref with a link to the original issue
+    if [ -z "$newref" ] ; then
+      echo "Warning: Couldn't find $sourcerepo/$ref issue in $targetrepo" 1>&2
+      newref="[#$ref](https://${sourcerepo%%/*}\.com/${sourcerepo#*/}/issues/$ref)"
+    fi
+
+    string=$(echo "$string" | sed "s?\(\W\|^\)#$ref\(\W\|$\)?\1$newref\2?g")
   done
   echo "$string"
     
