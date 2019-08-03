@@ -1207,11 +1207,82 @@ sub_log()
 
 }
 
+# dump: Generate a json dump of all issues
+sub_dump()
+{
+  local jstring path assignee tags title description duedate weight milestone timeestimate timespent
+
+  shas=$(sub_list -l %i -o %c -a | sed '/^$/d' | tr '\n' ' ')
+
+  cdissues
+  {
+    echo '{ "issues" : ['
+    for sha in $shas ; do
+      jstring="{\"sha\" : \"$sha\" }"
+      path=$(issue_path_part "$sha") || exit
+      # Get the attributes
+
+      # Assignee
+      if [ -r "$path/assignee" ] ; then
+        assignee=$(fmt "$path/assignee")
+        jstring=$(echo "$jstring" | jq --arg A "$assignee" -r '. + { assignee: $A }')
+      fi
+
+      # Tags
+      if [ -s "$path/tags" ] ; then
+        # format tags as json array
+        tags=$(head "$path/tags" | jq --slurp --raw-input 'split("\n")')
+        tags=$(echo "$tags" | jq 'map(select(. != ""))')
+        if [ "$tags" != '[]' ] ; then
+          jstring=$(echo "$jstring" | jq -r ". + { tags: $tags }")
+        fi
+      fi
+
+      # Description
+      # Title is the first line of description
+      description=$(cat "$path/description")
+      jstring=$(echo "$jstring" | jq --arg desc "$description" -r '. + { description: $desc }')
+
+      # Due Date
+      if [ -s "$path/duedate" ] ; then
+        duedate=$($DATEBIN --iso-8601 --date="$(fmt "$path/duedate")")
+        jstring=$(echo "$jstring" | jq --arg D "$duedate" -r '. + { due_date: $D }')
+      fi
+
+      # Weight
+      if [ -s "$path/weight" ] ; then
+        weight=$(fmt "$path/weight")
+        jstring=$(echo "$jstring" | jq --arg W "$weight" -r '. + { weight: $W }')
+      fi
+
+      # Milestone
+      if [ -s "$path/milestone" ] ; then
+        milestone=$(fmt "$path/milestone")
+        jstring=$(echo "$jstring" | jq --arg A "$milestone" -r '. + { milestone: $A }')
+      fi
+
+      # Time estimate/time spent
+      if [ -s "$path/timeestimate" ] ; then
+        timeestimate=$(fmt "$path/timeestimate")
+        jstring=$(echo "$jstring" | jq --arg A "$timeestimate" -r '. + { timeestimate: $A }')
+      fi
+
+      if [ -s "$path/timespent" ] ; then
+        timeestimate=$(fmt "$path/timespent")
+        jstring=$(echo "$jstring" | jq --arg A "$timespent" -r '. + { timespent: $A }')
+      fi
+
+      echo "$jstring" ','
+    done
+    echo '{} ] }'
+  } | jq
+}
+
 # tags: List all used tags and their count {{{1
 sub_tags()
 {
-	cdissues
-	sort issues/*/*/tags | uniq -c | pager
+  cdissues
+  sort issues/*/*/tags | uniq -c | pager
 }
 
 # help: display help information {{{1
@@ -1284,6 +1355,9 @@ fi
 shift
 case "$subcommand" in
 
+  dump)
+    sub_dump "$@"
+    ;;
   exportall)
     sub_exportall "$@"
     ;;
