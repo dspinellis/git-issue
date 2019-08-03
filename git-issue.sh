@@ -382,7 +382,7 @@ Date:	%aD' "$isha"
     # Due Date
     if [ -s "$path/duedate" ] ; then
       printf 'Due Date: '
-      #Print date in rfc-3339 for consistency with git show
+      # Print date in rfc-3339 for consistency with git show
       rawdate=$(cat "$path/duedate")
       $DATEBIN --date="$rawdate" --rfc-3339=seconds
     fi
@@ -396,7 +396,7 @@ Date:	%aD' "$isha"
       # SC2016: Expressions don't expand is single quotes, use double quotes for that
       # Rationale: We don't want expansion
       eval "echo $($DATEBIN --utc --date="@$rawspent" +'$((%s/3600/24)) days %H hours %M minutes %S seconds')" |
-      #remove newline and trim unnecessary fields
+      # Remove newline and trim unnecessary fields
       tr -d '\n' | sed -e "s/00 \(hours\|minutes\|seconds\) \?//g" -e "s/^0 days //"
       printf '/ '
       # shellcheck disable=SC2016
@@ -404,14 +404,14 @@ Date:	%aD' "$isha"
       sed -e "s/00 \(hours\|minutes\|seconds\) \?//g" -e "s/^0 days //"
     elif [ -s "$path/timespent" ] ; then
       printf 'Time Spent: '
-      #Print time in human readable format
+      # Print time in human readable format
       rawspent=$(cat "$path/timespent")
       # shellcheck disable=SC2016
       eval "echo $($DATEBIN --utc --date="@$rawspent" +'$((%s/3600/24)) days %H hours %M minutes %S seconds')" |
       sed -e "s/00 \(hours\|minutes\|seconds\) \?//g" -e "s/^0 days //"
     elif [ -s "$path/timeestimate" ] ; then
       printf 'Time Estimate: '
-      #Print time in human readable format
+      # Print time in human readable format
       rawest=$(cat "$path/timeestimate")
       # shellcheck disable=SC2016
       eval "echo $($DATEBIN --utc --date="@$rawest" +'$((%s/3600/24)) days %H hours %M minutes %S seconds')" |
@@ -574,7 +574,7 @@ sub_weight()
   test -n "$remove" -a -n "$2" && usage_weight
   weight="$2"
   if ! [ "$remove" ] ; then
-    #weight is positive integer
+    # weight is positive integer
     expr "$weight" : '[0-9]*$' > /dev/null || usage_weight
   fi
 
@@ -629,10 +629,10 @@ sub_duedate()
 
   test -n "$1" -a -n "$2$remove" || usage_duedate
   test -n "$remove" -a -n "$2" && usage_duedate
-  #date is stored in the ISO-8601 format
+  # Date is stored in the ISO-8601 format
   duedate=$($DATEBIN --date="$2" --iso-8601=seconds) || usage_duedate
   if ! [ "$remove" ] ; then
-    #convert dates to utc for accurate comparison
+    # Convert dates to utc for accurate comparison
     expr "$($DATEBIN --date="$duedate" --iso-8601=seconds --utc)" '>' "$($DATEBIN --date='now' --iso-8601=seconds --utc)" \
     > /dev/null || printf "Warning: duedate is in the past\n"
   fi
@@ -693,10 +693,10 @@ sub_timespent()
   test -n "$1" -a -n "$2$remove" || usage_timespent
   test -n "$remove" -a -n "$add" && usage_timespent
   test -n "$remove" -a -n "$2" && usage_timespent
-  #timespent is stored in seconds
+  # Timespent is stored in seconds
   timespent=$($DATEBIN --date="1970-1-1 +$2" --utc +%s)|| usage_timespent
   if ! [ "$remove" ] ; then
-    #check for negative time interval
+    # Check for negative time interval
     if [ "$timespent" -lt 0 ] ; then
       usage_timespent
     fi
@@ -717,7 +717,7 @@ sub_timespent()
     if [ "$add" ] ; then
       test -r "$path/timespent" || error "No time spent set"
       rawspent=$(cat "$path/timespent")
-      #add the existing time spent
+      # Add the existing time spent
       timespent=$((rawspent + timespent))
     fi
     touch "$path/timespent" || error "Unable to modify timespent file"
@@ -759,10 +759,10 @@ sub_timeestimate()
 
   test -n "$1" -a -n "$2$remove" || usage_timeestimate
   test -n "$remove" -a -n "$2" && usage_timeestimate
-  #timeestimate is stored in seconds
+  # Timeestimate is stored in seconds
   timeestimate=$($DATEBIN --date="1970-1-1 +$2" --utc +%s)|| usage_timeestimate
   if ! [ "$remove" ] ; then
-    #check for negative time interval
+    # Check for negative time interval
     if [ "$timeestimate" -lt 0 ] ; then
       usage_timespent
     fi
@@ -975,8 +975,8 @@ sub_edit()
     # get issue sha
     isha=$(echo "$commit" | sed 's/gi comment mark //')
     path=$(issue_path_part "$isha")
-    #shellcheck disable=SC2206
-    #SC2128: Expanding an array without an index only gives the first element.
+    # shellcheck disable=SC2206
+    # SC2128: Expanding an array without an index only gives the first element.
     edit "$path/comments/$1"*
     git add "$path/comments/$1"* || trans_abort
     commit 'gi: Edit comment' "gi edit comment $isha"
@@ -1027,7 +1027,7 @@ shortshow()
   # Due Date
   if [ -s "$path/duedate" ] ; then
     rawdate=$(fmt "$path/duedate") 
-    #Print it in rfc-3339 for consistency with git show format
+    # Print it in rfc-3339 for consistency with git show format
     duedate=$($DATEBIN --date="$rawdate" --rfc-3339=seconds)
   fi
 

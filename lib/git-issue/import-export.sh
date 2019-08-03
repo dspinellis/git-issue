@@ -326,7 +326,7 @@ create_issue()
       rest_api_send "$url" update "$jstring" PUT gitlab
     fi
   else
-    #check if issue already exists
+    # Check if issue already exists
     for i in ".issues/imports/$provider/$user/$repo"/[1-9]* ; do
       local sha
       sha=$(cat "$i/sha" 2> /dev/null)
@@ -816,7 +816,7 @@ USAGE_exportall_EOF
   exit 2
 }
 
-#Export all not already present issues to GitHub/GitLab repo
+# Export all not already present issues to GitHub/GitLab repo
 sub_exportall()
 {
   local all provider user repo flag OPTIND shas
