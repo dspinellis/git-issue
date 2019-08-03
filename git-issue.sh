@@ -1272,9 +1272,19 @@ sub_dump()
         jstring=$(echo "$jstring" | jq --arg A "$timespent" -r '. + { timespent: $A }')
       fi
 
+      if [ -d "$path/comments" ] ; then
+        local csha
+        cstring='[]'
+        cshas=$(git log --reverse --grep="^gi comment mark $sha" --format='%H')
+        for csha in $cshas ; do
+          cstring=$(echo "$cstring" | jq --arg C "$(cat "$path/comments/$csha")" --arg S "$csha" '.+= [{ sha : $S , body: $C }]')
+        done
+
+        jstring=$(echo "$jstring" | jq -r ". + { comments: $cstring }")
+      fi
       echo "$jstring" ','
-    done
-    echo '{} ] }'
+      done
+      echo '{} ] }'
   } | jq
 }
 
