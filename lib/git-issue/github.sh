@@ -866,14 +866,14 @@ USAGE_exportall_EOF
 #Export all not already present issues to GitHub/GitLab repo
 sub_exportall()
 {
-  local all provider user repo flag OPTIND shas
-  while getopts ar flag ; do
+  local all provider user repo flag OPTIND shas updaterefs
+  while getopts ar: flag ; do
     case "$flag" in
     a)
       all='-a'
       ;;
     r)
-      updaterefs=1
+      updaterefs=$OPTARG
       ;;
     ?)
       usage_exportall
@@ -901,7 +901,11 @@ fi
 
 for i in $shas ; do
   echo "Creating issue $i..."
-  create_issue "$i" "$provider" "$user" "$repo"
+  if [ -n "$updaterefs" ] ; then
+    create_issue -r "$updaterefs" "$i" "$provider" "$user" "$repo"
+  else
+    create_issue "$i" "$provider" "$user" "$repo"
+  fi
 done
 
 }

@@ -555,8 +555,18 @@ else
     start ; "$gi" show "$issue3" | try_grep 'worldpeace'
     # Try to create duplicate
     ntry "$gi" create -e "$issue3" gitlab $glrepo
-    # delete repo
+    # Delete repo
     curl -H "$GL_CURL_AUTH" -s --request DELETE $glrepourl | grep "Accepted" > /dev/null || printf "Couldn't delete repository.\nYou probably don't have delete permittions activated on the OAUTH token.\nPlease delete %s manually." "$glrepo"
+
+    # Test exportall and replacerefs
+    echo "Trying to create second GitLab repository..."
+    curl -H "$GL_CURL_AUTH" -s --header "Content-Type: application/json" --data '{"name": "git-issue-test-export-'"$RANDOM"'", "visibility": "private"}' --output glrepo https://gitlab.com/api/v4/projects
+    if  grep "git-issue-test-export" > /dev/null < glrepo ; then
+      glrepo2=$(jq --raw-output '.path_with_namespace' < glrepo | tr '/' ' ')
+      glrepourl2=$(jq --raw-output '._links.self' < glrepo)
+      try "$gi" exportall -r "gitlab $(echo "$glrepo" | tr ' ' '/')" gitlab $glrepo2
+      curl -H "$GL_CURL_AUTH" -s --request DELETE $glrepourl2 | grep "Accepted" > /dev/null || printf "Couldn't delete repository.\nYou probably don't have delete permittions activated on the OAUTH token.\nPlease delete %s manually." "$glrepo2"
+    fi
   else
     echo "Couldn't create test repository. Skipping export tests."
   fi
