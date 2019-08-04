@@ -406,7 +406,9 @@ create_issue()
     git log --reverse --grep="^gi comment mark $isha" --format='%H' |
     while read -r csha ; do
       local cbody cfound cjstring
-      cbody=$(sed '$!s/[^ ] \?$/&  /' "$path/comments/$csha" | head -c -1 ; echo x)
+      cbody=$(head -c -1 < "$path/comments/$csha"; echo x)
+      test "$provider" = gitlab && cbody=$(echo "$cbody" | sed '$!s/[^ ] \?$/&  /') ;\
+                                   echo "${cbody%x}" | head -c -1 > "$path/comments/$csha"
       cfound=
       for j in "$import_dir"/comments/* ; do
         if [ "$(cat "$j" 2> /dev/null)" = "$csha" ] ; then
