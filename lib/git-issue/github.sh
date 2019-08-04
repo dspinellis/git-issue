@@ -472,7 +472,7 @@ replacerefs()
   sourcerepo=$2
   targetrepo=$3
   #TODO better regexp ( e.g don't replace links )
-  refs=$(echo "$string" | grep -o '\(\W\|^\)#[0-9]\+\(\W\|$\)' | grep -o '[0-9]\+' | sort | uniq)
+  refs=$(echo "$string" | grep -o '\([^[[:alnum:]_]\|^\)#[0-9]\+\([^][:alnum:]_]\|$\)' | grep -o '[0-9]\+' | sort | uniq)
   
   cdissues
   for ref in $refs ; do
@@ -484,7 +484,7 @@ replacerefs()
       newref="[#$ref](https://${sourcerepo%%/*}\.com/${sourcerepo#*/}/issues/$ref)"
     fi
 
-    string=$(echo "$string" | sed "s?\(\W\|^\)#$ref\(\W\|$\)?\1$newref\2?g")
+    string=$(echo "$string" | sed "s?\([^[[:alnum:]_]\|^\)#$ref\([^][:alnum:]_]\|$\)?\1$newref\2?g")
   done
   echo "$string"
     
