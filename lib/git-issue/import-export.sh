@@ -397,7 +397,7 @@ create_issue()
   test -d "$import_dir" || mkdir -p "$import_dir"
   echo "$isha" > "$import_dir/sha"
   git add "$import_dir"
-  commit "gi: Add $import_dir" 'gi new mark'
+  git diff --quiet HEAD || commit "gi: Add $import_dir" 'gi new mark'
 
   # Comments
   if [ -d "$path/comments" ] ; then
