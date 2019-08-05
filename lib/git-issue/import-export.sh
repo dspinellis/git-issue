@@ -135,7 +135,7 @@ usage_create_issue()
   cat <<\USAGE_create_issue_EOF
 gi create usage: git issue create id provider user repo
 -e        Expand escape attribute sequences before exporting(see gi list -l)
--n        Keep HTTP transaction files 
+-n        Keep HTTP transaction files
 -u num    Update issue #num instead of creating a new one
 
 Example: git issue create 0123 github torvalds linux
@@ -147,27 +147,27 @@ USAGE_create_issue_EOF
 # Create an issue in GitHub/GitLab, based on a local one
 create_issue()
 {
-  local isha path assignee tags title description url provider user repo 
+  local isha path assignee tags title description url provider user repo
   local nodelete OPTIND escrepo update num import_dir attr_expand jstring
      
-  while getopts neu: flag ; do    
-    case $flag in    
-    n)    
-      nodelete=1    
-      ;;    
+  while getopts neu: flag ; do
+    case $flag in
+    n)
+      nodelete=1
+      ;;
     u)
       num=$OPTARG
       update=1
       ;;
     e)
-      attr_expand=1    
+      attr_expand=1
       ;;
-    ?)    
+    ?)
       usage_create_issue
-      ;;    
-    esac    
-  done    
-  shift $((OPTIND - 1));    
+      ;;
+    esac
+  done
+  shift $((OPTIND - 1));
     
   test -n "$1" || usage_create_issue
   test "$2" = github -o "$2" = gitlab || usage_create_issue
@@ -254,11 +254,13 @@ create_issue()
 
   # jq handles properly escaping the string if passed as variable
   if [ "$provider" = github ] ; then
-    jstring=$(echo "$jstring" | jq --arg desc "${description%x}" --arg tit "$title" -r '. + {title: $tit, body: $desc}')
+    jstring=$(echo "$jstring" | jq --arg desc "${description%x}" --arg tit "$title" \
+      -r '. + {title: $tit, body: $desc}')
   else
     # add trailing spaces if needed, or gitlab will ignore the newline
     description=$(echo "$description" | sed '$!s/[^ ] \?$/&  /')
-    jstring=$(echo "$jstring" | jq --arg desc "${description%x}" --arg tit "$title" -r '. + {title: $tit, description: $desc}')
+    jstring=$(echo "$jstring" | jq --arg desc "${description%x}" --arg tit "$title" \
+      -r '. + {title: $tit, description: $desc}')
   fi
 
   # Due Date (not supported on github)
@@ -315,7 +317,7 @@ create_issue()
       jstring=$(echo "$jstring" | jq --arg A "$found" -r '. + { milestone_id: $A }')
     fi
   fi
- 
+
   cd ..
   if [ -n "$num" ] ; then
     if [ "$provider" = github ] ; then
@@ -421,7 +423,8 @@ create_issue()
         # the comment exists already
         echo "Updating comment $csha..."
         if [ "$provider" = github ] ; then
-          rest_api_send "https://api.github.com/repos/$user/$repo/issues/comments/$cfound" commentupdate "$cjstring" PATCH github
+          rest_api_send "https://api.github.com/repos/$user/$repo/issues/comments/$cfound" \
+            commentupdate "$cjstring" PATCH github
         else
           rest_api_send "$url/notes/$cfound" commentupdate "$cjstring" PUT gitlab
         fi
@@ -442,8 +445,8 @@ create_issue()
   # delete temp files
   test -z $nodelete && rm -f ../create-body ../create-header
   rm -f milestone-body milestone-header mileres-body mileres-header
-  rm -f timeestimate-body timeestimate-header timespent-body timespent-header timestats-body timestats-header
-  rm -f commentupdate-header commentupdate-body commentcreate-header commentcreate-body
+  rm -f timeestimate-body timeestimate-header timespent-body timespent-header timestats-body
+  rm -f commentupdate-header commentupdate-body commentcreate-header commentcreate-body timestats-header
 }
 
 # Import GitHub/GitLab comments for the specified issue
@@ -704,18 +707,18 @@ export_issues()
 {
   local i import_dir sha url provider user repo flag attr_expand OPTIND sha num
 
-  while getopts e flag ; do    
-    case $flag in    
-    e)    
-      # global flag to enable escape sequence 
-      attr_expand=1    
-      ;;    
-    ?)    
+  while getopts e flag ; do
+    case $flag in
+    e)
+      # global flag to enable escape sequence
+      attr_expand=1
+      ;;
+    ?)
       usage_export
-      ;;    
-    esac    
-  done    
-  shift $((OPTIND - 1));    
+      ;;
+    esac
+  done
+  shift $((OPTIND - 1));
  
   test -n "$2" -a -n "$3" || usage_export
   test "$1" = github -o "$1" = gitlab || usage_export
@@ -800,7 +803,7 @@ sub_import()
 
   rm -f issue-header issue-body comments-header comments-body
 
-  # Mark last import SHA, so we can use this for merging 
+  # Mark last import SHA, so we can use this for merging
   if [ "$begin_sha" != "$(git rev-parse HEAD)" ] ; then
     local checkpoint="imports/$provider/$user/$repo/checkpoint"
     git rev-parse HEAD >"$checkpoint"
@@ -844,7 +847,6 @@ repo="$3"
 shas=$(sub_list -l %i -o %c "$all"| sed '/^$/d' | tr '\n' ' ')
 
 # Remove already exported issues
-#TODO
 if [ -d ".issues/imports/$provider/$user/$repo" ] ; then
   for i in ".issues/imports/$provider/$user/$repo/"[1-9]* ; do
     shas=$(echo "$shas" | sed "s/$(head -c 7 "$i/sha")//")

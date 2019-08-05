@@ -1015,18 +1015,18 @@ shortshow()
 
   # Milestone
   if [ -s "$path/milestone" ] ; then
-    # Escape sed special chars before passing them 
-    milestone=$(fmt "$path/milestone"|sed -e 's/[\/&]/\\&/g') 
+    # Escape sed special chars before passing them
+    milestone=$(fmt "$path/milestone"|sed -e 's/[\/&]/\\&/g')
   fi
 
   # Weight
   if [ -s "$path/weight" ] ; then
-    weight=$(fmt "$path/weight") 
+    weight=$(fmt "$path/weight")
   fi
 
   # Due Date
   if [ -s "$path/duedate" ] ; then
-    rawdate=$(fmt "$path/duedate") 
+    rawdate=$(fmt "$path/duedate")
     # Print it in rfc-3339 for consistency with git show format
     duedate=$($DATEBIN --date="$rawdate" --rfc-3339=seconds)
   fi
@@ -1066,8 +1066,8 @@ shortshow()
   # Description
   description=$(head -n 1 "$path/description"|sed -e 's/[\/&]/\\&/g')
 
-  # Print the field to sort by first, and remove it after sorting 
-  (echo "$sortfield"$'\002'"$formatstring") | 
+  # Print the field to sort by first, and remove it after sorting
+  (echo "$sortfield"$'\002'"$formatstring") |
 
   sed -e s/%n/$'\001'/g \
   -e s/%i/"$id"/g \
@@ -1079,7 +1079,7 @@ shortshow()
   -e s/%w/"$weight"/g \
   -e s/%A/"$assignee"/g \
   -e s/%T/"$tags"/g \
-  -e s/%D/"$description"/g | 
+  -e s/%D/"$description"/g |
   tr '\n' '\001'
   echo
 
@@ -1371,10 +1371,10 @@ case "$subcommand" in
   exportall)
     sub_exportall "$@"
     ;;
-  export) 
+  export)
     export_issues "$@"
     ;;
-  create) 
+  create)
     create_issue "$@"
     ;;
   init) # Initialize a new issue repository.
@@ -1433,10 +1433,10 @@ case "$subcommand" in
     ;;
    timespent) # Add (or remove with -r) the time spent
     sub_timespent "$@"
-    ;; 
+    ;;
    timeestimate) # Add (or remove with -r) the time estimate
     sub_timeestimate "$@"
-    ;; 
+    ;;
   weight) # Add (or remove with -r) a weight
     sub_weight "$@"
     ;;
