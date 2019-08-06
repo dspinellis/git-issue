@@ -1055,12 +1055,12 @@ shortshow()
 
   # Assignee
   if [ -r "$path/assignee" ] ; then
-    assignee=$(fmt "$path/assignee"|sed -e 's/[\/&]/\\&/g')
+    assignee=$(tr '\n' ' ' < "$path/assignee"|sed -e 's/[\/&]/\\&/g')
   fi
 
   # Tags
   if [ -s "$path/tags" ] ; then
-    tags=$(fmt "$path/tags"|sed -e 's/[\/&]/\\&/g')
+    tags=$(tr '\n' ' ' < "$path/tags"|sed -e 's/[\/&]/\\&/g')
   fi
 
   # Description
@@ -1224,14 +1224,14 @@ sub_dump()
 
       # Assignee
       if [ -r "$path/assignee" ] ; then
-        assignee=$(fmt "$path/assignee")
+        assignee=$(tr '\n' ' ' < "$path/assignee")
         jstring=$(echo "$jstring" | jq --arg A "$assignee" -r '. + { assignee: $A }')
       fi
 
       # Tags
       if [ -s "$path/tags" ] ; then
         # format tags as json array
-        tags=$(head "$path/tags" | jq --slurp --raw-input 'split("\n")')
+        tags=$(jq --slurp --raw-input 'split("\n")' "$path/tags")
         tags=$(echo "$tags" | jq 'map(select(. != ""))')
         if [ "$tags" != '[]' ] ; then
           jstring=$(echo "$jstring" | jq -r ". + { tags: $tags }")

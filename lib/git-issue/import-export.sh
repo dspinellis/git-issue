@@ -190,7 +190,7 @@ create_issue()
   # Get the attributes
   # Assignee
   if [ -r "$path/assignee" ] ; then
-    assignee=$(fmt "$path/assignee")
+    assignee=$(tr '\n' ' ' < "$path/assignee")
     nassignee="$assignee"
     if [ "$provider" = github ] ; then
       for a in $nassignee ; do
@@ -206,7 +206,7 @@ create_issue()
       fi
     else
       rest_api_get "https://gitlab.com/api/v4/users?username=$(echo "$assignee" | cut -f 1 -d ' ')" assignee gitlab
-      if [ "$(fmt assignee-body)" = '[]' ] ; then
+      if [ "$(cat assignee-body)" = '[]' ] ; then
         echo "Couldn't find assignee in GitLab, skipping assignment."
       else
         jstring=$(echo "$jstring" | jq -r ". + { assignee_ids: [$(jq -r '.[0].id' assignee-body)]}")
@@ -217,7 +217,7 @@ create_issue()
   # Tags
   if [ -s "$path/tags" ] ; then
     # format tags as json array
-    tags=$(head "$path/tags" | jq --slurp --raw-input 'split("\n")')
+    tags=$(jq --slurp --raw-input 'split("\n")' "$path/tags")
     # Process state (open--opened-- or closed)
     if [ -n "$num" ] ; then
       if grep '^open$' >/dev/null < "$path/tags"; then
