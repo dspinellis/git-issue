@@ -191,8 +191,19 @@ create_issue()
   # Assignee
   if [ -r "$path/assignee" ] ; then
     assignee=$(fmt "$path/assignee")
+    nassignee="$assignee"
     if [ "$provider" = github ] ; then
-      jstring=$(echo "$jstring" | jq --arg A "$assignee" -r '. + { assignee: $A }')
+      for a in $nassignee ; do
+        ret=$(curl -H "$GI_CURL_AUTH" -A "$USER_AGENT" "https://api.github.com/repos/$user/$repo/assignees/$a" --stderr /dev/null )
+        # if assignee is valid github should return no data
+        if [ -n "$ret" ] ; then
+          echo "Couldn't add assignee $a. Skipping..."
+          assignee=$(echo "$assignee" | sed "s/\($a \| $a\|^$a$\)//")
+        fi
+      done
+      if [ "$assignee" != '[]' ] ; then
+        jstring=$(echo "$jstring" | jq ". + { assignees : $(echo "$assignee" | tr -d '\n' | jq --slurp --raw-input 'split(" ")') }")
+      fi
     else
       rest_api_get "https://gitlab.com/api/v4/users?username=$assignee" assignee gitlab
       if [ "$(fmt assignee-body)" = '[]' ] ; then
@@ -234,7 +245,13 @@ create_issue()
  # Description
   # Title is the first line of description
   title=$(head -n 1 "$path/description")
-  description=$(tail --lines=+3 "$path/description" | head -c -1 ; echo x)
+  if [ -z "$(head -n 2 "$path/description" | tail -n 1)" ] ; then
+    description=$(tail --lines=+3 "$path/description" | head -c -1 ; echo x)
+  else
+    echo "Warning: Found non empty second line on issue description."
+    description=$(tail --lines=+2 "$path/description" | head -c -1 ; echo x)
+  fi
+
 
   # Handle formatting indicators
   if [ -n "$attr_expand" ] ; then
