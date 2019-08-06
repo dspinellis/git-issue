@@ -548,6 +548,11 @@ else
     try "$gi" new -c "gitlab $glrepo" -s "Issue exported directly"
     "$gi" assign "$issue2" "$gluser" > /dev/null 2>&1
     try "$gi" export gitlab $glrepo
+
+    "$gi" assign "$issue2" octocat
+    try "$gi" export gitlab $glrepo
+    "$gi" assign -r "$issue2" octocat
+
     # test milestone creation
     "$gi" new -s "milestone issue : %M" > /dev/null 2>&1
     if [ -z "$issue3" ] ; then

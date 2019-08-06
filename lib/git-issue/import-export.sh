@@ -147,7 +147,7 @@ USAGE_create_issue_EOF
 # Create an issue in GitHub/GitLab, based on a local one
 create_issue()
 {
-  local isha path assignee tags title description url provider user repo
+  local isha path assignee tags title description url provider user repo nassignee
   local nodelete OPTIND escrepo update num import_dir attr_expand jstring
      
   while getopts neu: flag ; do
@@ -205,7 +205,7 @@ create_issue()
         jstring=$(echo "$jstring" | jq ". + { assignees : $(echo "$assignee" | tr -d '\n' | jq --slurp --raw-input 'split(" ")') }")
       fi
     else
-      rest_api_get "https://gitlab.com/api/v4/users?username=$assignee" assignee gitlab
+      rest_api_get "https://gitlab.com/api/v4/users?username=$(echo "$assignee" | cut -f 1 -d ' ')" assignee gitlab
       if [ "$(fmt assignee-body)" = '[]' ] ; then
         echo "Couldn't find assignee in GitLab, skipping assignment."
       else
