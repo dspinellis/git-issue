@@ -472,6 +472,10 @@ else
     try "$gi" new -c "github $ghrepo" -s "Issue exported directly"
     "$gi" assign "$issue2" "$ghuser" > /dev/null 2>&1
     try "$gi" export github $ghrepo
+    # Test invalid assignee
+    "$gi" assign "$issue2" octocat
+    start ; "$gi" export github $ghrepo | try_grep "Couldn't add assignee octocat. Skipping..."
+    "$gi" assign -r "$issue2" octocat
 
     # test milestone creation
     "$gi" new -s "milestone issue" > /dev/null 2>&1
