@@ -701,7 +701,10 @@ import_issues()
     {
       jq -r ".[$i].title" issue-body
       echo
-      jq -r ".[$i].$jdesc" issue-body
+      if jq -e -r ".[$i].$jdesc" issue-body > /dev/null ; then
+        jq -r ".[$i].$jdesc" issue-body
+      fi
+
     } |
     tr -d \\r >"$path/description"
 
