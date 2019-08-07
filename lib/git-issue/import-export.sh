@@ -712,7 +712,7 @@ import_issues()
     if ! git diff --quiet HEAD ; then
       name=${name:-$(jq -r ".[$i].$juser" issue-body)}
       GIT_AUTHOR_DATE=$(jq -r ".[$i].updated_at" issue-body) \
-	commit "gi: Import issue #$issue_number from $provider" \
+	commit "gi: Import issue #$issue_number from $provider/$user/$repo" \
 	"Issue URL: https://$provider.com/$user/$repo/issues/$issue_number" \
 	--author="$name <$name@users.noreply.$provider.com>"
       echo "Imported/updated issue #$issue_number as $(short_sha "$sha")"
@@ -752,11 +752,18 @@ export_issues()
   # For each issue in the respective import dir
   for i in "imports/$provider/$user/$repo"/[1-9]* ; do
     sha=$(cat "$i/sha")
-    # extract number
+    path=$(issue_path_part "$sha") || exit
+    # Extract number
     num=$(echo "$i" | grep -o '/[1-9].*$' | tr -d '/')
-    echo "Exporting issue $sha as #$num"
-    create_issue -u "$num" "$sha" "$provider" "$user" "$repo"
-    rm -f create-body create-header
+    # Check if the issue has been modified since last import/export
+    lastimport=$(git log --grep "gi: \(Add imports/$provider/$user/$repo/$num\|Import issue #$num from github/$user/$repo\)" --format='%H' | head -n 1)
+    if [ -n "$(git rev-list --grep='gi: Import comment message' --invert-grep "$lastimport"..HEAD "$path")" ] ; then
+      echo "Exporting issue $sha as #$num"
+      create_issue -u "$num" "$sha" "$provider" "$user" "$repo"
+      rm -f create-body create-header
+    else
+      echo "Issue $sha hasn't been modified, skipping..."
+    fi
 
   done
 }
