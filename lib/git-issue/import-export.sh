@@ -418,16 +418,6 @@ create_issue()
   git add "$import_dir"
   git diff --quiet HEAD || commit "gi: Add $import_dir" 'gi new mark'
 
-  # Comments
-  if [ -d "$path/comments" ] ; then
-
-    local csha
-    git log --reverse --grep="^gi comment mark $isha" --format='%H' |
-    while read -r csha ; do
-      create_comment "$csha" "$provider" "$user" "$repo" "$num"
-    done
-  fi
-
   # delete temp files
   test -z $nodelete && rm -f ../create-body ../create-header
   rm -f milestone-body milestone-header mileres-body mileres-header timestats-header
@@ -491,7 +481,10 @@ create_comment()
      test -d "$import_dir/comments" || mkdir -p "$import_dir/comments"
      echo "$csha" > "$import_dir/comments/$(jq -r '.id' commentcreate-body)"
    fi
-   rm -f commentupdate-header commentupdate-body commentcreate-header commentcreate-body 
+  git add "$import_dir"
+  # mark export
+  commit "gi: Export comment $csha" "gi comment export $csha at $provider $user $repo"
+  rm -f commentupdate-header commentupdate-body commentcreate-header commentcreate-body 
 }
 
 # Import GitHub/GitLab comments for the specified issue
@@ -785,12 +778,36 @@ export_issues()
     num=$(echo "$i" | grep -o '/[1-9].*$' | tr -d '/')
     # Check if the issue has been modified since last import/export
     lastimport=$(git log --grep "gi: \(Add imports/$provider/$user/$repo/$num\|Import issue #$num from github/$user/$repo\)" --format='%H' | head -n 1)
-    if [ -n "$(git rev-list --grep='gi: Import comment message' --invert-grep "$lastimport"..HEAD "$path")" ] ; then
+    if [ -n "$(git rev-list --grep='\(gi: Import comment message\|gi: Add comment message\|gi: Edit comment\)' --invert-grep "$lastimport"..HEAD "$path")" ] ; then
       echo "Exporting issue $sha as #$num"
       create_issue -u "$num" "$sha" "$provider" "$user" "$repo"
+
       rm -f create-body create-header
     else
       echo "Issue $sha hasn't been modified, skipping..."
+    fi
+
+    # Comments
+    if [ -d "$path/comments" ] ; then
+
+      local csha cfound
+      git log --reverse --grep="^gi comment mark $sha" --format='%H' |
+        while read -r csha ; do
+          lastimport=$(git log --grep "\(gi comment message .* $csha\|gi comment export $csha at $provider $user $repo\)" --format='%H' | head -n 1)
+          cfound=
+          for j in "imports/$provider/$user/$repo/$num"/comments/* ; do
+            if [ "$(cat "$j" 2> /dev/null)" = "$csha" ] ; then
+              cfound=$(echo "$j" | sed 's:.*comments/\(.*\)$:\1:')
+              break
+            fi
+          done
+
+          if [ -n "$(git rev-list "$lastimport"..HEAD "$path/comments/$csha")" ] || [ -z "$cfound" ] ; then
+            create_comment "$csha" "$provider" "$user" "$repo" "$num"
+          else
+            echo "Comment $csha hasn't been modified, skipping..."
+          fi
+        done
     fi
 
   done
