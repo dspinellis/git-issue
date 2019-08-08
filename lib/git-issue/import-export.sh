@@ -424,46 +424,74 @@ create_issue()
     local csha
     git log --reverse --grep="^gi comment mark $isha" --format='%H' |
     while read -r csha ; do
-      local cbody cfound cjstring
-      cbody=$(head -c -1 < "$path/comments/$csha"; echo x)
-      test "$provider" = gitlab && cbody=$(echo "$cbody" | sed '$!s/[^ ] \?$/&  /') ;\
-                                   echo "${cbody%x}" | head -c -1 > "$path/comments/$csha"
-      cfound=
-      for j in "$import_dir"/comments/* ; do
-        if [ "$(cat "$j" 2> /dev/null)" = "$csha" ] ; then
-          cfound=$(echo "$j" | sed 's:.*comments/\(.*\)$:\1:')
-          break
-        fi
-      done
-      cjstring=$(echo '{}' | jq --arg desc "${cbody%x}" '{body: $desc}')
-      if [ -n "$cfound" ] ; then
-        # the comment exists already
-        echo "Updating comment $csha..."
-        if [ "$provider" = github ] ; then
-          rest_api_send "https://api.github.com/repos/$user/$repo/issues/comments/$cfound" \
-            commentupdate "$cjstring" PATCH github
-        else
-          rest_api_send "$url/notes/$cfound" commentupdate "$cjstring" PUT gitlab
-        fi
-      else
-        # we need to create it
-        echo "Creating comment $csha..."
-        if [ "$provider" = github ] ; then
-          rest_api_send "$url/comments" commentcreate "$cjstring" POST github
-        else
-          rest_api_send "$url/notes" commentcreate "$cjstring" POST gitlab
-        fi
-        test -d "$import_dir/comments" || mkdir -p "$import_dir/comments"
-        echo "$csha" > "$import_dir/comments/$(jq -r '.id' commentcreate-body)"
-      fi
+      create_comment "$csha" "$provider" "$user" "$repo" "$num"
     done
   fi
 
   # delete temp files
   test -z $nodelete && rm -f ../create-body ../create-header
-  rm -f milestone-body milestone-header mileres-body mileres-header
+  rm -f milestone-body milestone-header mileres-body mileres-header timestats-header
   rm -f timeestimate-body timeestimate-header timespent-body timespent-header timestats-body
-  rm -f commentupdate-header commentupdate-body commentcreate-header commentcreate-body timestats-header
+}
+
+# Create a comment in GitHub/GitLab, based on a local one
+# create_comment 
+create_comment()
+{
+  local cbody cfound cjstring csha isha path provider user repo num import_dir url
+
+  csha="$1"
+  provider="$2"
+  user="$3"
+  repo="$4"
+  num="$5"
+
+  
+  if [ "$provider" = github ] ; then
+    url="https://api.github.com/repos/$user/$repo/issues/$num"
+  else
+    url="https://gitlab.com/api/v4/projects/$user%2F$escrepo/issues/$num"
+  fi
+
+  import_dir="imports/$provider/$user/$repo/$num/"
+  commit=$(git show --format='%b' "$csha" 2> /dev/null ) || error "Unknown or ambigious comment specification $csha"
+  # get issue sha
+  isha=$(echo "$commit" | sed 's/gi comment mark //')
+  path=$(issue_path_part "$isha")
+
+  cdissues
+  cbody=$(head -c -1 < "$path/comments/$csha"; echo x)
+  test "$provider" = gitlab && cbody=$(echo "$cbody" | sed '$!s/[^ ] \?$/&  /') ;\
+    echo "${cbody%x}" | head -c -1 > "$path/comments/$csha"
+  cfound=
+  for j in "$import_dir"/comments/* ; do
+   if [ "$(cat "$j" 2> /dev/null)" = "$csha" ] ; then
+     cfound=$(echo "$j" | sed 's:.*comments/\(.*\)$:\1:')
+     break
+   fi
+ done
+ cjstring=$(echo '{}' | jq --arg desc "${cbody%x}" '{body: $desc}')
+ if [ -n "$cfound" ] ; then
+   # the comment exists already
+   echo "Updating comment $csha..."
+   if [ "$provider" = github ] ; then
+     rest_api_send "https://api.github.com/repos/$user/$repo/issues/comments/$cfound" \
+       commentupdate "$cjstring" PATCH github
+     else
+       rest_api_send "$url/notes/$cfound" commentupdate "$cjstring" PUT gitlab
+     fi
+   else
+     # we need to create it
+     echo "Creating comment $csha..."
+     if [ "$provider" = github ] ; then
+       rest_api_send "$url/comments" commentcreate "$cjstring" POST github
+     else
+       rest_api_send "$url/notes" commentcreate "$cjstring" POST gitlab
+     fi
+     test -d "$import_dir/comments" || mkdir -p "$import_dir/comments"
+     echo "$csha" > "$import_dir/comments/$(jq -r '.id' commentcreate-body)"
+   fi
+   rm -f commentupdate-header commentupdate-body commentcreate-header commentcreate-body 
 }
 
 # Import GitHub/GitLab comments for the specified issue
@@ -725,7 +753,7 @@ import_issues()
 
 export_issues()
 {
-  local i import_dir sha url provider user repo flag attr_expand OPTIND sha num
+  local i import_dir sha url provider user repo flag attr_expand OPTIND sha num lastimport
 
   while getopts e flag ; do
     case $flag in
