@@ -148,7 +148,7 @@ USAGE_create_issue_EOF
 create_issue()
 {
   local isha path assignee tags title description url provider user repo nassignee
-  local nodelete OPTIND escrepo update num import_dir attr_expand jstring
+  local nodelete OPTIND escrepo update num import_dir attr_expand jstring i
      
   while getopts neu: flag ; do
     case $flag in
@@ -428,7 +428,7 @@ create_issue()
 # create_comment 
 create_comment()
 {
-  local cbody cfound cjstring csha isha path provider user repo num import_dir url
+  local cbody cfound cjstring csha isha path provider user repo num import_dir url escrepo j
 
   csha="$1"
   provider="$2"
@@ -440,6 +440,7 @@ create_comment()
   if [ "$provider" = github ] ; then
     url="https://api.github.com/repos/$user/$repo/issues/$num"
   else
+    escrepo=$(urlescape "$repo")
     url="https://gitlab.com/api/v4/projects/$user%2F$escrepo/issues/$num"
   fi
 
@@ -896,7 +897,7 @@ USAGE_exportall_EOF
 # Export all not already present issues to GitHub/GitLab repo
 sub_exportall()
 {
-  local all provider user repo flag OPTIND shas
+  local all provider user repo flag OPTIND shas num path i
   while getopts a flag ; do
     case "$flag" in
     a)
@@ -925,8 +926,28 @@ if [ -d ".issues/imports/$provider/$user/$repo" ] ; then
   done
 fi
 
+cdissues
 for i in $shas ; do
   echo "Creating issue $i..."
-  create_issue "$i" "$provider" "$user" "$repo"
+  create_issue -n "$i" "$provider" "$user" "$repo"
+  # get created issue id
+  if [ "$provider" = github ] ; then
+    num=$(jq '.number' ../create-body)
+  else
+    num=$(jq '.iid' ../create-body)
+  fi
+  rm -f create-header create-body
+ 
+  # Create comments
+
+  path=$(issue_path_part "$i") || exit
+  if [ -d "$path/comments" ] ; then
+    local csha cfound
+    git log --reverse --grep="^gi comment mark $i" --format='%H' |
+      while read -r csha ; do
+        create_comment "$csha" "$provider" "$user" "$repo" "$num"
+      done
+  fi
+ 
 done
 }
