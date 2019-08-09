@@ -382,7 +382,7 @@ Date:	%aD' "$isha"
     # Due Date
     if [ -s "$path/duedate" ] ; then
       printf 'Due Date: '
-      #Print date in rfc-3339 for consistency with git show
+      # Print date in rfc-3339 for consistency with git show
       rawdate=$(cat "$path/duedate")
       $DATEBIN --date="$rawdate" --rfc-3339=seconds
     fi
@@ -396,7 +396,7 @@ Date:	%aD' "$isha"
       # SC2016: Expressions don't expand is single quotes, use double quotes for that
       # Rationale: We don't want expansion
       eval "echo $($DATEBIN --utc --date="@$rawspent" +'$((%s/3600/24)) days %H hours %M minutes %S seconds')" |
-      #remove newline and trim unnecessary fields
+      # Remove newline and trim unnecessary fields
       tr -d '\n' | sed -e "s/00 \(hours\|minutes\|seconds\) \?//g" -e "s/^0 days //"
       printf '/ '
       # shellcheck disable=SC2016
@@ -404,14 +404,14 @@ Date:	%aD' "$isha"
       sed -e "s/00 \(hours\|minutes\|seconds\) \?//g" -e "s/^0 days //"
     elif [ -s "$path/timespent" ] ; then
       printf 'Time Spent: '
-      #Print time in human readable format
+      # Print time in human readable format
       rawspent=$(cat "$path/timespent")
       # shellcheck disable=SC2016
       eval "echo $($DATEBIN --utc --date="@$rawspent" +'$((%s/3600/24)) days %H hours %M minutes %S seconds')" |
       sed -e "s/00 \(hours\|minutes\|seconds\) \?//g" -e "s/^0 days //"
     elif [ -s "$path/timeestimate" ] ; then
       printf 'Time Estimate: '
-      #Print time in human readable format
+      # Print time in human readable format
       rawest=$(cat "$path/timeestimate")
       # shellcheck disable=SC2016
       eval "echo $($DATEBIN --utc --date="@$rawest" +'$((%s/3600/24)) days %H hours %M minutes %S seconds')" |
@@ -574,7 +574,7 @@ sub_weight()
   test -n "$remove" -a -n "$2" && usage_weight
   weight="$2"
   if ! [ "$remove" ] ; then
-    #weight is positive integer
+    # weight is positive integer
     expr "$weight" : '[0-9]*$' > /dev/null || usage_weight
   fi
 
@@ -629,10 +629,10 @@ sub_duedate()
 
   test -n "$1" -a -n "$2$remove" || usage_duedate
   test -n "$remove" -a -n "$2" && usage_duedate
-  #date is stored in the ISO-8601 format
+  # Date is stored in the ISO-8601 format
   duedate=$($DATEBIN --date="$2" --iso-8601=seconds) || usage_duedate
   if ! [ "$remove" ] ; then
-    #convert dates to utc for accurate comparison
+    # Convert dates to utc for accurate comparison
     expr "$($DATEBIN --date="$duedate" --iso-8601=seconds --utc)" '>' "$($DATEBIN --date='now' --iso-8601=seconds --utc)" \
     > /dev/null || printf "Warning: duedate is in the past\n"
   fi
@@ -693,10 +693,10 @@ sub_timespent()
   test -n "$1" -a -n "$2$remove" || usage_timespent
   test -n "$remove" -a -n "$add" && usage_timespent
   test -n "$remove" -a -n "$2" && usage_timespent
-  #timespent is stored in seconds
+  # Timespent is stored in seconds
   timespent=$($DATEBIN --date="1970-1-1 +$2" --utc +%s)|| usage_timespent
   if ! [ "$remove" ] ; then
-    #check for negative time interval
+    # Check for negative time interval
     if [ "$timespent" -lt 0 ] ; then
       usage_timespent
     fi
@@ -717,7 +717,7 @@ sub_timespent()
     if [ "$add" ] ; then
       test -r "$path/timespent" || error "No time spent set"
       rawspent=$(cat "$path/timespent")
-      #add the existing time spent
+      # Add the existing time spent
       timespent=$((rawspent + timespent))
     fi
     touch "$path/timespent" || error "Unable to modify timespent file"
@@ -759,10 +759,10 @@ sub_timeestimate()
 
   test -n "$1" -a -n "$2$remove" || usage_timeestimate
   test -n "$remove" -a -n "$2" && usage_timeestimate
-  #timeestimate is stored in seconds
+  # Timeestimate is stored in seconds
   timeestimate=$($DATEBIN --date="1970-1-1 +$2" --utc +%s)|| usage_timeestimate
   if ! [ "$remove" ] ; then
-    #check for negative time interval
+    # Check for negative time interval
     if [ "$timeestimate" -lt 0 ] ; then
       usage_timespent
     fi
@@ -975,8 +975,8 @@ sub_edit()
     # get issue sha
     isha=$(echo "$commit" | sed 's/gi comment mark //')
     path=$(issue_path_part "$isha")
-    #shellcheck disable=SC2206
-    #SC2128: Expanding an array without an index only gives the first element.
+    # shellcheck disable=SC2206
+    # SC2128: Expanding an array without an index only gives the first element.
     edit "$path/comments/$1"*
     git add "$path/comments/$1"* || trans_abort
     commit 'gi: Edit comment' "gi edit comment $isha"
@@ -986,8 +986,8 @@ sub_edit()
 }
 
 
-# shellcheck source=lib/git-issue/github.sh
-. "$MY_LIB/github.sh"
+# shellcheck source=lib/git-issue/import-export.sh
+. "$MY_LIB/import-export.sh"
 
 # list: Show issues matching a tag {{{1
 usage_list()
@@ -1015,19 +1015,19 @@ shortshow()
 
   # Milestone
   if [ -s "$path/milestone" ] ; then
-    # Escape sed special chars before passing them 
-    milestone=$(fmt "$path/milestone"|sed -e 's/[\/&]/\\&/g') 
+    # Escape sed special chars before passing them
+    milestone=$(fmt "$path/milestone"|sed -e 's/[\/&]/\\&/g')
   fi
 
   # Weight
   if [ -s "$path/weight" ] ; then
-    weight=$(fmt "$path/weight") 
+    weight=$(fmt "$path/weight")
   fi
 
   # Due Date
   if [ -s "$path/duedate" ] ; then
-    rawdate=$(fmt "$path/duedate") 
-    #Print it in rfc-3339 for consistency with git show format
+    rawdate=$(fmt "$path/duedate")
+    # Print it in rfc-3339 for consistency with git show format
     duedate=$($DATEBIN --date="$rawdate" --rfc-3339=seconds)
   fi
 
@@ -1055,19 +1055,19 @@ shortshow()
 
   # Assignee
   if [ -r "$path/assignee" ] ; then
-    assignee=$(fmt "$path/assignee"|sed -e 's/[\/&]/\\&/g')
+    assignee=$(tr '\n' ' ' < "$path/assignee"|sed -e 's/[\/&]/\\&/g')
   fi
 
   # Tags
   if [ -s "$path/tags" ] ; then
-    tags=$(fmt "$path/tags"|sed -e 's/[\/&]/\\&/g')
+    tags=$(tr '\n' ' ' < "$path/tags"|sed -e 's/[\/&]/\\&/g')
   fi
 
   # Description
   description=$(head -n 1 "$path/description"|sed -e 's/[\/&]/\\&/g')
 
-  # Print the field to sort by first, and remove it after sorting 
-  (echo "$sortfield"$'\002'"$formatstring") | 
+  # Print the field to sort by first, and remove it after sorting
+  (echo "$sortfield"$'\002'"$formatstring") |
 
   sed -e s/%n/$'\001'/g \
   -e s/%i/"$id"/g \
@@ -1079,7 +1079,7 @@ shortshow()
   -e s/%w/"$weight"/g \
   -e s/%A/"$assignee"/g \
   -e s/%T/"$tags"/g \
-  -e s/%D/"$description"/g | 
+  -e s/%D/"$description"/g |
   tr '\n' '\001'
   echo
 
@@ -1207,11 +1207,92 @@ sub_log()
 
 }
 
+# dump: Generate a json dump of all issues
+sub_dump()
+{
+  local jstring path assignee tags title description duedate weight milestone timeestimate timespent
+
+  shas=$(sub_list -l %i -o %c -a | sed '/^$/d' | tr '\n' ' ')
+
+  cdissues
+  {
+    echo '{ "issues" : ['
+    for sha in $shas ; do
+      jstring="{\"sha\" : \"$sha\" }"
+      path=$(issue_path_part "$sha") || exit
+      # Get the attributes
+
+      # Assignee
+      if [ -r "$path/assignee" ] ; then
+        assignee=$(tr '\n' ' ' < "$path/assignee")
+        jstring=$(echo "$jstring" | jq --arg A "$assignee" -r '. + { assignee: $A }')
+      fi
+
+      # Tags
+      if [ -s "$path/tags" ] ; then
+        # format tags as json array
+        tags=$(jq --slurp --raw-input 'split("\n")' "$path/tags")
+        tags=$(echo "$tags" | jq 'map(select(. != ""))')
+        if [ "$tags" != '[]' ] ; then
+          jstring=$(echo "$jstring" | jq -r ". + { tags: $tags }")
+        fi
+      fi
+
+      # Description
+      # Title is the first line of description
+      description=$(cat "$path/description")
+      jstring=$(echo "$jstring" | jq --arg desc "$description" -r '. + { description: $desc }')
+
+      # Due Date
+      if [ -s "$path/duedate" ] ; then
+        duedate=$($DATEBIN --iso-8601 --date="$(fmt "$path/duedate")")
+        jstring=$(echo "$jstring" | jq --arg D "$duedate" -r '. + { due_date: $D }')
+      fi
+
+      # Weight
+      if [ -s "$path/weight" ] ; then
+        weight=$(fmt "$path/weight")
+        jstring=$(echo "$jstring" | jq --arg W "$weight" -r '. + { weight: $W }')
+      fi
+
+      # Milestone
+      if [ -s "$path/milestone" ] ; then
+        milestone=$(fmt "$path/milestone")
+        jstring=$(echo "$jstring" | jq --arg A "$milestone" -r '. + { milestone: $A }')
+      fi
+
+      # Time estimate/time spent
+      if [ -s "$path/timeestimate" ] ; then
+        timeestimate=$(fmt "$path/timeestimate")
+        jstring=$(echo "$jstring" | jq --arg A "$timeestimate" -r '. + { timeestimate: $A }')
+      fi
+
+      if [ -s "$path/timespent" ] ; then
+        timeestimate=$(fmt "$path/timespent")
+        jstring=$(echo "$jstring" | jq --arg A "$timespent" -r '. + { timespent: $A }')
+      fi
+
+      if [ -d "$path/comments" ] ; then
+        local csha
+        cstring='[]'
+        cshas=$(git log --reverse --grep="^gi comment mark $sha" --format='%H')
+        for csha in $cshas ; do
+          cstring=$(echo "$cstring" | jq --arg C "$(cat "$path/comments/$csha")" --arg S "$csha" '.+= [{ sha : $S , body: $C }]')
+        done
+
+        jstring=$(echo "$jstring" | jq -r ". + { comments: $cstring }")
+      fi
+      echo "$jstring" ','
+      done
+      echo '{} ] }'
+  } | jq
+}
+
 # tags: List all used tags and their count {{{1
 sub_tags()
 {
-	cdissues
-	sort issues/*/*/tags | uniq -c | pager
+  cdissues
+  sort issues/*/*/tags | uniq -c | pager
 }
 
 # help: display help information {{{1
@@ -1289,13 +1370,16 @@ case "$subcommand" in
     replacerefs "$@"
     ;;
 
+  dump)
+    sub_dump "$@"
+    ;;
   exportall)
     sub_exportall "$@"
     ;;
-  export) 
+  export)
     export_issues "$@"
     ;;
-  create) 
+  create)
     create_issue "$@"
     ;;
   init) # Initialize a new issue repository.
@@ -1354,10 +1438,10 @@ case "$subcommand" in
     ;;
    timespent) # Add (or remove with -r) the time spent
     sub_timespent "$@"
-    ;; 
+    ;;
    timeestimate) # Add (or remove with -r) the time estimate
     sub_timeestimate "$@"
-    ;; 
+    ;;
   weight) # Add (or remove with -r) a weight
     sub_weight "$@"
     ;;

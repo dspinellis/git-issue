@@ -11,7 +11,7 @@ install:
 	@mkdir -p $(DESTDIR)$(BINPREFIX)
 	@mkdir -p $(DESTDIR)$(LIBPREFIX)
 	install git-issue.sh $(DESTDIR)$(BINPREFIX)/git-issue
-	install lib/git-issue/github.sh $(DESTDIR)$(LIBPREFIX)/github.sh
+	install lib/git-issue/import-export.sh $(DESTDIR)$(LIBPREFIX)/import-export.sh
 	install -m 644 git-issue.1 $(DESTDIR)$(MANPREFIX)/
 	@mkdir -p $(DESTDIR)$(SYSCONFDIR)/bash_completion.d
 	install -m 644 gi-completion.sh $(DESTDIR)$(SYSCONFDIR)/bash_completion.d/git-issue

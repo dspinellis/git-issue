@@ -135,7 +135,7 @@ usage_create_issue()
   cat <<\USAGE_create_issue_EOF
 gi create usage: git issue create id provider user repo
 -e        Expand escape attribute sequences before exporting(see gi list -l)
--n        Keep HTTP transaction files 
+-n        Keep HTTP transaction files
 -u num    Update issue #num instead of creating a new one
 
 Example: git issue create 0123 github torvalds linux
@@ -146,14 +146,15 @@ USAGE_create_issue_EOF
 # Create an issue in GitHub/GitLab, based on a local one
 create_issue()
 {
-  local isha path assignee tags title description url provider user repo updaterefs
-  local nodelete OPTIND escrepo update num import_dir attr_expand jstring
+
+  local isha path assignee tags title description url provider user repo nassignee updaterefs
+  local nodelete OPTIND escrepo update num import_dir attr_expand jstring i
      
   while getopts neu:r: flag ; do
     case $flag in
     n)
-      nodelete=1    
-      ;;    
+      nodelete=1
+      ;;
     u)
       num=$OPTARG
       update=1
@@ -169,7 +170,7 @@ create_issue()
       ;;
     esac
   done
-  shift $((OPTIND - 1));    
+  shift $((OPTIND - 1));
     
   test -n "$1" || usage_create_issue
   test "$2" = github -o "$2" = gitlab || usage_create_issue
@@ -192,12 +193,23 @@ create_issue()
   # Get the attributes
   # Assignee
   if [ -r "$path/assignee" ] ; then
-    assignee=$(fmt "$path/assignee")
+    assignee=$(tr '\n' ' ' < "$path/assignee")
+    nassignee="$assignee"
     if [ "$provider" = github ] ; then
-      jstring=$(echo "$jstring" | jq --arg A "$assignee" -r '. + { assignee: $A }')
+      for a in $nassignee ; do
+        ret=$(curl -H "$GI_CURL_AUTH" -A "$USER_AGENT" "https://api.github.com/repos/$user/$repo/assignees/$a" --stderr /dev/null )
+        # if assignee is valid github should return no data
+        if [ -n "$ret" ] ; then
+          echo "Couldn't add assignee $a. Skipping..."
+          assignee=$(echo "$assignee" | sed "s/\($a \| $a\|^$a$\)//")
+        fi
+      done
+      if [ "$assignee" != '[]' ] ; then
+        jstring=$(echo "$jstring" | jq ". + { assignees : $(echo "$assignee" | tr -d '\n' | jq --slurp --raw-input 'split(" ")') }")
+      fi
     else
-      rest_api_get "https://gitlab.com/api/v4/users?username=$assignee" assignee gitlab
-      if [ "$(fmt assignee-body)" = '[]' ] ; then
+      rest_api_get "https://gitlab.com/api/v4/users?username=$(echo "$assignee" | cut -f 1 -d ' ')" assignee gitlab
+      if [ "$(cat assignee-body)" = '[]' ] ; then
         echo "Couldn't find assignee in GitLab, skipping assignment."
       else
         jstring=$(echo "$jstring" | jq -r ". + { assignee_ids: [$(jq -r '.[0].id' assignee-body)]}")
@@ -208,7 +220,7 @@ create_issue()
   # Tags
   if [ -s "$path/tags" ] ; then
     # format tags as json array
-    tags=$(head "$path/tags" | jq --slurp --raw-input 'split("\n")')
+    tags=$(jq --slurp --raw-input 'split("\n")' "$path/tags")
     # Process state (open--opened-- or closed)
     if [ -n "$num" ] ; then
       if grep '^open$' >/dev/null < "$path/tags"; then
@@ -236,7 +248,13 @@ create_issue()
  # Description
   # Title is the first line of description
   title=$(head -n 1 "$path/description")
-  description=$(tail --lines=+3 < "$path/description")
+  if [ -z "$(head -n 2 "$path/description" | tail -n 1)" ] ; then
+    description=$(tail --lines=+3 "$path/description" | head -c -1 ; echo x)
+  else
+    echo "Warning: Found non empty second line on issue description."
+    description=$(tail --lines=+2 "$path/description" | head -c -1 ; echo x)
+  fi
+
 
   # Handle formatting indicators
   if [ -n "$attr_expand" ] ; then
@@ -256,11 +274,13 @@ create_issue()
 
   # jq handles properly escaping the string if passed as variable
   if [ "$provider" = github ] ; then
-    jstring=$(echo "$jstring" | jq --arg desc "$description" --arg tit "$title" -r '. + {title: $tit, body: $desc}')
+    jstring=$(echo "$jstring" | jq --arg desc "${description%x}" --arg tit "$title" \
+      -r '. + {title: $tit, body: $desc}')
   else
     # add trailing spaces if needed, or gitlab will ignore the newline
     description=$(echo "$description" | sed '$!s/[^ ] \?$/&  /')
-    jstring=$(echo "$jstring" | jq --arg desc "$description" --arg tit "$title" -r '. + {title: $tit, description: $desc}')
+    jstring=$(echo "$jstring" | jq --arg desc "${description%x}" --arg tit "$title" \
+      -r '. + {title: $tit, description: $desc}')
   fi
 
   # Due Date (not supported on github)
@@ -317,7 +337,7 @@ create_issue()
       jstring=$(echo "$jstring" | jq --arg A "$found" -r '. + { milestone_id: $A }')
     fi
   fi
- 
+
   cd ..
   if [ -n "$num" ] ; then
     if [ "$provider" = github ] ; then
@@ -328,7 +348,7 @@ create_issue()
       rest_api_send "$url" update "$jstring" PUT gitlab
     fi
   else
-    #check if issue already exists
+    # Check if issue already exists
     for i in ".issues/imports/$provider/$user/$repo"/[1-9]* ; do
       local sha
       sha=$(cat "$i/sha" 2> /dev/null)
@@ -400,7 +420,7 @@ create_issue()
   test -d "$import_dir" || mkdir -p "$import_dir"
   echo "$isha" > "$import_dir/sha"
   git add "$import_dir"
-  commit "gi: Add $import_dir" 'gi new mark'
+  git diff --quiet HEAD || commit "gi: Add $import_dir" 'gi new mark'
 
   if [ -n "$updaterefs" ] ; then
     if [ "$provider" = github ] ; then
@@ -411,53 +431,74 @@ create_issue()
     fi
   fi
 
-  # Comments
-  if [ -d "$path/comments" ] ; then
-
-    local csha
-    git log --reverse --grep="^gi comment mark $isha" --format='%H' |
-    while read -r csha ; do
-      local cbody cfound cjstring
-      cbody=$(sed '$!s/[^ ] \?$/&  /' < "$path/comments/$csha")
-      if [ -n "$updaterefs" ] ; then
-        cbody=$(replacerefs "$cbody" "$updaterefs" "$provider/$user/$repo")
-      fi
-
-      cfound=
-      for j in "$import_dir"/comments/* ; do
-        if [ "$(cat "$j" 2> /dev/null)" = "$csha" ] ; then
-          cfound=$(echo "$j" | sed 's:.*comments/\(.*\)$:\1:')
-          break
-        fi
-      done
-      cjstring=$(echo '{}' | jq --arg desc "$cbody" '{body: $desc}')
-      if [ -n "$cfound" ] ; then
-        # the comment exists already
-        echo "Updating comment $csha..."
-        if [ "$provider" = github ] ; then
-          rest_api_send "https://api.github.com/repos/$user/$repo/issues/comments/$cfound" commentupdate "$cjstring" PATCH github
-        else
-          rest_api_send "$url/notes/$cfound" commentupdate "$cjstring" PUT gitlab
-        fi
-      else
-        # we need to create it
-        echo "Creating comment $csha..."
-        if [ "$provider" = github ] ; then
-          rest_api_send "$url/comments" commentcreate "$cjstring" POST github
-        else
-          rest_api_send "$url/notes" commentcreate "$cjstring" POST gitlab
-        fi
-        test -d "$import_dir/comments" || mkdir -p "$import_dir/comments"
-        echo "$csha" > "$import_dir/comments/$(jq -r '.id' commentcreate-body)"
-      fi
-    done
-  fi
-
   # delete temp files
   test -z $nodelete && rm -f ../create-body ../create-header
-  rm -f milestone-body milestone-header mileres-body mileres-header
-  rm -f timeestimate-body timeestimate-header timespent-body timespent-header timestats-body timestats-header
-  rm -f commentupdate-header commentupdate-body commentcreate-header commentcreate-body
+  rm -f milestone-body milestone-header mileres-body mileres-header timestats-header
+  rm -f timeestimate-body timeestimate-header timespent-body timespent-header timestats-body
+}
+
+# Create a comment in GitHub/GitLab, based on a local one
+# create_comment 
+create_comment()
+{
+  local cbody cfound cjstring csha isha path provider user repo num import_dir url escrepo j
+
+  csha="$1"
+  provider="$2"
+  user="$3"
+  repo="$4"
+  num="$5"
+
+  
+  if [ "$provider" = github ] ; then
+    url="https://api.github.com/repos/$user/$repo/issues/$num"
+  else
+    escrepo=$(urlescape "$repo")
+    url="https://gitlab.com/api/v4/projects/$user%2F$escrepo/issues/$num"
+  fi
+
+  import_dir="imports/$provider/$user/$repo/$num/"
+  commit=$(git show --format='%b' "$csha" 2> /dev/null ) || error "Unknown or ambigious comment specification $csha"
+  # get issue sha
+  isha=$(echo "$commit" | sed 's/gi comment mark //')
+  path=$(issue_path_part "$isha")
+
+  cdissues
+  cbody=$(head -c -1 < "$path/comments/$csha"; echo x)
+  test "$provider" = gitlab && cbody=$(echo "$cbody" | sed '$!s/[^ ] \?$/&  /') ;\
+    echo "${cbody%x}" | head -c -1 > "$path/comments/$csha"
+  cfound=
+  for j in "$import_dir"/comments/* ; do
+   if [ "$(cat "$j" 2> /dev/null)" = "$csha" ] ; then
+     cfound=$(echo "$j" | sed 's:.*comments/\(.*\)$:\1:')
+     break
+   fi
+ done
+ cjstring=$(echo '{}' | jq --arg desc "${cbody%x}" '{body: $desc}')
+ if [ -n "$cfound" ] ; then
+   # the comment exists already
+   echo "Updating comment $csha..."
+   if [ "$provider" = github ] ; then
+     rest_api_send "https://api.github.com/repos/$user/$repo/issues/comments/$cfound" \
+       commentupdate "$cjstring" PATCH github
+     else
+       rest_api_send "$url/notes/$cfound" commentupdate "$cjstring" PUT gitlab
+     fi
+   else
+     # we need to create it
+     echo "Creating comment $csha..."
+     if [ "$provider" = github ] ; then
+       rest_api_send "$url/comments" commentcreate "$cjstring" POST github
+     else
+       rest_api_send "$url/notes" commentcreate "$cjstring" POST gitlab
+     fi
+     test -d "$import_dir/comments" || mkdir -p "$import_dir/comments"
+     echo "$csha" > "$import_dir/comments/$(jq -r '.id' commentcreate-body)"
+   fi
+  git add "$import_dir"
+  # mark export
+  commit "gi: Export comment $csha" "gi comment export $csha at $provider $user $repo"
+  rm -f commentupdate-header commentupdate-body commentcreate-header commentcreate-body 
 }
 
 # Transform a string by replacing all references to issues in repo source to references in repo target
@@ -471,7 +512,6 @@ replacerefs()
   string=$1
   sourcerepo=$2
   targetrepo=$3
-  #TODO better regexp ( e.g don't replace links )
   refs=$(echo "$string" | grep -o '\([^[[:alnum:]_]\|^\)#[0-9]\+\([^][:alnum:]_]\|$\)' | grep -o '[0-9]\+' | sort | uniq)
   
   cdissues
@@ -726,7 +766,10 @@ import_issues()
     {
       jq -r ".[$i].title" issue-body
       echo
-      jq -r ".[$i].$jdesc" issue-body
+      if jq -e -r ".[$i].$jdesc" issue-body > /dev/null ; then
+        jq -r ".[$i].$jdesc" issue-body
+      fi
+
     } |
     tr -d \\r >"$path/description"
 
@@ -734,7 +777,7 @@ import_issues()
     if ! git diff --quiet HEAD ; then
       name=${name:-$(jq -r ".[$i].$juser" issue-body)}
       GIT_AUTHOR_DATE=$(jq -r ".[$i].updated_at" issue-body) \
-	commit "gi: Import issue #$issue_number from $provider" \
+	commit "gi: Import issue #$issue_number from $provider/$user/$repo" \
 	"Issue URL: https://$provider.com/$user/$repo/issues/$issue_number" \
 	--author="$name <$name@users.noreply.$provider.com>"
       echo "Imported/updated issue #$issue_number as $(short_sha "$sha")"
@@ -747,20 +790,20 @@ import_issues()
 
 export_issues()
 {
-  local i import_dir sha url provider user repo flag attr_expand OPTIND sha num
+  local i import_dir sha url provider user repo flag attr_expand OPTIND sha num lastimport
 
-  while getopts e flag ; do    
-    case $flag in    
-    e)    
-      # global flag to enable escape sequence 
-      attr_expand=1    
-      ;;    
-    ?)    
+  while getopts e flag ; do
+    case $flag in
+    e)
+      # global flag to enable escape sequence
+      attr_expand=1
+      ;;
+    ?)
       usage_export
-      ;;    
-    esac    
-  done    
-  shift $((OPTIND - 1));    
+      ;;
+    esac
+  done
+  shift $((OPTIND - 1));
  
   test -n "$2" -a -n "$3" || usage_export
   test "$1" = github -o "$1" = gitlab || usage_export
@@ -774,11 +817,42 @@ export_issues()
   # For each issue in the respective import dir
   for i in "imports/$provider/$user/$repo"/[1-9]* ; do
     sha=$(cat "$i/sha")
-    # extract number
+    path=$(issue_path_part "$sha") || exit
+    # Extract number
     num=$(echo "$i" | grep -o '/[1-9].*$' | tr -d '/')
-    echo "Exporting issue $sha as #$num"
-    create_issue -u "$num" "$sha" "$provider" "$user" "$repo"
-    rm -f create-body create-header
+    # Check if the issue has been modified since last import/export
+    lastimport=$(git log --grep "gi: \(Add imports/$provider/$user/$repo/$num\|Import issue #$num from github/$user/$repo\)" --format='%H' | head -n 1)
+    if [ -n "$(git rev-list --grep='\(gi: Import comment message\|gi: Add comment message\|gi: Edit comment\)' --invert-grep "$lastimport"..HEAD "$path")" ] ; then
+      echo "Exporting issue $sha as #$num"
+      create_issue -u "$num" "$sha" "$provider" "$user" "$repo"
+
+      rm -f create-body create-header
+    else
+      echo "Issue $sha hasn't been modified, skipping..."
+    fi
+
+    # Comments
+    if [ -d "$path/comments" ] ; then
+
+      local csha cfound
+      git log --reverse --grep="^gi comment mark $sha" --format='%H' |
+        while read -r csha ; do
+          lastimport=$(git log --grep "\(gi comment message .* $csha\|gi comment export $csha at $provider $user $repo\)" --format='%H' | head -n 1)
+          cfound=
+          for j in "imports/$provider/$user/$repo/$num"/comments/* ; do
+            if [ "$(cat "$j" 2> /dev/null)" = "$csha" ] ; then
+              cfound=$(echo "$j" | sed 's:.*comments/\(.*\)$:\1:')
+              break
+            fi
+          done
+
+          if [ -n "$(git rev-list "$lastimport"..HEAD "$path/comments/$csha")" ] || [ -z "$cfound" ] ; then
+            create_comment "$csha" "$provider" "$user" "$repo" "$num"
+          else
+            echo "Comment $csha hasn't been modified, skipping..."
+          fi
+        done
+    fi
 
   done
 }
@@ -845,7 +919,7 @@ sub_import()
 
   rm -f issue-header issue-body comments-header comments-body
 
-  # Mark last import SHA, so we can use this for merging 
+  # Mark last import SHA, so we can use this for merging
   if [ "$begin_sha" != "$(git rev-parse HEAD)" ] ; then
     local checkpoint="imports/$provider/$user/$repo/checkpoint"
     git rev-parse HEAD >"$checkpoint"
@@ -863,10 +937,10 @@ USAGE_exportall_EOF
   exit 2
 }
 
-#Export all not already present issues to GitHub/GitLab repo
+# Export all not already present issues to GitHub/GitLab repo
 sub_exportall()
 {
-  local all provider user repo flag OPTIND shas updaterefs
+  local all provider user repo flag OPTIND shas num path i updaterefs
   while getopts ar: flag ; do
     case "$flag" in
     a)
@@ -892,20 +966,39 @@ repo="$3"
 shas=$(sub_list -l %i -o %c "$all"| sed '/^$/d' | tr '\n' ' ')
 
 # Remove already exported issues
-#TODO
 if [ -d ".issues/imports/$provider/$user/$repo" ] ; then
   for i in ".issues/imports/$provider/$user/$repo/"[1-9]* ; do
     shas=$(echo "$shas" | sed "s/$(head -c 7 "$i/sha")//")
   done
 fi
 
+cdissues
 for i in $shas ; do
   echo "Creating issue $i..."
   if [ -n "$updaterefs" ] ; then
-    create_issue -r "$updaterefs" "$i" "$provider" "$user" "$repo"
+    create_issue -n -r "$updaterefs" "$i" "$provider" "$user" "$repo"
   else
-    create_issue "$i" "$provider" "$user" "$repo"
+    create_issue -n "$i" "$provider" "$user" "$repo"
   fi
+  # get created issue id
+  if [ "$provider" = github ] ; then
+    num=$(jq '.number' ../create-body)
+  else
+    num=$(jq '.iid' ../create-body)
+  fi
+  rm -f create-header create-body
+ 
+  # Create comments
+
+  path=$(issue_path_part "$i") || exit
+  if [ -d "$path/comments" ] ; then
+    local csha cfound
+    git log --reverse --grep="^gi comment mark $i" --format='%H' |
+      while read -r csha ; do
+        create_comment "$csha" "$provider" "$user" "$repo" "$num"
+      done
+  fi
+ 
 done
 
 }
