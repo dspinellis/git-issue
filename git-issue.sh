@@ -974,6 +974,7 @@ sub_edit()
     commit=$(git show --format='%b' "$1" 2> /dev/null ) || error "Unknown or ambigious comment specification $1"
     # get issue sha
     isha=$(echo "$commit" | sed 's/gi comment mark //')
+    echo "$isha" | grep -q '^[a-f0-9]\+$' || error "Not a comment sha."
     path=$(issue_path_part "$isha")
     # shellcheck disable=SC2206
     # SC2128: Expanding an array without an index only gives the first element.

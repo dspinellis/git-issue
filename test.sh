@@ -269,6 +269,8 @@ comment second line
 EOF
 commentsha=$("$gi" show -c "$issue" | awk '/comment/{print $2}')
 export VISUAL='mv ../comment '; try "$gi" edit -c "$commentsha"
+# Try passing issue sha as comment sha
+export VISUAL='mv ../comment '; ntry "$gi" edit -c "$issue"
 export VISUAL=
 start ; "$gi" show -c "$issue" | try_grep 'comment second line'
 start ; "$gi" show -c "$issue" | try_ngrep 'another comment line'
