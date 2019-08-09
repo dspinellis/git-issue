@@ -468,7 +468,7 @@ else
     "$gi" assign -r "$issue" louridas > /dev/null 2>&1
     try "$gi" create -n "$issue" github $ghrepo
     # Get the created issue
-    try "$gi" create -u "$(jq -r '.number' create-body)" "$issue" github $ghrepo
+    try "$gi" create -u "$(jq -r '.number' .issues/create-body)" "$issue" github $ghrepo
     # modify and export
     try "$gi" create -n "$issue2" github $ghrepo
     try "$gi" new -c "github $ghrepo" -s "Issue exported directly"
@@ -545,7 +545,7 @@ else
     gluser=$(jq --raw-output '.owner.username' < glrepo)
     try "$gi" create -n "$issue" gitlab $glrepo
     # Get the created issue
-    try "$gi" create -u "$(jq -r '.iid' create-body)" "$issue" gitlab $glrepo
+    try "$gi" create -u "$(jq -r '.iid' .issues/create-body)" "$issue" gitlab $glrepo
     # modify and export
     try "$gi" create -n "$issue2" gitlab $glrepo
     try "$gi" new -c "gitlab $glrepo" -s "Issue exported directly"

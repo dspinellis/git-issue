@@ -335,7 +335,6 @@ create_issue()
     fi
   fi
 
-  cd ..
   if [ -n "$num" ] ; then
     if [ "$provider" = github ] ; then
       url="https://api.github.com/repos/$user/$repo/issues/$num"
@@ -346,7 +345,7 @@ create_issue()
     fi
   else
     # Check if issue already exists
-    for i in ".issues/imports/$provider/$user/$repo"/[1-9]* ; do
+    for i in "imports/$provider/$user/$repo"/[1-9]* ; do
       local sha
       sha=$(cat "$i/sha" 2> /dev/null)
       if [ "$sha" = "$isha" ] ; then
@@ -374,8 +373,6 @@ create_issue()
   import_dir="imports/$provider/$user/$repo/$num"
 
   # Time estimate/time spent
-
-  cdissues
   local timeestimate timespent
   if [ -s "$path/timeestimate" ] && [ "$provider" = gitlab ] ; then
     timeestimate=$(fmt "$path/timeestimate")
@@ -919,14 +916,15 @@ repo="$3"
 # Create list of relevant shas sorted by date
 shas=$(sub_list -l %i -o %c "$all"| sed '/^$/d' | tr '\n' ' ')
 
+cdissues
+
 # Remove already exported issues
-if [ -d ".issues/imports/$provider/$user/$repo" ] ; then
-  for i in ".issues/imports/$provider/$user/$repo/"[1-9]* ; do
+if [ -d "imports/$provider/$user/$repo" ] ; then
+  for i in "imports/$provider/$user/$repo/"[1-9]* ; do
     shas=$(echo "$shas" | sed "s/$(head -c 7 "$i/sha")//")
   done
 fi
 
-cdissues
 for i in $shas ; do
   echo "Creating issue $i..."
   create_issue -n "$i" "$provider" "$user" "$repo"
