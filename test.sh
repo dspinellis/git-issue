@@ -171,8 +171,8 @@ fi
 # https://travis-ci.org/dspinellis/git-issue/settings
 if [ -n "$GH_TOKEN" ] &&  curl --version | awk '/curl/{exit $2 >= "7.55" ? 0 : 1}' ; then
   echo "Authorization: token $GH_TOKEN" >"$HOME/.token"
-  export GI_CURL_AUTH="Authorization: token $GH_TOKEN"
-  echo "Set GI_CURL_AUTH to $GI_CURL_AUTH using GH_TOKEN"
+  export GH_CURL_AUTH="Authorization: token $GH_TOKEN"
+  echo "Set GH_CURL_AUTH to $GH_CURL_AUTH using GH_TOKEN"
 fi
 
 echo 'TAP version 13'
@@ -420,7 +420,7 @@ try "$gi" pull
 "$gi" show "$issue" | try_grep modified-upstream
 cd ../testdir
 
-if [ -z "$GI_CURL_AUTH" ] ; then
+if [ -z "$GH_CURL_AUTH" ] ; then
   echo "Skipping GitHub import/export tests due to lack of GitHub authentication token."
 else
   # Import
@@ -457,7 +457,7 @@ else
   # Export
   # create new repository to test issue exporting
   echo "Trying to create GitHub repository..."
-  curl -H "$GI_CURL_AUTH" -s --data '{"name": "git-issue-test-export-'"$RANDOM"'", "private": true}' --output ghrepo https://api.github.com/user/repos
+  curl -H "$GH_CURL_AUTH" -s --data '{"name": "git-issue-test-export-'"$RANDOM"'", "private": true}' --output ghrepo https://api.github.com/user/repos
   if  grep "git-issue-test-export" > /dev/null < ghrepo ; then
     echo "Starting export tests..."
     ghrepo=$(jq --raw-output '.full_name' < ghrepo | tr '/' ' ')
@@ -489,7 +489,7 @@ else
     try "$gi" create -e "$issue3" github $ghrepo
 
     # delete repo
-    curl -H "$GI_CURL_AUTH" -s --request DELETE $ghrepourl | grep "{" && printf "Couldn't delete repository.\nYou probably don't have delete permittions activated on the OAUTH token.\nPlease delete %s manually." "$ghrepo"
+    curl -H "$GH_CURL_AUTH" -s --request DELETE $ghrepourl | grep "{" && printf "Couldn't delete repository.\nYou probably don't have delete permittions activated on the OAUTH token.\nPlease delete %s manually." "$ghrepo"
 
   else
     echo "Couldn't create test repository. Skipping export tests."

@@ -128,8 +128,8 @@ You use _git issue_ with the following sub-commands.
 * `git issue pull`: Update local Git repository with remote changes.
 * `git issue import`: Import/update GitHub/GitLab issues from the specified project.
   If the import involves more than a dozen of issues or if the repository
-  is private, set the environment variable `GI_CURL_AUTH` (GitHub) or `GL_CURL_AUTH` (GitLab) to the authentication token.
-  For example, run the following command: `export GI_CURL_AUTH="Authorization: token badf00ddead9bfee8f3c19afc3c97c6db55fcfde"`
+  is private, set the environment variable `GH_CURL_AUTH` (GitHub) or `GL_CURL_AUTH` (GitLab) to the authentication token.
+  For example, run the following command: `export GH_CURL_AUTH="Authorization: token badf00ddead9bfee8f3c19afc3c97c6db55fcfde"`
   You can create the authorization token through
   [GitHub settings](https://github.com/settings/tokens/new).
   For GitLab: `export GL_CURL_AUTH="PRIVATE-TOKEN: JvHLsdnDmD7rjUXzT-Ea"`

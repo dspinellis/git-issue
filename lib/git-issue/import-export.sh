@@ -57,7 +57,7 @@ rest_api_get()
 
   # use the correct authentication token
   if [ "$provider" = github ] ; then
-    authtoken="$GI_CURL_AUTH"
+    authtoken="$GH_CURL_AUTH"
   elif [ "$provider" = gitlab ] ; then
     authtoken="$GL_CURL_AUTH"
   else
@@ -106,7 +106,7 @@ rest_api_send()
 
   # use the correct authentication token
   if [ "$provider" = github ] ; then
-    authtoken="$GI_CURL_AUTH"
+    authtoken="$GH_CURL_AUTH"
   elif [ "$provider" = gitlab ] ; then
     authtoken="$GL_CURL_AUTH"
   else
@@ -194,7 +194,7 @@ create_issue()
     nassignee="$assignee"
     if [ "$provider" = github ] ; then
       for a in $nassignee ; do
-        ret=$(curl -H "$GI_CURL_AUTH" -A "$USER_AGENT" "https://api.github.com/repos/$user/$repo/assignees/$a" --stderr /dev/null )
+        ret=$(curl -H "$GH_CURL_AUTH" -A "$USER_AGENT" "https://api.github.com/repos/$user/$repo/assignees/$a" --stderr /dev/null )
         # if assignee is valid github should return no data
         if [ -n "$ret" ] ; then
           echo "Couldn't add assignee $a. Skipping..."
