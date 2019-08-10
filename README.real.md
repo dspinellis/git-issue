@@ -139,15 +139,16 @@ You use _git issue_ with the following sub-commands.
   With the `-e` option any escape sequences for the attributes present in the description, will be replaced as above.
   This can be used to e.g export an unsupported attribute to GitHub as text.
 * `git issue export`: Export issues for the specified project.
-  Only the issues that have been imported or modified by `git-issue` will be exported.
+  Only the issues that have been imported and modified (or created by `git issue create`) by `git-issue` will be exported.
   With the `-e` option any escape sequences for the attributes present in the description, will be replaced as above.
   This can be used to e.g export an unsupported attribute to GitHub as text.
-
+* `git issue exportall`: Export all open issues in the database (`-a` to include closed ones) to GitHub/GitLab. Useful for cloning whole repositories.
 
 ### Help and debug
 * `git issue help`: Display help information about git issue.
 * `git issue log`: Output a log of changes made
 * `git issue git`: Run the specified Git command on the issues repository.
+* `git issue dump`: Dump the whole database in json format to stdout.
 
 Issues and comments are specified through the SHA hash associated with the
 parent of the commit that opened them, which is specifically crafted for
