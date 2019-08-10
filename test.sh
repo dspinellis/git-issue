@@ -469,6 +469,7 @@ else
     try "$gi" create -n "$issue" github $ghrepo
     # Get the created issue
     try "$gi" create -u "$(jq -r '.number' .issues/create-body)" "$issue" github $ghrepo
+    rm -f .issues/create-body .issues/create-header
     # modify and export
     try "$gi" create -n "$issue2" github $ghrepo
     try "$gi" new -c "github $ghrepo" -s "Issue exported directly"
@@ -476,9 +477,9 @@ else
     try "$gi" export github $ghrepo
     start ; "$gi" export github $ghrepo | try_grep "Issue $issue.* hasn't been modified, skipping..."
     # Test invalid assignee
-    "$gi" assign "$issue2" octocat
+    "$gi" assign "$issue2" octocat > /dev/null 2>&1
     start ; "$gi" export github $ghrepo | try_grep "Couldn't add assignee octocat. Skipping..."
-    "$gi" assign -r "$issue2" octocat
+    "$gi" assign -r "$issue2" octocat > /dev/null 2>&1
 
     # test milestone creation
     "$gi" new -s "milestone issue" > /dev/null 2>&1
@@ -487,6 +488,28 @@ else
     "$gi" duedate "$issue3" week > /dev/null 2>&1
     "$gi" timeestimate "$issue3" 3hours > /dev/null 2>&1
     try "$gi" create -e "$issue3" github $ghrepo
+    try "$gi" exportall -a github $ghrepo
+
+    # Basic round-trip tests
+    echo "Starting GitHub round-trip test..."
+    cd ..
+    mkdir testdir3
+    cd testdir3
+    "$gi" init
+    try "$gi" import github $ghrepo
+    rissue=$("$gi" list | awk '/An open issue on GitHub with a description and comments/ {print $1}')
+    start ; "$gi" show "$rissue" | try_grep '^ *line 1'
+    start ; "$gi" show "$rissue" | try_grep '^ *line 2'
+    start ; "$gi" show "$rissue" | try_grep 'Line 3 with special characters "'\''<>|\$'
+    start ; "$gi" show -c "$rissue" | try_grep '^ *comment 1 line 1'
+    start ; "$gi" show -c "$rissue" | try_grep '^ *comment 1 line 2'
+    start ; "$gi" show -c "$rissue" | try_grep '^ *comment 2'
+    start ; "$gi" show -c "$rissue" | try_grep '^ *comment 4'
+ 
+    rissue=$("$gi" list | awk '/An open issue on GitHub with assignees and tags/ {print $1}')
+    start ; "$gi" show "$rissue" | try_grep 'good first issue'
+    
+    cd ../testdir
 
     # delete repo
     curl -H "$GH_CURL_AUTH" -s --request DELETE $ghrepourl | grep "{" && printf "Couldn't delete repository.\nYou probably don't have delete permittions activated on the OAUTH token.\nPlease delete %s manually." "$ghrepo"
@@ -546,15 +569,16 @@ else
     try "$gi" create -n "$issue" gitlab $glrepo
     # Get the created issue
     try "$gi" create -u "$(jq -r '.iid' .issues/create-body)" "$issue" gitlab $glrepo
+    rm -f .issues/create-body .issues/create-header
     # modify and export
     try "$gi" create -n "$issue2" gitlab $glrepo
     try "$gi" new -c "gitlab $glrepo" -s "Issue exported directly"
     "$gi" assign "$issue2" "$gluser" > /dev/null 2>&1
     try "$gi" export gitlab $glrepo
 
-    "$gi" assign "$issue2" octocat
+    "$gi" assign "$issue2" octocat > /dev/null 2>&1
     try "$gi" export gitlab $glrepo
-    "$gi" assign -r "$issue2" octocat
+    "$gi" assign -r "$issue2" octocat > /dev/null 2>&1
 
     # test milestone creation
     "$gi" new -s "milestone issue : %M" > /dev/null 2>&1
@@ -568,6 +592,33 @@ else
     start ; "$gi" show "$issue3" | try_grep 'ver4'
     # Try to create duplicate
     ntry "$gi" create -e "$issue3" gitlab $glrepo
+    try "$gi" exportall -a gitlab $glrepo
+
+    # Basic GitLab round-trip tests
+    echo "Starting GitHub round-trip test..."
+    cd ..
+    mkdir testdir4
+    cd testdir4
+    "$gi" init
+    start ; "$gi" list | try_grep 'An open issue on GitLab with a description and comments'
+    # Closed issues
+    start ; "$gi" list | try_grep -v 'A closed issue on GitLab without description'
+    start ; "$gi" list -a | try_grep 'A closed issue on GitLab without description'
+    # Description and comments
+    rglissue=$("$gi" list | awk '/An open issue on GitLab with a description and comments/ {print $1}')
+    start ; "$gi" show "$rglissue" | try_grep '^ *line 1'
+    start ; "$gi" show "$rglissue" | try_grep '^ *line 2'
+    start ; "$gi" show "$rglissue" | try_grep 'Line 3 with special characters "'\''<>|\$'
+    start ; "$gi" show -c "$rglissue" | try_grep '^ *comment 2'
+    start ; "$gi" show -c "$rglissue" | try_grep '^ *comment 3'
+    start ; "$gi" show -c "$rglissue" | try_grep '^ *comment 4'
+    start ; "$gi" show "$rglissue" | try_grep '^GitLab issue: #[1-9]* at vyrondrosos/git-issue'
+    # Assignees and tags
+    rglissue=$("$gi" list | awk '/An open issue on GitLab with assignees and tags/ {print $1}')
+    start ; "$gi" show "$rglissue" | try_grep 'good first issue'
+    start ; "$gi" show "$rglissue" | header_continuation | try_grep 'Assigned-to:.*vyrondrosos'
+
+    cd ../testdir
     # delete repo
     curl -H "$GL_CURL_AUTH" -s --request DELETE $glrepourl | grep "Accepted" > /dev/null || printf "Couldn't delete repository.\nYou probably don't have delete permittions activated on the OAUTH token.\nPlease delete %s manually." "$glrepo"
   else

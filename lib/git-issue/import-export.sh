@@ -416,7 +416,7 @@ create_issue()
   git diff --quiet HEAD || commit "gi: Add $import_dir" 'gi new mark'
 
   # delete temp files
-  test -z $nodelete && rm -f ../create-body ../create-header
+  test -z $nodelete && rm -f create-body create-header update-body update-header
   rm -f milestone-body milestone-header mileres-body mileres-header timestats-header
   rm -f timeestimate-body timeestimate-header timespent-body timespent-header timestats-body
 }
@@ -930,9 +930,9 @@ for i in $shas ; do
   create_issue -n "$i" "$provider" "$user" "$repo"
   # get created issue id
   if [ "$provider" = github ] ; then
-    num=$(jq '.number' ../create-body)
+    num=$(jq '.number' create-body)
   else
-    num=$(jq '.iid' ../create-body)
+    num=$(jq '.iid' create-body)
   fi
   rm -f create-header create-body
  

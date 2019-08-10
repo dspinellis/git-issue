@@ -173,8 +173,8 @@ Update local Git repository with remote changes.
 .RS 4
 Import/update GitHub/GitLab issues from the specified project.
   If the import involves more than a dozen of issues or if the repository
-  is private, set the environment variable \fCGI_CURL_AUTH\fP (GitHub) or \fCGL_CURL_AUTH\fP (GitLab) to the authentication token.
-  For example, run the following command: \fCexport GI_CURL_AUTH="Authorization: token badf00ddead9bfee8f3c19afc3c97c6db55fcfde"\fP
+  is private, set the environment variable \fCGH_CURL_AUTH\fP (GitHub) or \fCGL_CURL_AUTH\fP (GitLab) to the authentication token.
+  For example, run the following command: \fCexport GH_CURL_AUTH="Authorization: token badf00ddead9bfee8f3c19afc3c97c6db55fcfde"\fP
   You can create the authorization token through
   GitHub settings <https://github.com/settings/tokens/new>.
   For GitLab: \fCexport GL_CURL_AUTH="PRIVATE-TOKEN: JvHLsdnDmD7rjUXzT-Ea"\fP
@@ -192,10 +192,14 @@ Create the issue in the provided GitHub repository.
 \fBgit issue export\fP
 .RS 4
 Export issues for the specified project.
-  Only the issues that have been imported or modified by \fCgit-issue\fP will be exported.
+  Only the issues that have been imported and modified (or created by \fCgit issue create\fP) by \fCgit-issue\fP will be exported.
   With the \fC-e\fP option any escape sequences for the attributes present in the description, will be replaced as above.
   This can be used to e.g export an unsupported attribute to GitHub as text.
-
+.RE
+.PP
+\fBgit issue exportall\fP
+.RS 4
+Export all open issues in the database (\fC-a\fP to include closed ones) to GitHub/GitLab. Useful for cloning whole repositories.
 
 .RE
 .PP
@@ -212,6 +216,11 @@ Output a log of changes made
 \fBgit issue git\fP
 .RS 4
 Run the specified Git command on the issues repository.
+.RE
+.PP
+\fBgit issue dump\fP
+.RS 4
+Dump the whole database in json format to stdout.
 
 Issues and comments are specified through the SHA hash associated with the
 parent of the commit that opened them, which is specifically crafted for

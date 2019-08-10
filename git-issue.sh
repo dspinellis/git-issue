@@ -133,7 +133,9 @@ trans_abort()
     git reset "$start_sha"
     git clean -qfd
     git checkout -- .
-    rm -f issue-header issue-body comments-header comments-body
+    rm -f issue-header issue-body comments-header comments-body create-body create-header update-body update-header
+    rm -f milestone-body milestone-header mileres-body mileres-header timestats-header
+    rm -f timeestimate-body timeestimate-header timespent-body timespent-header timestats-body
   fi
   echo 'Operation aborted' 1>&2
   exit 1
@@ -1347,6 +1349,7 @@ Synchronize with remote repositories
    import     Import/update GitHub/GitLab issues from the specified project
    create     Create the issue in the provided GitHub repository
    export     Export issues for the specified project
+   exportall  Export all open issues in the database (-a to include closed ones) to GitHub/GitLab Useful for cloning whole repositories
 
 Help and debug
    help       Display help information about git issue
