@@ -978,12 +978,14 @@ sub_edit()
     isha=$(echo "$commit" | sed 's/gi comment mark //')
     echo "$isha" | grep -q '^[a-f0-9]\+$' || error "Not a comment sha."
     path=$(issue_path_part "$isha")
+    # Get full comment sha
+    csha=$(git rev-parse "$1")
     # shellcheck disable=SC2206
     # SC2128: Expanding an array without an index only gives the first element.
-    edit "$path/comments/$1"*
-    git add "$path/comments/$1"* || trans_abort
-    commit 'gi: Edit comment' "gi edit comment $isha"
-    echo "Edited comment $(short_sha "$isha")"
+    edit "$path/comments/$csha" || trans_abort
+    git add "$path/comments/$csha" || trans_abort
+    commit 'gi: Edit comment' "gi edit comment $csha"
+    echo "Edited comment $(short_sha "$csha")"
   fi
 
 }
