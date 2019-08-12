@@ -449,8 +449,15 @@ create_comment()
 
   cdissues
   cbody=$(head -c -1 < "$path/comments/$csha"; echo x)
-  test "$provider" = gitlab && cbody=$(echo "$cbody" | sed '$!s/[^ ] \?$/&  /') ;\
+  if [ "$provider" = gitlab ] ; then
+    cbody=$(echo "$cbody" | sed '$!s/[^ ] \?$/&  /')
     echo "${cbody%x}" | head -c -1 > "$path/comments/$csha"
+    git add "$path/comments/$csha"
+    if ! git diff --quiet HEAD ; then
+      commit "Update comment formatting" "gi edit comment $csha"
+    fi
+  fi
+
   cfound=
   for j in "$import_dir"/comments/* ; do
    if [ "$(cat "$j" 2> /dev/null)" = "$csha" ] ; then
