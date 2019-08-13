@@ -542,7 +542,7 @@ else
   # Assignees and tags
   glissue=$("$gi" list | awk '/An open issue on GitLab with assignees and tags/ {print $1}')
   start ; "$gi" show "$glissue" | try_grep 'good first issue'
-  start ; "$gi" show "$glissue" | header_continuation | try_grep 'Assigned-to:.*vyrondrosos'
+  start ; "$gi" show "$glissue" | header_continuation | try_grep 'Assigned-to:.*'"$gluser"
   # Milestone
   try "$gi" list ver3
   # Import should be idempotent
@@ -600,6 +600,7 @@ else
     mkdir testdir4
     cd testdir4
     "$gi" init
+    try "$gi" import gitlab $glrepo
     start ; "$gi" list | try_grep 'An open issue on GitLab with a description and comments'
     # Closed issues
     start ; "$gi" list | try_grep -v 'A closed issue on GitLab without description'
@@ -616,7 +617,7 @@ else
     # Assignees and tags
     rglissue=$("$gi" list | awk '/An open issue on GitLab with assignees and tags/ {print $1}')
     start ; "$gi" show "$rglissue" | try_grep 'good first issue'
-    start ; "$gi" show "$rglissue" | header_continuation | try_grep 'Assigned-to:.*vyrondrosos'
+    start ; "$gi" show "$rglissue" | header_continuation | try_grep 'Assigned-to:.*'"$gluser"
 
     cd ../testdir
     # delete repo
