@@ -43,11 +43,11 @@ _gi_autocomplete_subcommand()
 _gi_autocomplete_subcommand_argument()
 {
   case $1 in
-    show | comment | tag | assign | attach | watcher)
+    show | comment | tag | assign | attach | watcher | weight | create)
       # list all issues
       list_args="-a"
       ;;
-    edit | close | milestone)
+    edit | close | milestone | duedate | timeestimate | timespent)
       # list only open issues
       list_args=""
       ;;
