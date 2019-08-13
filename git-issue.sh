@@ -35,7 +35,7 @@ IFS=:
 
 # shellcheck disable=SC2086
 # Rationale: Word splitting not an issue
-LD_LIBRARY_PATH="$(dirname $0)/lib:$LD_LIBRARY_PATH:/usr/lib"
+LD_LIBRARY_PATH="$(dirname $0)/lib:$LD_LIBRARY_PATH:/usr/lib:/usr/local/lib"
 for i in ${LD_LIBRARY_PATH} ; do
   if [ -d "${i}/git-issue" ] ; then
     MY_LIB="${i}/git-issue"
