@@ -24,6 +24,27 @@ USAGE_export_EOF
   exit 2
 }
 
+# importsget: Return all mentions of SHA given in imports
+
+importsget()
+{
+  local path isha sha num
+
+  path=$(issue_path_part "$1") || exit
+  isha=$(issue_sha "$path")
+  cdissues
+  test -d imports || return
+  for i in "imports/github/"*/*/[1-9]* "imports/gitlab/"*/*/[1-9]* "imports/gitlab/"*/*/*/[1-9]*; do
+    local sha
+    if [ -r "$i/sha" ] ; then
+      sha=$(cat "$i/sha")
+      if [ "$sha" = "$isha" ] ; then
+        echo "${i#'imports/'}"
+      fi
+    fi
+  done
+
+}
 
 # Escape special URL characters in argument string using Percent-encoding
 urlescape()

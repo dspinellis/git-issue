@@ -357,27 +357,13 @@ sub_show()
 Date:	%aD' "$isha"
 
     # Imports
-    for i in "imports/github/"*/*/[1-9]* ; do
-      local sha
-      if [ -r "$i/sha" ] ; then
-        sha=$(cat "$i/sha")
-        if [ "$sha" = "$isha" ] ; then
-          local num
-          num=$(echo "$i" | grep -o '/[1-9].*$' | tr -d '/')
-          echo "GitHub issue: #$num at $i" | sed -e 's:imports/github/::' -e 's:/[1-9]*$::'
-        fi
-      fi
-    done
-
-    for i in "imports/gitlab/"*/*/[1-9]* "imports/gitlab/"*/*/*/[1-9]* ; do
-      local sha
-      if [ -r "$i/sha" ] ; then
-        sha=$(cat "$i/sha")
-        if [ "$sha" = "$isha" ] ; then
-          local num
-          num=$(echo "$i" | grep -o '/[1-9].*$' | tr -d '/')
-          echo "GitLab issue: #$num at $i" | sed -e 's:imports/gitlab/::' -e 's:/[1-9]*$::'
-        fi
+    for i in $(importsget "$isha") ; do
+      local num
+      num=$(echo "$i" | grep -o '/[1-9]*$' | tr -d '/')
+      if echo "$i" | grep -q '^github' ; then
+        echo "GitHub issue: #$num at $i" | sed -e 's:/[1-9]*$::' -e 's:github/::'
+      else
+        echo "GitLab issue: #$num at $i" | sed -e 's:/[1-9]*$::' -e 's:gitlab/::'
       fi
     done
 
