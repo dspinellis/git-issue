@@ -27,7 +27,7 @@
 # User agent string
 # shellcheck disable=SC2034
 # SC2034 : USER_AGENT appears unused. Verify use (or export if used externally)
-USER_AGENT=https://github.com/dspinellis/git-issue/tree/6d4040b
+USER_AGENT=https://github.com/dspinellis/git-issue/tree/b7e1353
 
 # Determine our script library path
 my_IFS=$IFS
@@ -35,7 +35,7 @@ IFS=:
 
 # shellcheck disable=SC2086
 # Rationale: Word splitting not an issue
-LD_LIBRARY_PATH="$(dirname $0)/lib:$LD_LIBRARY_PATH:/usr/lib"
+LD_LIBRARY_PATH="$(dirname $0)/lib:$LD_LIBRARY_PATH:/usr/lib:/usr/local/lib"
 for i in ${LD_LIBRARY_PATH} ; do
   if [ -d "${i}/git-issue" ] ; then
     MY_LIB="${i}/git-issue"
@@ -133,7 +133,9 @@ trans_abort()
     git reset "$start_sha"
     git clean -qfd
     git checkout -- .
-    rm -f issue-header issue-body comments-header comments-body
+    rm -f issue-header issue-body comments-header comments-body create-body create-header update-body update-header
+    rm -f milestone-body milestone-header mileres-body mileres-header timestats-header
+    rm -f timeestimate-body timeestimate-header timespent-body timespent-header timestats-body
   fi
   echo 'Operation aborted' 1>&2
   exit 1
@@ -974,13 +976,16 @@ sub_edit()
     commit=$(git show --format='%b' "$1" 2> /dev/null ) || error "Unknown or ambigious comment specification $1"
     # get issue sha
     isha=$(echo "$commit" | sed 's/gi comment mark //')
+    echo "$isha" | grep -q '^[a-f0-9]\+$' || error "Not a comment sha."
     path=$(issue_path_part "$isha")
+    # Get full comment sha
+    csha=$(git rev-parse "$1")
     # shellcheck disable=SC2206
     # SC2128: Expanding an array without an index only gives the first element.
-    edit "$path/comments/$1"*
-    git add "$path/comments/$1"* || trans_abort
-    commit 'gi: Edit comment' "gi edit comment $isha"
-    echo "Edited comment $(short_sha "$isha")"
+    edit "$path/comments/$csha" || trans_abort
+    git add "$path/comments/$csha" || trans_abort
+    commit 'gi: Edit comment' "gi edit comment $csha"
+    echo "Edited comment $(short_sha "$csha")"
   fi
 
 }
@@ -1346,6 +1351,7 @@ Synchronize with remote repositories
    import     Import/update GitHub/GitLab issues from the specified project
    create     Create the issue in the provided GitHub repository
    export     Export issues for the specified project
+   exportall  Export all open issues in the database (-a to include closed ones) to GitHub/GitLab Useful for cloning whole repositories
 
 Help and debug
    help       Display help information about git issue

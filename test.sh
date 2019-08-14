@@ -171,8 +171,8 @@ fi
 # https://travis-ci.org/dspinellis/git-issue/settings
 if [ -n "$GH_TOKEN" ] &&  curl --version | awk '/curl/{exit $2 >= "7.55" ? 0 : 1}' ; then
   echo "Authorization: token $GH_TOKEN" >"$HOME/.token"
-  export GI_CURL_AUTH="Authorization: token $GH_TOKEN"
-  echo "Set GI_CURL_AUTH to $GI_CURL_AUTH using GH_TOKEN"
+  export GH_CURL_AUTH="Authorization: token $GH_TOKEN"
+  echo "Set GH_CURL_AUTH to $GH_CURL_AUTH using GH_TOKEN"
 fi
 
 echo 'TAP version 13'
@@ -269,6 +269,8 @@ comment second line
 EOF
 commentsha=$("$gi" show -c "$issue" | awk '/comment/{print $2}')
 export VISUAL='mv ../comment '; try "$gi" edit -c "$commentsha"
+# Try passing issue sha as comment sha
+export VISUAL='mv ../comment '; ntry "$gi" edit -c "$issue"
 export VISUAL=
 start ; "$gi" show -c "$issue" | try_grep 'comment second line'
 start ; "$gi" show -c "$issue" | try_ngrep 'another comment line'
@@ -418,7 +420,7 @@ try "$gi" pull
 "$gi" show "$issue" | try_grep modified-upstream
 cd ../testdir
 
-if [ -z "$GI_CURL_AUTH" ] ; then
+if [ -z "$GH_CURL_AUTH" ] ; then
   echo "Skipping GitHub import/export tests due to lack of GitHub authentication token."
 else
   # Import
@@ -455,7 +457,7 @@ else
   # Export
   # create new repository to test issue exporting
   echo "Trying to create GitHub repository..."
-  curl -H "$GI_CURL_AUTH" -s --data '{"name": "git-issue-test-export-'"$RANDOM"'", "private": true}' --output ghrepo https://api.github.com/user/repos
+  curl -H "$GH_CURL_AUTH" -s --data '{"name": "git-issue-test-export-'"$RANDOM"'", "private": true}' --output ghrepo https://api.github.com/user/repos
   if  grep "git-issue-test-export" > /dev/null < ghrepo ; then
     echo "Starting export tests..."
     ghrepo=$(jq --raw-output '.full_name' < ghrepo | tr '/' ' ')
@@ -466,7 +468,8 @@ else
     "$gi" assign -r "$issue" louridas > /dev/null 2>&1
     try "$gi" create -n "$issue" github $ghrepo
     # Get the created issue
-    try "$gi" create -u "$(jq -r '.number' create-body)" "$issue" github $ghrepo
+    try "$gi" create -u "$(jq -r '.number' .issues/create-body)" "$issue" github $ghrepo
+    rm -f .issues/create-body .issues/create-header
     # modify and export
     try "$gi" create -n "$issue2" github $ghrepo
     try "$gi" new -c "github $ghrepo" -s "Issue exported directly"
@@ -474,9 +477,9 @@ else
     try "$gi" export github $ghrepo
     start ; "$gi" export github $ghrepo | try_grep "Issue $issue.* hasn't been modified, skipping..."
     # Test invalid assignee
-    "$gi" assign "$issue2" octocat
+    "$gi" assign "$issue2" octocat > /dev/null 2>&1
     start ; "$gi" export github $ghrepo | try_grep "Couldn't add assignee octocat. Skipping..."
-    "$gi" assign -r "$issue2" octocat
+    "$gi" assign -r "$issue2" octocat > /dev/null 2>&1
 
     # test milestone creation
     "$gi" new -s "milestone issue" > /dev/null 2>&1
@@ -485,9 +488,33 @@ else
     "$gi" duedate "$issue3" week > /dev/null 2>&1
     "$gi" timeestimate "$issue3" 3hours > /dev/null 2>&1
     try "$gi" create -e "$issue3" github $ghrepo
+    try "$gi" exportall -a github $ghrepo
+
+    # Basic round-trip tests
+    echo "Starting GitHub round-trip test..."
+    cd ..
+    mkdir testdir3
+    cd testdir3
+    "$gi" init
+    try "$gi" import github $ghrepo
+    rissue=$("$gi" list | awk '/An open issue on GitHub with a description and comments/ {print $1}')
+    rissue2=$("$gi" list | awk '/milestone issue/{print $1}')
+    start ; "$gi" show "$rissue" | try_grep '^ *line 1'
+    start ; "$gi" show "$rissue" | try_grep '^ *line 2'
+    start ; "$gi" show "$rissue" | try_grep 'Line 3 with special characters "'\''<>|\$'
+    start ; "$gi" show -c "$rissue" | try_grep '^ *comment 1 line 1'
+    start ; "$gi" show -c "$rissue" | try_grep '^ *comment 1 line 2'
+    start ; "$gi" show -c "$rissue" | try_grep '^ *comment 2'
+    start ; "$gi" show -c "$rissue" | try_grep '^ *comment 4'
+ 
+    start ; "$gi" show "$rissue2" | try_grep '^Milestone: ver4'
+    rissue3=$("$gi" list | awk '/An open issue on GitHub with assignees and tags/ {print $1}')
+    start ; "$gi" show "$rissue3" | try_grep 'good first issue'
+    
+    cd ../testdir
 
     # delete repo
-    curl -H "$GI_CURL_AUTH" -s --request DELETE $ghrepourl | grep "{" && printf "Couldn't delete repository.\nYou probably don't have delete permittions activated on the OAUTH token.\nPlease delete %s manually." "$ghrepo"
+    curl -H "$GH_CURL_AUTH" -s --request DELETE $ghrepourl | grep "{" && printf "Couldn't delete repository.\nYou probably don't have delete permittions activated on the OAUTH token.\nPlease delete %s manually." "$ghrepo"
 
   else
     echo "Couldn't create test repository. Skipping export tests."
@@ -517,7 +544,7 @@ else
   # Assignees and tags
   glissue=$("$gi" list | awk '/An open issue on GitLab with assignees and tags/ {print $1}')
   start ; "$gi" show "$glissue" | try_grep 'good first issue'
-  start ; "$gi" show "$glissue" | header_continuation | try_grep 'Assigned-to:.*vyrondrosos'
+  start ; "$gi" show "$glissue" | header_continuation | try_grep 'Assigned-to:.*'"$gluser"
   # Milestone
   try "$gi" list ver3
   # Import should be idempotent
@@ -543,40 +570,62 @@ else
     gluser=$(jq --raw-output '.owner.username' < glrepo)
     try "$gi" create -n "$issue" gitlab $glrepo
     # Get the created issue
-    try "$gi" create -u "$(jq -r '.iid' create-body)" "$issue" gitlab $glrepo
+    try "$gi" create -u "$(jq -r '.iid' .issues/create-body)" "$issue" gitlab $glrepo
+    rm -f .issues/create-body .issues/create-header
     # modify and export
     try "$gi" create -n "$issue2" gitlab $glrepo
     try "$gi" new -c "gitlab $glrepo" -s "Issue exported directly"
     "$gi" assign "$issue2" "$gluser" > /dev/null 2>&1
     try "$gi" export gitlab $glrepo
 
-    "$gi" assign "$issue2" octocat
+    "$gi" assign "$issue2" octocat > /dev/null 2>&1
     try "$gi" export gitlab $glrepo
-    "$gi" assign -r "$issue2" octocat
+    "$gi" assign -r "$issue2" octocat > /dev/null 2>&1
 
     # test milestone creation
-    "$gi" new -s "milestone issue : %M" > /dev/null 2>&1
-    if [ -z "$issue3" ] ; then
-      issue3=$("$gi" list | awk '/milestone issue/{print $1}')
-      "$gi" milestone "$issue3" ver4 > /dev/null 2>&1
-      "$gi" duedate "$issue3" week > /dev/null 2>&1
-      "$gi" timeestimate "$issue3" 3hours > /dev/null 2>&1
-    fi
-    try "$gi" create -e "$issue3" gitlab $glrepo
-    start ; "$gi" show "$issue3" | try_grep 'ver4'
+    "$gi" new -s "gitlab milestone issue : %M" > /dev/null 2>&1
+    glissue3=$("$gi" list | awk '/gitlab milestone issue : %M/{print $1}')
+    "$gi" milestone "$glissue3" ver4 > /dev/null 2>&1
+    "$gi" duedate "$glissue3" week > /dev/null 2>&1
+    "$gi" timeestimate "$glissue3" 3hours > /dev/null 2>&1
+    try "$gi" create -e "$glissue3" gitlab $glrepo
+    start ; "$gi" show "$glissue3" | try_grep 'ver4'
     # Try to create duplicate
-    ntry "$gi" create -e "$issue3" gitlab $glrepo
+    ntry "$gi" create -e "$glissue3" gitlab $glrepo
+    try "$gi" exportall -a gitlab $glrepo
 
-    # Test exportall and replacerefs
-    echo "Trying to create second GitLab repository..."
-    curl -H "$GL_CURL_AUTH" -s --header "Content-Type: application/json" --data '{"name": "git-issue-test-export-'"$RANDOM"'", "visibility": "private"}' --output glrepo https://gitlab.com/api/v4/projects
-    if  grep "git-issue-test-export" > /dev/null < glrepo ; then
-      glrepo2=$(jq --raw-output '.path_with_namespace' < glrepo | tr '/' ' ')
-      glrepourl2=$(jq --raw-output '._links.self' < glrepo)
-      try "$gi" exportall -r "gitlab/$(echo "$glrepo" | tr ' ' '/')" gitlab $glrepo2
-      curl -H "$GL_CURL_AUTH" -s --request DELETE $glrepourl2 | grep "Accepted" > /dev/null || printf "Couldn't delete repository.\nYou probably don't have delete permittions activated on the OAUTH token.\nPlease delete %s manually." "$glrepo2"
-    fi
-    # Delete repo
+    # Basic GitLab round-trip tests
+    echo "Starting GitHub round-trip test..."
+    cd ..
+    mkdir testdir4
+    cd testdir4
+    "$gi" init
+    try "$gi" import gitlab $glrepo
+    start ; "$gi" list | try_grep 'An open issue on GitLab with a description and comments'
+    # Closed issues
+    start ; "$gi" list | try_grep -v 'A closed issue on GitLab without description'
+    start ; "$gi" list -a | try_grep 'A closed issue on GitLab without description'
+    # Description and comments
+    rglissue=$("$gi" list | awk '/An open issue on GitLab with a description and comments/ {print $1}')
+    rglissue2=$("$gi" list | awk '/gitlab milestone issue/ {print $1}')
+    start ; "$gi" show "$rglissue" | try_grep '^ *line 1'
+    start ; "$gi" show "$rglissue" | try_grep '^ *line 2'
+    start ; "$gi" show "$rglissue" | try_grep 'Line 3 with special characters "'\''<>|\$'
+    start ; "$gi" show -c "$rglissue" | try_grep '^ *comment 2'
+    start ; "$gi" show -c "$rglissue" | try_grep '^ *comment 3'
+    start ; "$gi" show -c "$rglissue" | try_grep '^ *comment 4'
+    start ; "$gi" show "$rglissue" | try_grep '^GitLab issue: #[1-9]* at vyrondrosos/git-issue'
+
+    start ; "$gi" show "$rglissue2" | try_grep "^Due Date: $($DATEBIN --date=week --rfc-3339=date)"
+    start ; "$gi" show "$rglissue2" | try_grep '^Time Estimate: 03 hours'
+    start ; "$gi" show "$rglissue2" | try_grep '^Milestone: ver4'
+    # Assignees and tags
+    rglissue3=$("$gi" list | awk '/An open issue on GitLab with assignees and tags/ {print $1}')
+    start ; "$gi" show "$rglissue3" | try_grep 'good first issue'
+    start ; "$gi" show "$rglissue3" | header_continuation | try_grep 'Assigned-to:.*'"$gluser"
+
+    cd ../testdir
+    # delete repo
     curl -H "$GL_CURL_AUTH" -s --request DELETE $glrepourl | grep "Accepted" > /dev/null || printf "Couldn't delete repository.\nYou probably don't have delete permittions activated on the OAUTH token.\nPlease delete %s manually." "$glrepo"
   else
     echo "Couldn't create test repository. Skipping export tests."

@@ -128,8 +128,8 @@ You use _git issue_ with the following sub-commands.
 * `git issue pull`: Update local Git repository with remote changes.
 * `git issue import`: Import/update GitHub/GitLab issues from the specified project.
   If the import involves more than a dozen of issues or if the repository
-  is private, set the environment variable `GI_CURL_AUTH` (GitHub) or `GL_CURL_AUTH` (GitLab) to the authentication token.
-  For example, run the following command: `export GI_CURL_AUTH="Authorization: token badf00ddead9bfee8f3c19afc3c97c6db55fcfde"`
+  is private, set the environment variable `GH_CURL_AUTH` (GitHub) or `GL_CURL_AUTH` (GitLab) to the authentication token.
+  For example, run the following command: `export GH_CURL_AUTH="Authorization: token badf00ddead9bfee8f3c19afc3c97c6db55fcfde"`
   You can create the authorization token through
   [GitHub settings](https://github.com/settings/tokens/new).
   For GitLab: `export GL_CURL_AUTH="PRIVATE-TOKEN: JvHLsdnDmD7rjUXzT-Ea"`
@@ -139,15 +139,16 @@ You use _git issue_ with the following sub-commands.
   With the `-e` option any escape sequences for the attributes present in the description, will be replaced as above.
   This can be used to e.g export an unsupported attribute to GitHub as text.
 * `git issue export`: Export issues for the specified project.
-  Only the issues that have been imported or modified by `git-issue` will be exported.
+  Only the issues that have been imported and modified (or created by `git issue create`) by `git-issue` will be exported.
   With the `-e` option any escape sequences for the attributes present in the description, will be replaced as above.
   This can be used to e.g export an unsupported attribute to GitHub as text.
-
+* `git issue exportall`: Export all open issues in the database (`-a` to include closed ones) to GitHub/GitLab. Useful for cloning whole repositories.
 
 ### Help and debug
 * `git issue help`: Display help information about git issue.
 * `git issue log`: Output a log of changes made
 * `git issue git`: Run the specified Git command on the issues repository.
+* `git issue dump`: Dump the whole database in json format to stdout.
 
 Issues and comments are specified through the SHA hash associated with the
 parent of the commit that opened them, which is specifically crafted for
@@ -233,17 +234,20 @@ Added comment 8c0d5b3
 
 ### Add a due date for the issue
 ```
-$ git issue duedate "next Tuesday"
+$ git issue duedate "next Tuesday" e6a95c9
+Added duedate 2019-08-13T00:00:00+03:00
 ```
 
 ### Keep track of time spent on the issue
 ```
-$ git issue timespent "2hours"
+$ git issue timespent "2hours" e6a95c9
+Added timespent 7200
 ```
 
 ### Log additional time spent working on it
 ```
-$ git issue timespent -a "4 hours"
+$ git issue timespent -a "4 hours" e6a95c9
+Added timespent 21600
 ```
 
 ### Add tag to an issue
@@ -424,6 +428,7 @@ $ git issue show 0a27c66
 issue 0a27c6633f492e42bb2a24e6ae458482a4690a55
 Author: dspinellis <dspinellis@users.noreply.github.com>
 Date:   Thu, 30 Aug 2018 20:59:59 +0000
+GitHub issue: #3 at vyrondrosos/git-issue-test-issues
 Tags:   bug
         duplicate
         enhancement
@@ -439,6 +444,47 @@ Assigned-to:    dspinellis
 Edit History:
 * Thu, 30 Aug 2018 20:59:59 +0000 by dspinellis
 * <dspinellis@users.noreply.github.com>
+```
+
+### Export all issues to GitHub
+
+```
+$ git issue exportall github dspinellis git-issue-test-issues
+Creating issue 9179d38...
+Couldn't add assignee dspinellis. Skipping...
+Couldn't add assignee louridas. Skipping...
+Creating issue 3651dd3...
+Creating new Milestone ver3...
+Creating comment d72c68d0177b500a91ea37548e6594f84457fd5b...
+Creating comment 6966d4d718c80cf8635e9276d6f391de70c22f93...
+Creating comment 85293a6904d0fbd6238fbb2e1c36fc65af9ffc60...
+Creating comment aea83723c0414ff135afcfb5165d64f8a7ad687c...
+```
+
+### Make changes
+
+```
+$ git issue edit 9179d38
+Opening editor...
+Edited issue 9179d38
+$ git issue edit -c d72c6
+Opening editor...
+Edited comment d72c68d
+```
+
+### Export modified issues back to GitHub
+
+```
+$ git issue export github dspinellis git-issue-test-issues
+$ git issue export github dspinellis git-issue-test-issues # Needs a token with the relevant permissions
+Issue b83d92872dc16440402516a5f4ce1b8cc6436344 hasn't been modified, skipping...
+Comment a93764f32179e93493ceb0a7060efce1e980aff1 hasn't been modified, skipping...
+Exporting issue 9179d381135273220301f175c03b101b3e9c703d as #15
+Issue 3651dd38e4e1d9dbce66649710324235c773fe78 hasn't been modified, skipping...
+Updating comment d72c68d0177b500a91ea37548e6594f84457fd5b...
+Comment 6966d4d718c80cf8635e9276d6f391de70c22f93 hasn't been modified, skipping...
+Comment 85293a6904d0fbd6238fbb2e1c36fc65af9ffc60 hasn't been modified, skipping...
+Comment aea83723c0414ff135afcfb5165d64f8a7ad687c hasn't been modified, skipping...
 ```
 
 ### Sub-command auto-completion

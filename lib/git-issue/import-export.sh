@@ -57,7 +57,7 @@ rest_api_get()
 
   # use the correct authentication token
   if [ "$provider" = github ] ; then
-    authtoken="$GI_CURL_AUTH"
+    authtoken="$GH_CURL_AUTH"
   elif [ "$provider" = gitlab ] ; then
     authtoken="$GL_CURL_AUTH"
   else
@@ -106,7 +106,7 @@ rest_api_send()
 
   # use the correct authentication token
   if [ "$provider" = github ] ; then
-    authtoken="$GI_CURL_AUTH"
+    authtoken="$GH_CURL_AUTH"
   elif [ "$provider" = gitlab ] ; then
     authtoken="$GL_CURL_AUTH"
   else
@@ -197,7 +197,7 @@ create_issue()
     nassignee="$assignee"
     if [ "$provider" = github ] ; then
       for a in $nassignee ; do
-        ret=$(curl -H "$GI_CURL_AUTH" -A "$USER_AGENT" "https://api.github.com/repos/$user/$repo/assignees/$a" --stderr /dev/null )
+        ret=$(curl -H "$GH_CURL_AUTH" -A "$USER_AGENT" "https://api.github.com/repos/$user/$repo/assignees/$a" --stderr /dev/null )
         # if assignee is valid github should return no data
         if [ -n "$ret" ] ; then
           echo "Couldn't add assignee $a. Skipping..."
@@ -338,7 +338,6 @@ create_issue()
     fi
   fi
 
-  cd ..
   if [ -n "$num" ] ; then
     if [ "$provider" = github ] ; then
       url="https://api.github.com/repos/$user/$repo/issues/$num"
@@ -349,7 +348,7 @@ create_issue()
     fi
   else
     # Check if issue already exists
-    for i in ".issues/imports/$provider/$user/$repo"/[1-9]* ; do
+    for i in "imports/$provider/$user/$repo"/[1-9]* ; do
       local sha
       sha=$(cat "$i/sha" 2> /dev/null)
       if [ "$sha" = "$isha" ] ; then
@@ -378,8 +377,6 @@ create_issue()
 
 
   # Time estimate/time spent
-
-  cdissues
   local timeestimate timespent
   if [ -s "$path/timeestimate" ] && [ "$provider" = gitlab ] ; then
     timeestimate=$(fmt "$path/timeestimate")
@@ -432,7 +429,7 @@ create_issue()
   fi
 
   # delete temp files
-  test -z $nodelete && rm -f ../create-body ../create-header
+  test -z $nodelete && rm -f create-body create-header update-body update-header
   rm -f milestone-body milestone-header mileres-body mileres-header timestats-header
   rm -f timeestimate-body timeestimate-header timespent-body timespent-header timestats-body
 }
@@ -465,8 +462,15 @@ create_comment()
 
   cdissues
   cbody=$(head -c -1 < "$path/comments/$csha"; echo x)
-  test "$provider" = gitlab && cbody=$(echo "$cbody" | sed '$!s/[^ ] \?$/&  /') ;\
+  if [ "$provider" = gitlab ] ; then
+    cbody=$(echo "$cbody" | sed '$!s/[^ ] \?$/&  /')
     echo "${cbody%x}" | head -c -1 > "$path/comments/$csha"
+    git add "$path/comments/$csha"
+    if ! git diff --quiet HEAD ; then
+      commit "Update comment formatting" "gi edit comment $csha"
+    fi
+  fi
+
   cfound=
   for j in "$import_dir"/comments/* ; do
    if [ "$(cat "$j" 2> /dev/null)" = "$csha" ] ; then
@@ -965,14 +969,15 @@ repo="$3"
 # Create list of relevant shas sorted by date
 shas=$(sub_list -l %i -o %c "$all"| sed '/^$/d' | tr '\n' ' ')
 
+cdissues
+
 # Remove already exported issues
-if [ -d ".issues/imports/$provider/$user/$repo" ] ; then
-  for i in ".issues/imports/$provider/$user/$repo/"[1-9]* ; do
+if [ -d "imports/$provider/$user/$repo" ] ; then
+  for i in "imports/$provider/$user/$repo/"[1-9]* ; do
     shas=$(echo "$shas" | sed "s/$(head -c 7 "$i/sha")//")
   done
 fi
 
-cdissues
 for i in $shas ; do
   echo "Creating issue $i..."
   if [ -n "$updaterefs" ] ; then
@@ -982,9 +987,9 @@ for i in $shas ; do
   fi
   # get created issue id
   if [ "$provider" = github ] ; then
-    num=$(jq '.number' ../create-body)
+    num=$(jq '.number' create-body)
   else
-    num=$(jq '.iid' ../create-body)
+    num=$(jq '.iid' create-body)
   fi
   rm -f create-header create-body
  

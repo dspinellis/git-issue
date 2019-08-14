@@ -9,9 +9,9 @@ default: install
 install:
 	@mkdir -p $(DESTDIR)$(MANPREFIX)
 	@mkdir -p $(DESTDIR)$(BINPREFIX)
-	@mkdir -p $(DESTDIR)$(LIBPREFIX)
+	@mkdir -p $(DESTDIR)$(LIBPREFIX)/git-issue
 	install git-issue.sh $(DESTDIR)$(BINPREFIX)/git-issue
-	install lib/git-issue/import-export.sh $(DESTDIR)$(LIBPREFIX)/import-export.sh
+	install lib/git-issue/import-export.sh $(DESTDIR)$(LIBPREFIX)/git-issue/import-export.sh
 	install -m 644 git-issue.1 $(DESTDIR)$(MANPREFIX)/
 	@mkdir -p $(DESTDIR)$(SYSCONFDIR)/bash_completion.d
 	install -m 644 gi-completion.sh $(DESTDIR)$(SYSCONFDIR)/bash_completion.d/git-issue
