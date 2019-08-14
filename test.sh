@@ -498,6 +498,7 @@ else
     "$gi" init
     try "$gi" import github $ghrepo
     rissue=$("$gi" list | awk '/An open issue on GitHub with a description and comments/ {print $1}')
+    rissue2=$("$gi" list | awk '/milestone issue/{print $1}')
     start ; "$gi" show "$rissue" | try_grep '^ *line 1'
     start ; "$gi" show "$rissue" | try_grep '^ *line 2'
     start ; "$gi" show "$rissue" | try_grep 'Line 3 with special characters "'\''<>|\$'
@@ -506,8 +507,9 @@ else
     start ; "$gi" show -c "$rissue" | try_grep '^ *comment 2'
     start ; "$gi" show -c "$rissue" | try_grep '^ *comment 4'
  
-    rissue=$("$gi" list | awk '/An open issue on GitHub with assignees and tags/ {print $1}')
-    start ; "$gi" show "$rissue" | try_grep 'good first issue'
+    start ; "$gi" show "$rissue2" | try_grep '^Milestone: ver4'
+    rissue3=$("$gi" list | awk '/An open issue on GitHub with assignees and tags/ {print $1}')
+    start ; "$gi" show "$rissue3" | try_grep 'good first issue'
     
     cd ../testdir
 
@@ -581,17 +583,15 @@ else
     "$gi" assign -r "$issue2" octocat > /dev/null 2>&1
 
     # test milestone creation
-    "$gi" new -s "milestone issue : %M" > /dev/null 2>&1
-    if [ -z "$issue3" ] ; then
-      issue3=$("$gi" list | awk '/milestone issue/{print $1}')
-      "$gi" milestone "$issue3" ver4 > /dev/null 2>&1
-      "$gi" duedate "$issue3" week > /dev/null 2>&1
-      "$gi" timeestimate "$issue3" 3hours > /dev/null 2>&1
-    fi
-    try "$gi" create -e "$issue3" gitlab $glrepo
-    start ; "$gi" show "$issue3" | try_grep 'ver4'
+    "$gi" new -s "gitlab milestone issue : %M" > /dev/null 2>&1
+    glissue3=$("$gi" list | awk '/gitlab milestone issue : %M/{print $1}')
+    "$gi" milestone "$glissue3" ver4 > /dev/null 2>&1
+    "$gi" duedate "$glissue3" week > /dev/null 2>&1
+    "$gi" timeestimate "$glissue3" 3hours > /dev/null 2>&1
+    try "$gi" create -e "$glissue3" gitlab $glrepo
+    start ; "$gi" show "$glissue3" | try_grep 'ver4'
     # Try to create duplicate
-    ntry "$gi" create -e "$issue3" gitlab $glrepo
+    ntry "$gi" create -e "$glissue3" gitlab $glrepo
     try "$gi" exportall -a gitlab $glrepo
 
     # Basic GitLab round-trip tests
@@ -607,6 +607,7 @@ else
     start ; "$gi" list -a | try_grep 'A closed issue on GitLab without description'
     # Description and comments
     rglissue=$("$gi" list | awk '/An open issue on GitLab with a description and comments/ {print $1}')
+    rglissue2=$("$gi" list | awk '/gitlab milestone issue/ {print $1}')
     start ; "$gi" show "$rglissue" | try_grep '^ *line 1'
     start ; "$gi" show "$rglissue" | try_grep '^ *line 2'
     start ; "$gi" show "$rglissue" | try_grep 'Line 3 with special characters "'\''<>|\$'
@@ -614,10 +615,14 @@ else
     start ; "$gi" show -c "$rglissue" | try_grep '^ *comment 3'
     start ; "$gi" show -c "$rglissue" | try_grep '^ *comment 4'
     start ; "$gi" show "$rglissue" | try_grep '^GitLab issue: #[1-9]* at vyrondrosos/git-issue'
+
+    start ; "$gi" show "$rglissue2" | try_grep "^Due Date: $($DATEBIN --date=week --rfc-3339=date)"
+    start ; "$gi" show "$rglissue2" | try_grep '^Time Estimate: 03 hours'
+    start ; "$gi" show "$rglissue2" | try_grep '^Milestone: ver4'
     # Assignees and tags
-    rglissue=$("$gi" list | awk '/An open issue on GitLab with assignees and tags/ {print $1}')
-    start ; "$gi" show "$rglissue" | try_grep 'good first issue'
-    start ; "$gi" show "$rglissue" | header_continuation | try_grep 'Assigned-to:.*'"$gluser"
+    rglissue3=$("$gi" list | awk '/An open issue on GitLab with assignees and tags/ {print $1}')
+    start ; "$gi" show "$rglissue3" | try_grep 'good first issue'
+    start ; "$gi" show "$rglissue3" | header_continuation | try_grep 'Assigned-to:.*'"$gluser"
 
     cd ../testdir
     # delete repo
