@@ -1230,6 +1230,8 @@ sub_filter()
     echo "Filtering issue $GI_SHA..."
     eval "$@" || error "$1 returned non-zero exit status code. Aborting..."
   done
+  echo
+  echo 'Filter applied. To commit the results, run "gi git commit -a".'
 
 }
 # dump: Generate a json dump of all issues
