@@ -984,7 +984,7 @@ sub_edit()
 usage_list()
 {
   cat <<\USAGE_list_EOF
-gi new usage: git issue list [-a] [tag|milestone]
+gi list usage: git issue list [-a] [tag|milestone]
               git issue list [-a] -l formatstring [-o sort_field] [-r] [tag|milestone]
 USAGE_list_EOF
   exit 2
@@ -1170,7 +1170,7 @@ sub_list()
 usage_log()
 {
   cat <<\USAGE_log_EOF
-gi new usage: git issue log [-I issue-SHA] [git log options]
+gi log usage: git issue log [-I issue-SHA] [git log options]
 USAGE_log_EOF
   exit 2
 }
@@ -1198,6 +1198,40 @@ sub_log()
 
 }
 
+usage_filter()
+{
+  cat <<\USAGE_filter_EOF
+gi filter usage: git issue filter-apply command
+USAGE_filter_EOF
+  exit 2
+}
+
+#filter-apply: Apply a filter (script or other command) for each issue
+sub_filter()
+{
+
+  cdissues
+  test -n "$1" || usage_filter
+  command -v "$1" > /dev/null || error "$1 is not a recognized command."
+  test -d issues || error "There are no issues to filter."
+  cd issues || trans_abort
+  for i in */* ; do
+    cdissues
+    #set environment variables for the command to use
+    GI_SHA=$(echo "$i" | tr -d '/')
+    GI_IMPORTS=$(importsget "$GI_SHA")
+    GI_AUTHOR=$(git show --no-patch --format='%an' "$GI_SHA")
+    GI_DATE=$(git show --no-patch --format='%aD' "$GI_SHA")
+    export GI_SHA
+    export GI_IMPORTS
+    export GI_AUTHOR
+    export GI_DATE
+    cd "issues/$i" || trans_abort
+    echo "Filtering issue $GI_SHA..."
+    eval "$@" || error "$1 returned non-zero exit status code. Aborting..."
+  done
+
+}
 # dump: Generate a json dump of all issues
 sub_dump()
 {
@@ -1362,6 +1396,9 @@ case "$subcommand" in
     replacerefs "$@"
     ;;
 
+  filter-apply)
+    sub_filter "$@"
+    ;;
   dump)
     sub_dump "$@"
     ;;

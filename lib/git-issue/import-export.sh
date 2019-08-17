@@ -34,6 +34,7 @@ importsget()
   isha=$(issue_sha "$path")
   cdissues
   test -d imports || return
+  #TODO support arbitrary nesting
   for i in "imports/github/"*/*/[1-9]* "imports/gitlab/"*/*/[1-9]* "imports/gitlab/"*/*/*/[1-9]*; do
     local sha
     if [ -r "$i/sha" ] ; then
