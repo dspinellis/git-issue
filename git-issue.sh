@@ -1210,12 +1210,18 @@ USAGE_filter_EOF
 sub_filter()
 {
 
-  cdissues
   test -n "$1" || usage_filter
-  command -v "$1" > /dev/null || error "$1 is not a recognized command."
+  command -v "$1" > /dev/null || test -x "$1" || error "$1 is not a recognized command."
+  # Get absolute path
+  #shellcheck disable=SC2164
+  # SC2164: Use 'cd ... || exit' or 'cd ... || return' in case cd fails.
+  abscmd="$(cd "$(dirname "$1")"; pwd -P)/$(basename "$1")"
+  shift
+  cdissues
   test -d issues || error "There are no issues to filter."
   cd issues || trans_abort
   for i in */* ; do
+    # In case the command changes directory
     cdissues
     #set environment variables for the command to use
     GI_SHA=$(echo "$i" | tr -d '/')
@@ -1228,7 +1234,7 @@ sub_filter()
     export GI_DATE
     cd "issues/$i" || trans_abort
     echo "Filtering issue $GI_SHA..."
-    eval "$@" || error "$1 returned non-zero exit status code. Aborting..."
+    eval "$abscmd" "$@" || error "$abscmd returned non-zero exit status code. Aborting..."
   done
   echo
   echo 'Filter applied. To commit the results, run "gi git commit -a".'
