@@ -1393,12 +1393,7 @@ fi
 shift
 case "$subcommand" in
 
-  #DEBUG
-  replacerefs)
-    replacerefs "$@"
-    ;;
-
-  filter-apply)
+ filter-apply)
     sub_filter "$@"
     ;;
   dump)

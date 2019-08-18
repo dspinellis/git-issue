@@ -169,10 +169,10 @@ USAGE_create_issue_EOF
 create_issue()
 {
 
-  local isha path assignee tags title description url provider user repo nassignee updaterefs
+  local isha path assignee tags title description url provider user repo nassignee
   local nodelete OPTIND escrepo update num import_dir attr_expand jstring i
      
-  while getopts neu:r: flag ; do
+  while getopts neu: flag ; do
     case $flag in
     n)
       nodelete=1
@@ -180,9 +180,6 @@ create_issue()
     u)
       num=$OPTARG
       update=1
-      ;;
-    r)
-      updaterefs=$OPTARG
       ;;
     e)
       attr_expand=1
@@ -441,15 +438,6 @@ create_issue()
   git add "$import_dir"
   git diff --quiet HEAD || commit "gi: Add $import_dir" 'gi new mark'
 
-  if [ -n "$updaterefs" ] ; then
-    if [ "$provider" = github ] ; then
-      rest_api_send "$url" update "$(echo '{}' | jq --arg desc "$(replacerefs "$description" "$updaterefs" "$provider/$user/$repo")" -r '. + { body: $desc}')" PATCH github
-
-    else
-      rest_api_send "$url" update "$(echo '{}' | jq --arg desc "$(replacerefs "$description" "$updaterefs" "$provider/$user/$repo")" -r '. + { description: $desc}')" PUT gitlab
-    fi
-  fi
-
   # delete temp files
   test -z $nodelete && rm -f create-body create-header update-body update-header
   rm -f milestone-body milestone-header mileres-body mileres-header timestats-header
@@ -525,36 +513,6 @@ create_comment()
   # mark export
   commit "gi: Export comment $csha" "gi comment export $csha at $provider $user $repo"
   rm -f commentupdate-header commentupdate-body commentcreate-header commentcreate-body 
-}
-
-# Transform a string by replacing all references to issues in repo source to references in repo target
-# replacerefs string "provider/sourceuser/sourcerepo" "provider/targetuser/targetrepo"
-
-replacerefs()
-{
-  local sourcerepo targetrepo string refs ref sha
-  expr "$2" : '.*/.*' > /dev/null || error "Replacerefs: Bad sourcerepo"
-  expr "$3" : '.*/.*' > /dev/null || error "Replacerefs: Bad targetrepo"
-  string=$1
-  sourcerepo=$2
-  targetrepo=$3
-  refs=$(echo "$string" | grep -o '\([^[[:alnum:]_]\|^\)#[0-9]\+\([^][:alnum:]_]\|$\)' | grep -o '[0-9]\+' | sort | uniq)
-  
-  cdissues
-  for ref in $refs ; do
-    test -d "imports/$sourcerepo/$ref" || echo "Warning: Couldn't find $sourcerepo/$ref" 1>&2
-    newref=$(sub_show "$(cat "imports/$sourcerepo/$ref/sha")" | grep -i "${targetrepo%%/*} issue: #[0-9]\+ at ${targetrepo#*/}" | grep -o '#[0-9]\+')
-    # if not found, replace the ref with a link to the original issue
-    if [ -z "$newref" ] ; then
-      echo "Warning: Couldn't find $sourcerepo/$ref issue in $targetrepo" 1>&2
-      newref="[#$ref](https://${sourcerepo%%/*}\.com/${sourcerepo#*/}/issues/$ref)"
-    fi
-
-    string=$(echo "$string" | sed "s?\([^[[:alnum:]_]\|^\)#$ref\([^][:alnum:]_]\|$\)?\1$newref\2?g")
-  done
-  echo "$string"
-    
-
 }
 
 # Import GitHub/GitLab comments for the specified issue
@@ -966,14 +924,11 @@ USAGE_exportall_EOF
 # Export all not already present issues to GitHub/GitLab repo
 sub_exportall()
 {
-  local all provider user repo flag OPTIND shas num path i updaterefs
-  while getopts ar: flag ; do
+  local all provider user repo flag OPTIND shas num path i
+  while getopts a flag ; do
     case "$flag" in
     a)
       all='-a'
-      ;;
-    r)
-      updaterefs=$OPTARG
       ;;
     ?)
       usage_exportall
@@ -1002,11 +957,7 @@ fi
 
 for i in $shas ; do
   echo "Creating issue $i..."
-  if [ -n "$updaterefs" ] ; then
-    create_issue -n -r "$updaterefs" "$i" "$provider" "$user" "$repo"
-  else
-    create_issue -n "$i" "$provider" "$user" "$repo"
-  fi
+  create_issue -n "$i" "$provider" "$user" "$repo"
   # get created issue id
   if [ "$provider" = github ] ; then
     num=$(jq '.number' create-body)
