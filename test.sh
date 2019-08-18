@@ -379,6 +379,18 @@ start ; "$gi" list -l oneline -o "%D" | head -n 1 | try_grep 'First-issue'
 start ; "$gi" list -l oneline -o "%D" -r | head -n 1 | try_grep 'Second issue'
 start ; "$gi" list -l short -o "%T" | head -n 4 | try_grep 'feature'
 
+# Filter-apply
+
+cat <<EOF >test-filter.sh
+#!/bin/sh
+echo "Line added by test-filter" >> description
+EOF
+
+chmod +x test-filter.sh
+start ; "$gi" filter-apply test-filter.sh | try_grep "Filter applied"
+start ; "$gi" show "$issue" | try_grep "Line added by test-filter"
+# Reset changes
+"$gi" git checkout -- .
 
 # close
 try "$gi" close "$issue"
