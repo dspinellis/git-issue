@@ -452,7 +452,7 @@ else
   start ; "$gi" show -c "$issue" | try_grep '^ *comment 1 line 2$'
   start ; "$gi" show -c "$issue" | try_grep '^ *comment 2$'
   start ; "$gi" show -c "$issue" | try_grep '^ *comment 4$'
-  start ; "$gi" show "$issue" | try_grep '^GitHub issue: #[1-9]* at dspinellis/git-issue-test-issues$'
+  start ; "$gi" show "$issue" | try_grep '^GitHub issue: #[0-9]* at dspinellis/git-issue-test-issues$'
   # Assignees and tags
   issue=$("$gi" list | awk '/An open issue on GitHub with assignees and tags/ {print $1}')
   start ; "$gi" show "$issue" | try_grep 'good first issue'
@@ -552,7 +552,7 @@ else
   start ; "$gi" show -c "$glissue" | try_grep '^ *comment 2$'
   start ; "$gi" show -c "$glissue" | try_grep '^ *comment 3$'
   start ; "$gi" show -c "$glissue" | try_grep '^ *comment 4$'
-  start ; "$gi" show "$glissue" | try_grep '^GitLab issue: #[1-9]* at vyrondrosos/git-issue-test-issues$'
+  start ; "$gi" show "$glissue" | try_grep '^GitLab issue: #[0-9]* at vyrondrosos/git-issue-test-issues$'
   # Assignees and tags
   glissue=$("$gi" list | awk '/An open issue on GitLab with assignees and tags/ {print $1}')
   start ; "$gi" show "$glissue" | try_grep 'good first issue'
@@ -626,7 +626,7 @@ else
     start ; "$gi" show -c "$rglissue" | try_grep '^ *comment 2'
     start ; "$gi" show -c "$rglissue" | try_grep '^ *comment 3'
     start ; "$gi" show -c "$rglissue" | try_grep '^ *comment 4'
-    start ; "$gi" show "$rglissue" | try_grep '^GitLab issue: #[1-9]* at vyrondrosos/git-issue'
+    start ; "$gi" show "$rglissue" | try_grep '^GitLab issue: #[0-9]* at vyrondrosos/git-issue'
 
     start ; "$gi" show "$rglissue2" | try_grep "^Due Date: $($DATEBIN --date=week --rfc-3339=date)"
     start ; "$gi" show "$rglissue2" | try_grep '^Time Estimate: 03 hours'
