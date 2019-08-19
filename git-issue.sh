@@ -359,11 +359,11 @@ Date:	%aD' "$isha"
     # Imports
     for i in $(importsget "$isha") ; do
       local num
-      num=$(echo "$i" | grep -o '/[1-9]*$' | tr -d '/')
+      num=$(echo "$i" | grep -o '/[0-9]\+$' | tr -d '/')
       if echo "$i" | grep -q '^github' ; then
-        echo "GitHub issue: #$num at $i" | sed -e 's:/[1-9]*$::' -e 's:github/::'
+        echo "GitHub issue: #$num at $i" | sed -e 's:/[0-9]\+$::' -e 's:github/::'
       else
-        echo "GitLab issue: #$num at $i" | sed -e 's:/[1-9]*$::' -e 's:gitlab/::'
+        echo "GitLab issue: #$num at $i" | sed -e 's:/[0-9]\+$::' -e 's:gitlab/::'
       fi
     done
 
@@ -1399,7 +1399,7 @@ fi
 shift
 case "$subcommand" in
 
- filter-apply)
+  filter-apply)
     sub_filter "$@"
     ;;
   dump)

@@ -30,9 +30,9 @@ importsget()
 {
   local path isha sha num
 
+  cdissues
   path=$(issue_path_part "$1") || exit
   isha=$(issue_sha "$path")
-  cdissues
   test -d imports || return
   # Get all issues(glob can't handle arbitrary nesting)
   find imports/ -name 'sha' | rev | sed 's:ahs/::' | rev |
@@ -142,7 +142,7 @@ rest_api_send()
     trans_abort
   fi
 
-  if ! grep -q '^\(Status: 20[0-9]\|HTTP/[[:digit:]].[[:digit:]] 20[1-9] Created\|HTTP/[[:digit:]].[[:digit:]] 200 OK\)' "$prefix-header" ; then
+  if ! grep -q '^\(Status: 20[0-9]\|HTTP/[[:digit:]].[[:digit:]] 20[0-9] Created\|HTTP/[[:digit:]].[[:digit:]] 200 OK\)' "$prefix-header" ; then
     echo 'GitHub API communication failure' 1>&2
     echo "URL: $url" 1>&2
     echo "Data: $data" 1>&2
@@ -368,12 +368,12 @@ create_issue()
     fi
   else
     # Check if issue already exists
-    for i in "imports/$provider/$user/$repo"/[1-9]* ; do
+    for i in "imports/$provider/$user/$repo"/[0-9]* ; do
       local sha
       sha=$(cat "$i/sha" 2> /dev/null)
       if [ "$sha" = "$isha" ] ; then
         local num
-        num=$(echo "$i" | grep -o '/[1-9].*$' | tr -d '/')
+        num=$(echo "$i" | grep -o '/[0-9].*$' | tr -d '/')
         error "Error: Local issue $sha is linked with $provider issue #$num.Cannot create duplicate."
       fi
     done
@@ -800,11 +800,11 @@ export_issues()
   test -d "imports/$provider/$user/$repo" || error "No local issues found for this repository."
 
   # For each issue in the respective import dir
-  for i in "imports/$provider/$user/$repo"/[1-9]* ; do
+  for i in "imports/$provider/$user/$repo"/[0-9]* ; do
     sha=$(cat "$i/sha")
     path=$(issue_path_part "$sha") || exit
     # Extract number
-    num=$(echo "$i" | grep -o '/[1-9].*$' | tr -d '/')
+    num=$(echo "$i" | grep -o '/[0-9].*$' | tr -d '/')
     # Check if the issue has been modified since last import/export
     lastimport=$(git log --grep "gi: \(Add imports/$provider/$user/$repo/$num\|Import issue #$num from github/$user/$repo\)" --format='%H' | head -n 1)
     if [ -n "$(git rev-list --grep='\(gi: Import comment message\|gi: Add comment message\|gi: Edit comment\)' --invert-grep "$lastimport"..HEAD "$path")" ] ; then
@@ -951,7 +951,7 @@ cdissues
 
 # Remove already exported issues
 if [ -d "imports/$provider/$user/$repo" ] ; then
-  for i in "imports/$provider/$user/$repo/"[1-9]* ; do
+  for i in "imports/$provider/$user/$repo/"[0-9]* ; do
     shas=$(echo "$shas" | sed "s/$(head -c 7 "$i/sha")//")
   done
 fi
