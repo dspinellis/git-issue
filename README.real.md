@@ -123,6 +123,17 @@ You use _git issue_ with the following sub-commands.
    
    Optionally, one of the above given with `-o` will order based on this field(reverse order with `-r`).
    
+### Work with multiple issues
+* `git issue filter-apply command`: Run `command` in every issue directory. The following environment variables will be set: 
+  - `GI_SHA` : Sha of the current issue
+  - `GI_IMPORTS` : The imports directories for current issue(one on each line)
+  - `GI_AUTHOR` : Author of current issue
+  - `GI_DATE` : Creation date of current issue
+  
+  The command can read add/remove or edit any of the issue's attributes.
+  Some potentially useful scripts to be used with this command are in the scripts/ directory.
+  Remember to inspect the results (e.g `gi git diff`) and commit them with `gi git commit -a`.
+  
 ### Synchronize with remote repositories
 * `git issue push`: Update remote Git repository with local changes.
 * `git issue pull`: Update local Git repository with remote changes.
