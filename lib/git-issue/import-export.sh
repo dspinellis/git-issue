@@ -34,8 +34,9 @@ importsget()
   isha=$(issue_sha "$path")
   cdissues
   test -d imports || return
-  #TODO support arbitrary nesting
-  for i in "imports/github/"*/*/[1-9]* "imports/gitlab/"*/*/[1-9]* "imports/gitlab/"*/*/*/[1-9]*; do
+  # Get all issues(glob can't handle arbitrary nesting)
+  find imports/ -name 'sha' | rev | sed 's:ahs/::' | rev |
+  while read -r i ; do
     local sha
     if [ -r "$i/sha" ] ; then
       sha=$(cat "$i/sha")
@@ -51,20 +52,20 @@ importsget()
 urlescape()
 {
   echo "$1" |
-  sed 's.%.%25.' |
-  sed -e 's./.%2F.' \
-  -e 's.!.%21.' \
-  -e 's.#.%23.' \
-  -e 's.\$.%24.' \
-  -e 's.&.%26.' \
-  -e 's.'\''.%27.' \
-  -e 's.(.%28.' \
-  -e 's.).%29.' \
-  -e 's.*.%2A.' \
-  -e 's.+.%2B.' \
-  -e 's.,.%2C.' \
-  -e 's.:.%3A.' \
-  -e 's.;.%3B.'
+  sed 's.%.%25.g' |
+  sed -e 's./.%2F.g' \
+  -e 's.!.%21.g' \
+  -e 's.#.%23.g' \
+  -e 's.\$.%24.g' \
+  -e 's.&.%26.g' \
+  -e 's.'\''.%27.g' \
+  -e 's.(.%28.g' \
+  -e 's.).%29.g' \
+  -e 's.*.%2A.g' \
+  -e 's.+.%2B.g' \
+  -e 's.,.%2C.g' \
+  -e 's.:.%3A.g' \
+  -e 's.;.%3B.g'
 
 }
 # Get a page using the GitHub/GitLab API; abort transaction on error
