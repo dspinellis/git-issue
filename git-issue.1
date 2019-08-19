@@ -35,7 +35,7 @@ to support the efficient merging of work, while also providing
 a solid audit trail regarding any changes.
 
 .SH GIT ISSUE COMMANDS
-.\" Auto-generated content from README.real.md; do not edit this section
+.\" Auto-generated content from README.md; do not edit this section
 You use \fIgit issue\fP with the following sub-commands.
 
 .RE
@@ -159,6 +159,20 @@ This will list issues in the specified format, given as an argument to \fC-l\fP.
    
 .RE
 .PP
+\fBgit issue filter-apply command\fP
+.RS 4
+Run \fCcommand\fP in every issue directory. The following environment variables will be set: 
+  - \fCGI_SHA\fP : Sha of the current issue
+  - \fCGI_IMPORTS\fP : The imports directories for current issue(one on each line)
+  - \fCGI_AUTHOR\fP : Author of current issue
+  - \fCGI_DATE\fP : Creation date of current issue
+  
+  The command can read add/remove or edit any of the issue's attributes.
+  Some potentially useful scripts to be used with this command are in the scripts/ directory.
+  Remember to inspect the results (e.g \fCgi git diff\fP) and commit them with \fCgi git commit -a\fP.
+  
+.RE
+.PP
 \fBgit issue push\fP
 .RS 4
 Update remote Git repository with local changes.
@@ -233,7 +247,7 @@ The \fCPAGER\fP environment variable is used for determining the program
 to use to display long lists of results.
 
 .SH FILES
-.\" Auto-generated content from README.real.md; do not edit this section
+.\" Auto-generated content from README.md; do not edit this section
 All data are stored under \fC.issues\fP, which should be placed under \fC.gitignore\fP,
 if it will coexist with another Git-based project.
 The directory contains the following elements.
@@ -291,7 +305,7 @@ A \fCtemplates\fP directory with message templates.
 The command terminates with a non zero exit code on errors.
 
 .SH EXAMPLES
-.\" Auto-generated content from README.real.md; do not edit this section
+.\" Auto-generated content from README.md; do not edit this section
 You can also view a video of the following session on YouTube <https://youtu.be/9aKHTjtTbFs>.
 
 .ft P
