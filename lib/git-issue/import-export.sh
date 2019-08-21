@@ -268,10 +268,11 @@ create_issue()
  # Description
   # Title is the first line of description
   title=$(head -n 1 "$path/description")
-  if [ -z "$(head -n 2 "$path/description" | tail -n 1)" ] ; then
+  if [ -z "$(head -n 2 "$path/description" | tail -n +2)" ] ; then
     description=$(tail --lines=+3 "$path/description" | head -c -1 ; echo x)
   else
     echo "Warning: Found non empty second line on issue description."
+    #include second line if non empty
     description=$(tail --lines=+2 "$path/description" | head -c -1 ; echo x)
   fi
 

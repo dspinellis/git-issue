@@ -994,7 +994,8 @@ USAGE_list_EOF
 shortshow()
 {
 
-  local path formatstring sortfield id date duedate rawdate milestone weight assignee tags description rawest timeestimate rawspent timespent
+  local path formatstring sortfield id date duedate rawdate milestone
+  local weight assignee tags description rawest timeestimate rawspent timespent
 
   path=$1
   formatstring=$2

@@ -526,7 +526,9 @@ else
     cd ../testdir
 
     # delete repo
-    curl -H "$GH_CURL_AUTH" -s --request DELETE $ghrepourl | grep "{" && printf "Couldn't delete repository.\nYou probably don't have delete permittions activated on the OAUTH token.\nPlease delete %s manually." "$ghrepo"
+    curl -H "$GH_CURL_AUTH" -s --request DELETE $ghrepourl |
+      grep "{" && printf "Couldn't delete repository.
+You probably don't have delete permittions activated on the OAUTH token.\nPlease delete %s manually." "$ghrepo"
 
   else
     echo "Couldn't create test repository. Skipping export tests."
@@ -638,7 +640,9 @@ else
 
     cd ../testdir
     # delete repo
-    curl -H "$GL_CURL_AUTH" -s --request DELETE $glrepourl | grep "Accepted" > /dev/null || printf "Couldn't delete repository.\nYou probably don't have delete permittions activated on the OAUTH token.\nPlease delete %s manually." "$glrepo"
+    curl -H "$GL_CURL_AUTH" -s --request DELETE $glrepourl |
+      grep "Accepted" > /dev/null || printf "Couldn't delete repository.
+You probably don't have delete permittions activated on the OAUTH token.\nPlease delete %s manually." "$glrepo"
   else
     echo "Couldn't create test repository. Skipping export tests."
   fi
