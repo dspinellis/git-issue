@@ -486,7 +486,6 @@ Edited comment d72c68d
 ### Export modified issues back to GitHub
 
 ```
-$ git issue export github dspinellis git-issue-test-issues
 $ git issue export github dspinellis git-issue-test-issues # Needs a token with the relevant permissions
 Issue b83d92872dc16440402516a5f4ce1b8cc6436344 hasn't been modified, skipping...
 Comment a93764f32179e93493ceb0a7060efce1e980aff1 hasn't been modified, skipping...
