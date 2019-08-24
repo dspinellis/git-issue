@@ -98,6 +98,8 @@ You use _git issue_ with the following sub-commands.
   The person is specified with his/her email address.
   The form `@name` or `name@` can be used as a shortcut, provided it
   uniquely identifies an existing assignee or committer.
+  Note that if you plan to export the issue to a GitHub/GitLab repository, the assignee may be rejected if
+  it doesn't correspond to a valid username, or if you don't have the necessary permissions.
 * `git issue attach`: Attach (or remove with `-r`) a file to an issue.
 * `git issue watcher`: Add (or remove with `-r`) an issue watcher.
 * `git issue close`: Remove the `open` tag, add the closed tag
@@ -130,7 +132,7 @@ You use _git issue_ with the following sub-commands.
   - `GI_AUTHOR` : Author of current issue
   - `GI_DATE` : Creation date of current issue
   
-  The command can read add/remove or edit any of the issue's attributes.
+  The command can read, add/remove or edit any of the issue's attributes.
   Some potentially useful scripts to be used with this command are in the scripts/ directory.
   Remember to inspect the results (e.g `gi git diff`) and commit them with `gi git commit -a`.
   

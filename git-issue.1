@@ -113,6 +113,8 @@ Assign (or remove \fC-r\fP) an issue to a person.
   The person is specified with his/her email address.
   The form \fC@name\fP or \fCname@\fP can be used as a shortcut, provided it
   uniquely identifies an existing assignee or committer.
+  Note that if you plan to export the issue to a GitHub/GitLab repository, the assignee may be rejected if
+  it doesn't correspond to a valid username, or if you don't have the necessary permissions.
 .RE
 .PP
 \fBgit issue attach\fP
@@ -167,7 +169,7 @@ Run \fCcommand\fP in every issue directory. The following environment variables 
   - \fCGI_AUTHOR\fP : Author of current issue
   - \fCGI_DATE\fP : Creation date of current issue
   
-  The command can read add/remove or edit any of the issue's attributes.
+  The command can read, add/remove or edit any of the issue's attributes.
   Some potentially useful scripts to be used with this command are in the scripts/ directory.
   Remember to inspect the results (e.g \fCgi git diff\fP) and commit them with \fCgi git commit -a\fP.
   
@@ -640,7 +642,6 @@ Edited comment d72c68d
 Export modified issues back to GitHub
 .ft C
 .nf
-$ git issue export github dspinellis git-issue-test-issues
 $ git issue export github dspinellis git-issue-test-issues # Needs a token with the relevant permissions
 Issue b83d92872dc16440402516a5f4ce1b8cc6436344 hasn't been modified, skipping...
 Comment a93764f32179e93493ceb0a7060efce1e980aff1 hasn't been modified, skipping...
