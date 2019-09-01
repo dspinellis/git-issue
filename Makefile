@@ -21,7 +21,9 @@ sync-docs:
 	./sync-docs.sh
 
 test:
-	shellcheck -x *.sh lib/git-issue/*.sh
+	shellcheck --version >/dev/null 2>&1 && \
+		shellcheck -x *.sh lib/git-issue/*.sh || \
+		echo 'Skipping shellcheck; consider installing it'
 	./test.sh
 
 uninstall:
