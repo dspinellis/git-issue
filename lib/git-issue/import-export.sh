@@ -295,11 +295,15 @@ create_issue()
 
   # jq handles properly escaping the string if passed as variable
   if [ "$provider" = github ] ; then
+    # TODO: this directive is not needed on latest shellcheck versions
+    # shellcheck disable=SC2016
     jstring=$(echo "$jstring" | jq --arg desc "${description%x}" --arg tit "$title" \
       -r '. + {title: $tit, body: $desc}')
   else
     # add trailing spaces if needed, or gitlab will ignore the newline
     description=$(echo "$description" | sed '$!s/[^ ] \?$/&  /')
+    # TODO: this directive is not needed on latest shellcheck versions
+    # shellcheck disable=SC2016
     jstring=$(echo "$jstring" | jq --arg desc "${description%x}" --arg tit "$title" \
       -r '. + {title: $tit, description: $desc}')
   fi
@@ -309,6 +313,8 @@ create_issue()
     local duedate
     # gitlab date must be in YYYY-MM-DD format
     duedate=$($DATEBIN --iso-8601 --date="$(fmt "$path/duedate")")
+    # TODO: this directive is not needed on latest shellcheck versions
+    # shellcheck disable=SC2016
     jstring=$(echo "$jstring" | jq --arg D "$duedate" -r '. + { due_date: $D }')
   fi
 
@@ -316,6 +322,8 @@ create_issue()
   if [ -s "$path/weight" ] && [ "$provider" = gitlab ] ; then
     local weight
     weight=$(fmt "$path/weight")
+    # TODO: this directive is not needed on latest shellcheck versions
+    # shellcheck disable=SC2016
     jstring=$(echo "$jstring" | jq --arg W "$weight" -r '. + { weight: $W }')
   fi
 
@@ -353,8 +361,12 @@ create_issue()
       found=$(jq ".$jmileid" mileres-body)
     fi
     if [ "$provider" = github ] ; then
+      # TODO: this directive is not needed on latest shellcheck versions
+      # shellcheck disable=SC2016
       jstring=$(echo "$jstring" | jq --arg A "$found" -r '. + { milestone: $A }')
     else
+      # TODO: this directive is not needed on latest shellcheck versions
+      # shellcheck disable=SC2016
       jstring=$(echo "$jstring" | jq --arg A "$found" -r '. + { milestone_id: $A }')
     fi
   fi
@@ -490,6 +502,8 @@ create_comment()
      break
    fi
  done
+ # TODO: this directive is not needed on latest shellcheck versions
+ # shellcheck disable=SC2016
  cjstring=$(echo '{}' | jq --arg desc "${cbody%x}" '{body: $desc}')
  if [ -n "$cfound" ] ; then
    # the comment exists already

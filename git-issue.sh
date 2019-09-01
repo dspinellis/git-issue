@@ -1,6 +1,6 @@
 #!/bin/sh
-# shellcheck disable=SC2039,SC1117
-#
+# shellcheck disable=SC2039,SC1117,SC2006
+# TODO: SC2006 not needed on latest shellcheck version
 # Shellcheck ignore list:
 #  - SC2039: In POSIX sh, 'local' is undefined.
 #    Rationale: Local makes for better code and works on many modern shells
@@ -1259,6 +1259,8 @@ sub_dump()
       # Assignee
       if [ -r "$path/assignee" ] ; then
         assignee=$(tr '\n' ' ' < "$path/assignee")
+        # TODO: this directive is not needed on latest shellcheck versions
+        # shellcheck disable=SC2016
         jstring=$(echo "$jstring" | jq --arg A "$assignee" -r '. + { assignee: $A }')
       fi
 
@@ -1275,34 +1277,46 @@ sub_dump()
       # Description
       # Title is the first line of description
       description=$(cat "$path/description")
+      # TODO: this directive is not needed on latest shellcheck versions
+      # shellcheck disable=SC2016
       jstring=$(echo "$jstring" | jq --arg desc "$description" -r '. + { description: $desc }')
 
       # Due Date
       if [ -s "$path/duedate" ] ; then
         duedate=$($DATEBIN --iso-8601 --date="$(fmt "$path/duedate")")
+        # TODO: this directive is not needed on latest shellcheck versions
+        # shellcheck disable=SC2016
         jstring=$(echo "$jstring" | jq --arg D "$duedate" -r '. + { due_date: $D }')
       fi
 
       # Weight
       if [ -s "$path/weight" ] ; then
         weight=$(fmt "$path/weight")
+        # TODO: this directive is not needed on latest shellcheck versions
+        # shellcheck disable=SC2016
         jstring=$(echo "$jstring" | jq --arg W "$weight" -r '. + { weight: $W }')
       fi
 
       # Milestone
       if [ -s "$path/milestone" ] ; then
         milestone=$(fmt "$path/milestone")
+        # TODO: this directive is not needed on latest shellcheck versions
+        # shellcheck disable=SC2016
         jstring=$(echo "$jstring" | jq --arg A "$milestone" -r '. + { milestone: $A }')
       fi
 
       # Time estimate/time spent
       if [ -s "$path/timeestimate" ] ; then
         timeestimate=$(fmt "$path/timeestimate")
+        # TODO: this directive is not needed on latest shellcheck versions
+        # shellcheck disable=SC2016
         jstring=$(echo "$jstring" | jq --arg A "$timeestimate" -r '. + { timeestimate: $A }')
       fi
 
       if [ -s "$path/timespent" ] ; then
         timeestimate=$(fmt "$path/timespent")
+        # TODO: this directive is not needed on latest shellcheck versions
+        # shellcheck disable=SC2016
         jstring=$(echo "$jstring" | jq --arg A "$timespent" -r '. + { timespent: $A }')
       fi
 
@@ -1311,6 +1325,8 @@ sub_dump()
         cstring='[]'
         cshas=$(git log --reverse --grep="^gi comment mark $sha" --format='%H')
         for csha in $cshas ; do
+          # TODO: this directive is not needed on latest shellcheck versions
+          # shellcheck disable=SC2016
           cstring=$(echo "$cstring" | jq --arg C "$(cat "$path/comments/$csha")" --arg S "$csha" '.+= [{ sha : $S , body: $C }]')
         done
 
