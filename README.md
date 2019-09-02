@@ -144,8 +144,8 @@ You use _git issue_ with the following sub-commands.
   is private, set the environment variable `GH_CURL_AUTH` (GitHub) or `GL_CURL_AUTH` (GitLab) to the authentication token.
   For example, run the following command: `export GH_CURL_AUTH="Authorization: token badf00ddead9bfee8f3c19afc3c97c6db55fcfde"`
   You can create the authorization token through
-  [GitHub settings](https://github.com/settings/tokens/new).
-  For GitLab: `export GL_CURL_AUTH="PRIVATE-TOKEN: JvHLsdnDmD7rjUXzT-Ea"`
+  [GitHub settings](https://github.com/settings/tokens/new), with the `repo` and `delete_repo`(only for running the tests) permissions.
+  For GitLab: `export GL_CURL_AUTH="PRIVATE-TOKEN: JvHLsdnDmD7rjUXzT-Ea"`. The `api` permission is required.
   Use the [GitLab settings](https://gitlab.com/profile/personal_access_tokens) to create the token.
   In case the repository is part of a GitLab group, specify repository as groupname/reponame.
 * `git issue create`: Create the issue in the provided GitHub repository.
