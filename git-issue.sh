@@ -27,7 +27,7 @@
 # User agent string
 # shellcheck disable=SC2034
 # SC2034 : USER_AGENT appears unused. Verify use (or export if used externally)
-USER_AGENT=https://github.com/dspinellis/git-issue/tree/4119789
+USER_AGENT=https://github.com/dspinellis/git-issue/tree/3565b3b
 
 # Determine our script library path
 my_IFS=$IFS
@@ -1323,7 +1323,7 @@ sub_dump()
       if [ -d "$path/comments" ] ; then
         local csha
         cstring='[]'
-        cshas=$(git log --reverse --grep="^gi comment mark $sha" --format='%H')
+        cshas=$(git rev-list --reverse --grep="^gi comment mark $sha" HEAD)
         for csha in $cshas ; do
           # TODO: this directive is not needed on latest shellcheck versions
           # shellcheck disable=SC2016

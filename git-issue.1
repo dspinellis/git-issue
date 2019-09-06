@@ -192,8 +192,10 @@ Import/update GitHub/GitLab issues from the specified project.
   is private, set the environment variable \fCGH_CURL_AUTH\fP (GitHub) or \fCGL_CURL_AUTH\fP (GitLab) to the authentication token.
   For example, run the following command: \fCexport GH_CURL_AUTH="Authorization: token badf00ddead9bfee8f3c19afc3c97c6db55fcfde"\fP
   You can create the authorization token through
-  GitHub settings <https://github.com/settings/tokens/new>.
+  GitHub settings <https://github.com/settings/tokens/new>, with the \fCrepo\fP and \fCdelete_repo\fP(only for running the tests) permissions.
+  
   For GitLab: \fCexport GL_CURL_AUTH="PRIVATE-TOKEN: JvHLsdnDmD7rjUXzT-Ea"\fP
+  The \fCapi\fP permission is required.
   Use the GitLab settings <https://gitlab.com/profile/personal\fIaccess\fPtokens> to create the token.
   In case the repository is part of a GitLab group, specify repository as groupname/reponame.
 .RE

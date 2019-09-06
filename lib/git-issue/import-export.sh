@@ -821,7 +821,8 @@ export_issues()
     # Extract number
     num=$(echo "$i" | grep -o '/[0-9].*$' | tr -d '/')
     # Check if the issue has been modified since last import/export
-    lastimport=$(git log --grep "gi: \(Add imports/$provider/$user/$repo/$num\|Import issue #$num from github/$user/$repo\)" --format='%H' | head -n 1)
+    lastimport=$(git rev-list --grep "gi: \(Add imports/$provider/$user/$repo/$num\|Import issue #$num from github/$user/$repo\)" HEAD | head -n 1)
+    test -n "$lastimport" || error "Cannot find import commit."
     if [ -n "$(git rev-list --grep='\(gi: Import comment message\|gi: Add comment message\|gi: Edit comment\)' --invert-grep "$lastimport"..HEAD "$path")" ] ; then
       echo "Exporting issue $sha as #$num"
       create_issue -u "$num" "$sha" "$provider" "$user" "$repo"
@@ -835,9 +836,9 @@ export_issues()
     if [ -d "$path/comments" ] ; then
 
       local csha cfound
-      git log --reverse --grep="^gi comment mark $sha" --format='%H' |
+      git rev-list --reverse --grep="^gi comment mark $sha" HEAD |
         while read -r csha ; do
-          lastimport=$(git log --grep "\(gi comment message .* $csha\|gi comment export $csha at $provider $user $repo\)" --format='%H' | head -n 1)
+          lastimport=$(git rev-list --grep "\(gi comment message .* $csha\|gi comment export $csha at $provider $user $repo\)" HEAD | head -n 1)
           cfound=
           for j in "imports/$provider/$user/$repo/$num"/comments/* ; do
             if [ "$(cat "$j" 2> /dev/null)" = "$csha" ] ; then
@@ -987,7 +988,7 @@ for i in $shas ; do
   path=$(issue_path_part "$i") || exit
   if [ -d "$path/comments" ] ; then
     local csha cfound
-    git log --reverse --grep="^gi comment mark $i" --format='%H' |
+    git rev-list --reverse --grep="^gi comment mark $i" HEAD |
       while read -r csha ; do
         create_comment "$csha" "$provider" "$user" "$repo" "$num"
       done
