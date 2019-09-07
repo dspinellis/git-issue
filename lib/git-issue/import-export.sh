@@ -41,7 +41,7 @@ importsget()
     if [ -r "$i/sha" ] ; then
       sha=$(cat "$i/sha")
       if [ "$sha" = "$isha" ] ; then
-        echo "${i#'imports/'}"
+        echo "${i#imports/}"
       fi
     fi
   done
@@ -353,7 +353,7 @@ create_issue()
       fi
     done
 
-    if ! [[ "$found" ]] ; then
+    if [ -z "$found" ] ; then
       # we need to create it
       echo "Creating new Milestone $milestone..."
       rest_api_send "$mileurl" mileres "{ \"title\": \"$milestone\",

@@ -469,7 +469,7 @@ else
   # Export
   # create new repository to test issue exporting
   echo "Trying to create GitHub repository..."
-  curl -H "$GH_CURL_AUTH" -s --data '{"name": "git-issue-test-export-'"$RANDOM"'", "private": true}' --output ghrepo https://api.github.com/user/repos
+  curl -H "$GH_CURL_AUTH" -s --data '{"name": "git-issue-test-export-'"$($DATEBIN -Is | tr ':+' '--')"'", "private": true}' --output ghrepo https://api.github.com/user/repos
   if  grep "git-issue-test-export" > /dev/null < ghrepo ; then
     echo "Starting export tests..."
     ghrepo=$(jq --raw-output '.full_name' < ghrepo | tr '/' ' ')
@@ -576,7 +576,7 @@ else
   # Export
   # Create new repository to test issue exporting
   echo "Trying to create GitLab repository..."
-  curl -H "$GL_CURL_AUTH" -s --header "Content-Type: application/json" --data '{"name": "git-issue-test-export-'"$RANDOM"'", "visibility": "private"}' --output glrepo https://gitlab.com/api/v4/projects
+  curl -H "$GL_CURL_AUTH" -s --header "Content-Type: application/json" --data '{"name": "git-issue-test-export-'"$($DATEBIN -Is | tr ':+' '--')"'", "visibility": "private"}' --output glrepo https://gitlab.com/api/v4/projects
   if  grep "git-issue-test-export" > /dev/null < glrepo ; then
     echo "Starting export tests..."
     glrepo=$(jq --raw-output '.path_with_namespace' < glrepo | tr '/' ' ')
