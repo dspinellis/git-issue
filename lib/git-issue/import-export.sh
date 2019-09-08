@@ -172,7 +172,7 @@ create_issue()
 
   local isha path assignee tags title description url provider user repo nassignee
   local nodelete OPTIND escrepo update num import_dir attr_expand jstring i
-     
+
   while getopts neu: flag ; do
     case $flag in
     n)
@@ -225,14 +225,14 @@ create_issue()
         fi
       done
       if [ "$assignee" != '[]' ] ; then
-        jstring=$(echo "$jstring" | jq ". + { assignees : $(echo "$assignee" | tr -d '\n' | jq --slurp --raw-input 'split(" ")') }")
+        jstring=$(printf '%s' "$jstring" | jq ". + { assignees : $(echo "$assignee" | tr -d '\n' | jq --slurp --raw-input 'split(" ")') }")
       fi
     else
       rest_api_get "https://gitlab.com/api/v4/users?username=$(echo "$assignee" | cut -f 1 -d ' ')" assignee gitlab
       if [ "$(cat assignee-body)" = '[]' ] ; then
         echo "Couldn't find assignee in GitLab, skipping assignment."
       else
-        jstring=$(echo "$jstring" | jq -r ". + { assignee_ids: [$(jq -r '.[0].id' assignee-body)]}")
+        jstring=$(printf '%s' "$jstring" | jq -r ". + { assignee_ids: [$(jq -r '.[0].id' assignee-body)]}")
       fi
     fi
   fi
@@ -242,18 +242,18 @@ create_issue()
     # format tags as json array
     tags=$(jq --slurp --raw-input 'split("\n")' "$path/tags")
     # Process state (open--opened-- or closed)
-    if [ -n "$num" ] ; then
+    if [ -n "$update" ] ; then
       if grep '^open$' >/dev/null < "$path/tags"; then
         if [ "$provider" = github ] ; then
-          jstring=$(echo "$jstring" | jq -r '. + { state: "open" }')
+          jstring=$(printf '%s' "$jstring" | jq -r '. + { state: "open" }')
         else
-          jstring=$(echo "$jstring" | jq -r '. + { state_event: "reopen" }')
+          jstring=$(printf '%s' "$jstring" | jq -r '. + { state_event: "reopen" }')
         fi
       else
         if [ "$provider" = gitlab ] ; then
-          jstring=$(echo "$jstring" | jq -r '. + { state_event: "close" }')
+          jstring=$(printf '%s' "$jstring" | jq -r '. + { state_event: "close" }')
         else
-          jstring=$(echo "$jstring" | jq -r '. + { state: "closed" }')
+          jstring=$(printf '%s' "$jstring" | jq -r '. + { state: "closed" }')
         fi
       fi
     fi
@@ -261,7 +261,7 @@ create_issue()
     tags=$(echo "$tags" | jq 'map(select(. != "closed"))')
     tags=$(echo "$tags" | jq 'map(select(. != ""))')
     if [ "$tags" != '[]' ] ; then
-      jstring=$(echo "$jstring" | jq -r ". + { labels: $tags }")
+      jstring=$(printf '%s' "$jstring" | jq -r ". + { labels: $tags }")
     fi
   fi
 
@@ -297,14 +297,14 @@ create_issue()
   if [ "$provider" = github ] ; then
     # TODO: this directive is not needed on latest shellcheck versions
     # shellcheck disable=SC2016
-    jstring=$(echo "$jstring" | jq --arg desc "${description%x}" --arg tit "$title" \
+    jstring=$(printf '%s' "$jstring" | jq --arg desc "${description%x}" --arg tit "$title" \
       -r '. + {title: $tit, body: $desc}')
   else
     # add trailing spaces if needed, or gitlab will ignore the newline
     description=$(echo "$description" | sed '$!s/[^ ] \?$/&  /')
     # TODO: this directive is not needed on latest shellcheck versions
     # shellcheck disable=SC2016
-    jstring=$(echo "$jstring" | jq --arg desc "${description%x}" --arg tit "$title" \
+    jstring=$(printf '%s' "$jstring" | jq --arg desc "${description%x}" --arg tit "$title" \
       -r '. + {title: $tit, description: $desc}')
   fi
 
@@ -315,7 +315,7 @@ create_issue()
     duedate=$($DATEBIN --iso-8601 --date="$(fmt "$path/duedate")")
     # TODO: this directive is not needed on latest shellcheck versions
     # shellcheck disable=SC2016
-    jstring=$(echo "$jstring" | jq --arg D "$duedate" -r '. + { due_date: $D }')
+    jstring=$(printf '%s' "$jstring" | jq --arg D "$duedate" -r '. + { due_date: $D }')
   fi
 
   # Weight (only supported on gitlab starter+)
@@ -324,7 +324,7 @@ create_issue()
     weight=$(fmt "$path/weight")
     # TODO: this directive is not needed on latest shellcheck versions
     # shellcheck disable=SC2016
-    jstring=$(echo "$jstring" | jq --arg W "$weight" -r '. + { weight: $W }')
+    jstring=$(printf '%s' "$jstring" | jq --arg W "$weight" -r '. + { weight: $W }')
   fi
 
   # Milestone
@@ -363,15 +363,15 @@ create_issue()
     if [ "$provider" = github ] ; then
       # TODO: this directive is not needed on latest shellcheck versions
       # shellcheck disable=SC2016
-      jstring=$(echo "$jstring" | jq --arg A "$found" -r '. + { milestone: $A }')
+      jstring=$(printf '%s' "$jstring" | jq --arg A "$found" -r '. + { milestone: $A }')
     else
       # TODO: this directive is not needed on latest shellcheck versions
       # shellcheck disable=SC2016
-      jstring=$(echo "$jstring" | jq --arg A "$found" -r '. + { milestone_id: $A }')
+      jstring=$(printf '%s' "$jstring" | jq --arg A "$found" -r '. + { milestone_id: $A }')
     fi
   fi
 
-  if [ -n "$num" ] ; then
+  if [ -n "$update" ] ; then
     if [ "$provider" = github ] ; then
       url="https://api.github.com/repos/$user/$repo/issues/$num"
       rest_api_send "$url" update "$jstring" PATCH github
@@ -419,7 +419,7 @@ create_issue()
 
   if [ -s "$path/timespent" ] && [ "$provider" = gitlab ] ; then
     timespent=$(fmt "$path/timespent")
-    if [ -n "$num" ] ; then
+    if [ -n "$update" ] ; then
       local oldspent
       # get existing timestats
       rest_api_get "$url/time_stats" timestats gitlab
@@ -487,7 +487,7 @@ create_comment()
   cdissues
   cbody=$(head -c -1 < "$path/comments/$csha"; echo x)
   if [ "$provider" = gitlab ] ; then
-    cbody=$(echo "$cbody" | sed '$!s/[^ ] \?$/&  /')
+    cbody=$(printf '%s' "$cbody" | sed '$!s/[^ ] \?$/&  /')
     echo "${cbody%x}" | head -c -1 > "$path/comments/$csha"
     git add "$path/comments/$csha"
     if ! git diff --quiet HEAD ; then
