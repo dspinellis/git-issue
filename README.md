@@ -62,7 +62,7 @@ You can even put `gi` in your project's current directory and run it from there.
 ### Portability and testing
 The `git-issue.sh` script has been tested on:
 Debian GNU/Linux, FreeBSD, macOS, and Cygwin.
-If you're running _git issue* on another system,
+If you're running *git issue* on another system,
 run the `test.sh` script to verify
 its operation, and (please) update this file.
 
@@ -78,6 +78,7 @@ You use _git issue_ with the following sub-commands.
 * `git issue clone`: Clone the specified remote repository.
 * `git issue init`: Create a new issues repository in the current directory.
   The `-e` option uses an existing Git project repository.
+
 ### Work with an issue
 * `git issue new`: Create a new open issue (with optional `-s` summary and -c "provider user repo" for github/gitlab export).
 * `git issue show`: Show specified issue (and its comments with `-c`).
@@ -109,7 +110,7 @@ You use _git issue_ with the following sub-commands.
    An optional argument can show issues matching a tag or milestone.
 * `git issue list -l formatstring`: This will list issues in the specified format, given as an argument to `-l`.
    The following escape sequences can be used:
-   
+
    - `%n` : newline
    - `%i` : issue ID
    - `%c` : creation date
@@ -123,20 +124,20 @@ You use _git issue_ with the following sub-commands.
    - `%D` : Description(first line)
 
    If the format string is one of: (`oneline`, `short` or `full`) it will interpreted as the corresponding preset.
-   
+
    Optionally, one of the above given with `-o` will order based on this field(reverse order with `-r`).
-   
+
 ### Work with multiple issues
-* `git issue filter-apply command`: Run `command` in every issue directory. The following environment variables will be set: 
+* `git issue filter-apply command`: Run `command` in every issue directory. The following environment variables will be set:
   - `GI_SHA` : Sha of the current issue
   - `GI_IMPORTS` : The imports directories for current issue(one on each line)
   - `GI_AUTHOR` : Author of current issue
   - `GI_DATE` : Creation date of current issue
-  
+
   The command can read, add/remove or edit any of the issue's attributes.
   Some potentially useful scripts to be used with this command are in the scripts/ directory.
   Remember to inspect the results (e.g `gi git diff`) and commit them with `gi git commit -a`.
-  
+
 ### Synchronize with remote repositories
 * `git issue push`: Update remote Git repository with local changes.
 * `git issue pull`: Update local Git repository with remote changes.
@@ -247,18 +248,21 @@ Added comment 8c0d5b3
 ```
 
 ### Add a due date for the issue
+
 ```
 $ git issue duedate "next Tuesday" e6a95c9
 Added duedate 2019-08-13T00:00:00+03:00
 ```
 
 ### Keep track of time spent on the issue
+
 ```
 $ git issue timespent "2hours" e6a95c9
 Added timespent 7200
 ```
 
 ### Log additional time spent working on it
+
 ```
 $ git issue timespent -a "4 hours" e6a95c9
 Added timespent 21600
