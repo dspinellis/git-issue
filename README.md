@@ -1,7 +1,8 @@
 [![Build Status](https://travis-ci.org/eellak/gsoc2019-git-issue.svg?branch=gsoc-2019)](https://travis-ci.org/eellak/gsoc2019-git-issue)
 # git-issue
 
-This is a minimalist decentralized issue management system based on Git.
+This is a minimalist decentralized issue management system based on Git,
+offering (optional) biderectional integration with GitHub and GitLab issue management.
 It has the following advantages over other systems.
 
 * **No backend, no dependencies:**
