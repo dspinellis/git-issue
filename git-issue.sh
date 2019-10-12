@@ -27,7 +27,7 @@
 # User agent string
 # shellcheck disable=SC2034
 # SC2034 : USER_AGENT appears unused. Verify use (or export if used externally)
-USER_AGENT=https://github.com/dspinellis/git-issue/tree/3565b3b
+USER_AGENT=https://github.com/dspinellis/git-issue/tree/ea66152
 
 # Determine our script library path
 my_IFS=$IFS
@@ -1391,7 +1391,7 @@ Show multiple issues
 * list -l formatstring: This will list issues in the specified format, given as an argument to -l
 
 Work with multiple issues
-* filter-apply command: Run command in every issue directory The following environment variables will be set: 
+* filter-apply command: Run command in every issue directory The following environment variables will be set:
 
 Synchronize with remote repositories
    push       Update remote Git repository with local changes
