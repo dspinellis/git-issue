@@ -577,7 +577,7 @@ import_comments()
 	csha=$(cat "$import_dir/$comment_id")
       else
 	name=$(jq -r ".[$i].$juser" comments-body)
-	GIT_AUTHOR_DATE=$(jq -r ".[$i].updated_at" comments-body) \
+	GIT_EVENT_DATE=$(jq -r ".[$i].updated_at" comments-body) \
 	  commit 'gi: Add comment' "gi comment mark $isha" \
 	  --author="$name <$name@users.noreply.$provider.com>"
 	csha=$(git rev-parse HEAD)
@@ -602,12 +602,12 @@ import_comments()
         name=$(jq -r ".[$i].$juser" comments-body)
         if [ "$provider" = github ] ; then
           html_url=$(jq -r ".[$i].html_url" comments-body)
-          GIT_AUTHOR_DATE=$(jq -r ".[$i].updated_at" comments-body) \
+          GIT_EVENT_DATE=$(jq -r ".[$i].updated_at" comments-body) \
 	    commit 'gi: Import comment message' "gi comment message $isha $csha
 Comment URL: $html_url" \
 	    --author="$name <$name@users.noreply.github.com>"
         else
-          GIT_AUTHOR_DATE=$(jq -r ".[$i].updated_at" comments-body) \
+          GIT_EVENT_DATE=$(jq -r ".[$i].updated_at" comments-body) \
 	    commit 'gi: Import comment message' "gi comment message $isha $csha"\
 	    --author="$name <$name@users.noreply.gitlab.com>"
         fi
@@ -665,7 +665,7 @@ import_issues()
       sha=$(cat "$import_dir/sha")
     else
       name=$(jq -r ".[$i].$juser" issue-body)
-      GIT_AUTHOR_DATE=$(jq -r ".[$i].updated_at" issue-body) \
+      GIT_EVENT_DATE=$(jq -r ".[$i].updated_at" issue-body) \
       commit 'gi: Add issue' 'gi new mark' \
 	--author="$name <$name@users.noreply.$provider.com>"
       sha=$(git rev-parse HEAD)
@@ -776,7 +776,7 @@ import_issues()
     git add "$path/description" "$path/tags" imports || trans_abort
     if ! git diff --quiet HEAD ; then
       name=${name:-$(jq -r ".[$i].$juser" issue-body)}
-      GIT_AUTHOR_DATE=$(jq -r ".[$i].updated_at" issue-body) \
+      GIT_EVENT_DATE=$(jq -r ".[$i].updated_at" issue-body) \
 	commit "gi: Import issue #$issue_number from $provider/$user/$repo" \
 	"Issue URL: https://$provider.com/$user/$repo/issues/$issue_number" \
 	--author="$name <$name@users.noreply.$provider.com>"

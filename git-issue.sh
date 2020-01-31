@@ -163,7 +163,8 @@ commit()
   shift
   commit_message=$1
   shift
-  git commit --allow-empty -q -m "$commit_summary
+  GIT_AUTHOR_DATE="$GIT_EVENT_DATE" GIT_COMMITTER_DATE="$GIT_EVENT_DATE" \
+    git commit --allow-empty -q -m "$commit_summary
 
 $commit_message" "$@" || trans_abort
 }
