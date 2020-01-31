@@ -1399,8 +1399,8 @@ Synchronize with remote repositories
    pull       Update local Git repository with remote changes
    import     Import/update GitHub/GitLab issues from the specified project
    create     Create the issue in the provided GitHub repository
-   export     Export issues for the specified project
-   exportall  Export all open issues in the database (-a to include closed ones) to GitHub/GitLab Useful for cloning whole repositories
+   export     Export modified issues for the specified project
+   exportall  Export all open issues in the database (-a to include closed ones) to GitHub/GitLab. Useful for cloning whole repositories
 
 Help and debug
    help       Display help information about git issue

@@ -933,7 +933,7 @@ sub_import()
 usage_exportall()
 {
   cat <<\USAGE_exportall_EOF
-gi new usage: git issue list [-a] provider user repo
+gi new usage: git issue exportall [-a] provider user repo
 USAGE_exportall_EOF
   exit 2
 }
