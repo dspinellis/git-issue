@@ -1,6 +1,6 @@
-.TH GIT-ISSUE 1 "11 October 2019"
+.TH GIT-ISSUE 1 "31 January 2020"
 .\"
-.\" (C) Copyright 2016-2018 Diomidis Spinellis
+.\" (C) Copyright 2016-2020 Diomidis Spinellis
 .\"
 .\" This file is part of git-issue, the Git-based issue management system.
 .\"
@@ -172,7 +172,7 @@ Run \fCcommand\fP in every issue directory. The following environment variables 
 
   The command can read, add/remove or edit any of the issue's attributes.
   Some potentially useful scripts to be used with this command are in the scripts/ directory.
-  Remember to inspect the results (e.g \fCgi git diff\fP) and commit them with \fCgi git commit -a\fP.
+  Remember to inspect the results (e.g. \fCgi git diff\fP) and commit them with \fCgi git commit -a\fP.
 
 .RE
 .PP
@@ -203,7 +203,7 @@ Import/update GitHub/GitLab issues from the specified project.
 .RS 4
 Create the issue in the provided GitHub repository.
   With the \fC-e\fP option any escape sequences for the attributes present in the description, will be replaced as above.
-  This can be used to e.g export an unsupported attribute to GitHub as text.
+  This can be used to e.g. export an unsupported attribute to GitHub as text.
 .RE
 .PP
 \fBgit issue export\fP
@@ -211,7 +211,7 @@ Create the issue in the provided GitHub repository.
 Export issues for the specified project.
   Only the issues that have been imported and modified (or created by \fCgit issue create\fP) by \fCgit-issue\fP will be exported.
   With the \fC-e\fP option any escape sequences for the attributes present in the description, will be replaced as above.
-  This can be used to e.g export an unsupported attribute to GitHub as text.
+  This can be used to e.g. export an unsupported attribute to GitHub as text.
 .RE
 .PP
 \fBgit issue exportall\fP
@@ -644,14 +644,14 @@ Export modified issues back to GitHub
 .ft C
 .nf
 $ git issue export github dspinellis git-issue-test-issues # Needs a token with the relevant permissions
-Issue b83d92872dc16440402516a5f4ce1b8cc6436344 hasn't been modified, skipping...
-Comment a93764f32179e93493ceb0a7060efce1e980aff1 hasn't been modified, skipping...
+Issue b83d92872dc16440402516a5f4ce1b8cc6436344 not modified, skipping...
+Comment a93764f32179e93493ceb0a7060efce1e980aff1 not modified, skipping...
 Exporting issue 9179d381135273220301f175c03b101b3e9c703d as #15
-Issue 3651dd38e4e1d9dbce66649710324235c773fe78 hasn't been modified, skipping...
+Issue 3651dd38e4e1d9dbce66649710324235c773fe78 not modified, skipping...
 Updating comment d72c68d0177b500a91ea37548e6594f84457fd5b...
-Comment 6966d4d718c80cf8635e9276d6f391de70c22f93 hasn't been modified, skipping...
-Comment 85293a6904d0fbd6238fbb2e1c36fc65af9ffc60 hasn't been modified, skipping...
-Comment aea83723c0414ff135afcfb5165d64f8a7ad687c hasn't been modified, skipping...
+Comment 6966d4d718c80cf8635e9276d6f391de70c22f93 not modified, skipping...
+Comment 85293a6904d0fbd6238fbb2e1c36fc65af9ffc60 not modified, skipping...
+Comment aea83723c0414ff135afcfb5165d64f8a7ad687c not modified, skipping...
 
 .fi
 .ft R
@@ -679,7 +679,9 @@ e6a95c9 - New issue entered from the command line
 <\fIhttps://github\.com/dspinellis/git\-issue\fR>
 
 .SH AUTHOR
-Written by Diomidis Spinellis <\fIdds@aueb\.gr\fP>
+First version written by Diomidis Spinellis <\fIdds@aueb\.gr\fP>.
+Vuron Drosos <\fIvyrondrosos@gmail.com\fP> implemented the GitHub/GitLab
+export functionality during the Google Summer of Code 2019.
 
 .SH BUGS
 Report bugs through

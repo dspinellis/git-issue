@@ -6,7 +6,7 @@
 #    Rationale: Local makes for better code and works on many modern shells
 #  - SC1117: Backslash is literal. Prefer explicit escaping.
 #
-# (C) Copyright 2016-2019 Diomidis Spinellis
+# (C) Copyright 2016-2020 Diomidis Spinellis
 #
 # This file is part of git-issue, the Git-based issue management system.
 #
@@ -33,15 +33,20 @@ USER_AGENT=https://github.com/dspinellis/git-issue/tree/ea66152
 my_IFS=$IFS
 IFS=:
 
+# Set library path
 # shellcheck disable=SC2086
 # Rationale: Word splitting not an issue
-LD_LIBRARY_PATH="$(dirname $0)/lib:$LD_LIBRARY_PATH:/usr/lib:/usr/local/lib"
-for i in ${LD_LIBRARY_PATH} ; do
+LIB_PATH="$(dirname $0)/../lib:$LD_LIBRARY_PATH:/usr/lib:/usr/local/lib"
+if [ "x$GIT_ISSUE_LIB_PATH" != x ] ; then
+  LIB_PATH="$GIT_ISSUE_LIB_PATH"
+fi
+for i in ${LIB_PATH} ; do
   if [ -d "${i}/git-issue" ] ; then
     MY_LIB="${i}/git-issue"
     break
   fi
 done
+
 
 IFS=$my_IFS
 
@@ -59,6 +64,9 @@ error()
 }
 
 $DATEBIN --help | grep 'gnu' > /dev/null || error "Require GNU date"
+
+test "x$MY_LIB" != x || error "No git-issue directory in path $LIB_PATH"
+
 # Return a unique identifier for the specified file
 filesysid()
 {
@@ -163,7 +171,8 @@ commit()
   shift
   commit_message=$1
   shift
-  git commit --allow-empty -q -m "$commit_summary
+  GIT_AUTHOR_DATE="$GIT_EVENT_DATE" GIT_COMMITTER_DATE="$GIT_EVENT_DATE" \
+    git commit --allow-empty -q -m "$commit_summary
 
 $commit_message" "$@" || trans_abort
 }
@@ -1398,8 +1407,8 @@ Synchronize with remote repositories
    pull       Update local Git repository with remote changes
    import     Import/update GitHub/GitLab issues from the specified project
    create     Create the issue in the provided GitHub repository
-   export     Export issues for the specified project
-   exportall  Export all open issues in the database (-a to include closed ones) to GitHub/GitLab Useful for cloning whole repositories
+   export     Export modified issues for the specified project
+   exportall  Export all open issues in the database (-a to include closed ones) to GitHub/GitLab. Useful for cloning whole repositories
 
 Help and debug
    help       Display help information about git issue

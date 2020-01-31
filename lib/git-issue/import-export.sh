@@ -17,7 +17,7 @@ usage_export()
 {
   cat <<\USAGE_export_EOF
 gi export usage: git issue export provider user repo
--e        Expand escape attribute sequences before exporting(see gi list -l)
+-e        Expand escape attribute sequences before exporting (see gi list -l)
 
 Example: git issue export github torvalds linux
 USAGE_export_EOF
@@ -157,7 +157,7 @@ usage_create_issue()
 {
   cat <<\USAGE_create_issue_EOF
 gi create usage: git issue create id provider user repo
--e        Expand escape attribute sequences before exporting(see gi list -l)
+-e        Expand escape attribute sequences before exporting (see gi list -l)
 -n        Keep HTTP transaction files
 -u num    Update issue #num instead of creating a new one
 
@@ -577,7 +577,7 @@ import_comments()
 	csha=$(cat "$import_dir/$comment_id")
       else
 	name=$(jq -r ".[$i].$juser" comments-body)
-	GIT_AUTHOR_DATE=$(jq -r ".[$i].updated_at" comments-body) \
+	GIT_EVENT_DATE=$(jq -r ".[$i].updated_at" comments-body) \
 	  commit 'gi: Add comment' "gi comment mark $isha" \
 	  --author="$name <$name@users.noreply.$provider.com>"
 	csha=$(git rev-parse HEAD)
@@ -602,12 +602,12 @@ import_comments()
         name=$(jq -r ".[$i].$juser" comments-body)
         if [ "$provider" = github ] ; then
           html_url=$(jq -r ".[$i].html_url" comments-body)
-          GIT_AUTHOR_DATE=$(jq -r ".[$i].updated_at" comments-body) \
+          GIT_EVENT_DATE=$(jq -r ".[$i].updated_at" comments-body) \
 	    commit 'gi: Import comment message' "gi comment message $isha $csha
 Comment URL: $html_url" \
 	    --author="$name <$name@users.noreply.github.com>"
         else
-          GIT_AUTHOR_DATE=$(jq -r ".[$i].updated_at" comments-body) \
+          GIT_EVENT_DATE=$(jq -r ".[$i].updated_at" comments-body) \
 	    commit 'gi: Import comment message' "gi comment message $isha $csha"\
 	    --author="$name <$name@users.noreply.gitlab.com>"
         fi
@@ -665,7 +665,7 @@ import_issues()
       sha=$(cat "$import_dir/sha")
     else
       name=$(jq -r ".[$i].$juser" issue-body)
-      GIT_AUTHOR_DATE=$(jq -r ".[$i].updated_at" issue-body) \
+      GIT_EVENT_DATE=$(jq -r ".[$i].updated_at" issue-body) \
       commit 'gi: Add issue' 'gi new mark' \
 	--author="$name <$name@users.noreply.$provider.com>"
       sha=$(git rev-parse HEAD)
@@ -776,7 +776,7 @@ import_issues()
     git add "$path/description" "$path/tags" imports || trans_abort
     if ! git diff --quiet HEAD ; then
       name=${name:-$(jq -r ".[$i].$juser" issue-body)}
-      GIT_AUTHOR_DATE=$(jq -r ".[$i].updated_at" issue-body) \
+      GIT_EVENT_DATE=$(jq -r ".[$i].updated_at" issue-body) \
 	commit "gi: Import issue #$issue_number from $provider/$user/$repo" \
 	"Issue URL: https://$provider.com/$user/$repo/issues/$issue_number" \
 	--author="$name <$name@users.noreply.$provider.com>"
@@ -829,7 +829,7 @@ export_issues()
 
       rm -f create-body create-header
     else
-      echo "Issue $sha hasn't been modified, skipping..."
+      echo "Issue $sha not modified, skipping..."
     fi
 
     # Comments
@@ -850,7 +850,7 @@ export_issues()
           if [ -n "$(git rev-list "$lastimport"..HEAD "$path/comments/$csha")" ] || [ -z "$cfound" ] ; then
             create_comment "$csha" "$provider" "$user" "$repo" "$num"
           else
-            echo "Comment $csha hasn't been modified, skipping..."
+            echo "Comment $csha not modified, skipping..."
           fi
         done
     fi
@@ -933,7 +933,7 @@ sub_import()
 usage_exportall()
 {
   cat <<\USAGE_exportall_EOF
-gi new usage: git issue list [-a] provider user repo
+gi new usage: git issue exportall [-a] provider user repo
 USAGE_exportall_EOF
   exit 2
 }
@@ -951,49 +951,47 @@ sub_exportall()
       usage_exportall
       ;;
   esac
-done
-shift $((OPTIND - 1));
-
-test "$1" = github -o "$1" = gitlab || usage_exportall
-test -n "$2" -a -n "$3" || usage_exportall
-provider="$1"
-user="$2"
-repo="$3"
-
-# Create list of relevant shas sorted by date
-shas=$(sub_list -l %i -o %c "$all"| sed '/^$/d' | tr '\n' ' ')
-
-cdissues
-
-# Remove already exported issues
-if [ -d "imports/$provider/$user/$repo" ] ; then
-  for i in "imports/$provider/$user/$repo/"[0-9]* ; do
-    shas=$(echo "$shas" | sed "s/$(head -c 7 "$i/sha")//")
   done
-fi
+  shift $((OPTIND - 1));
 
-for i in $shas ; do
-  echo "Creating issue $i..."
-  create_issue -n "$i" "$provider" "$user" "$repo"
-  # get created issue id
-  if [ "$provider" = github ] ; then
-    num=$(jq '.number' create-body)
-  else
-    num=$(jq '.iid' create-body)
+  test "$1" = github -o "$1" = gitlab || usage_exportall
+  test -n "$2" -a -n "$3" || usage_exportall
+  provider="$1"
+  user="$2"
+  repo="$3"
+
+  # Create list of relevant shas sorted by date
+  shas=$(sub_list -l %i -o %c "$all"| sed '/^$/d' | tr '\n' ' ')
+
+  cdissues
+
+  # Remove already exported issues
+  if [ -d "imports/$provider/$user/$repo" ] ; then
+    for i in "imports/$provider/$user/$repo/"[0-9]* ; do
+      shas=$(echo "$shas" | sed "s/$(head -c 7 "$i/sha")//")
+    done
   fi
-  rm -f create-header create-body
- 
-  # Create comments
 
-  path=$(issue_path_part "$i") || exit
-  if [ -d "$path/comments" ] ; then
-    local csha cfound
-    git rev-list --reverse --grep="^gi comment mark $i" HEAD |
-      while read -r csha ; do
-        create_comment "$csha" "$provider" "$user" "$repo" "$num"
-      done
-  fi
- 
-done
+  for i in $shas ; do
+    echo "Creating issue $i..."
+    create_issue -n "$i" "$provider" "$user" "$repo"
+    # get created issue id
+    if [ "$provider" = github ] ; then
+      num=$(jq '.number' create-body)
+    else
+      num=$(jq '.iid' create-body)
+    fi
+    rm -f create-header create-body
 
+    # Create comments
+
+    path=$(issue_path_part "$i") || exit
+    if [ -d "$path/comments" ] ; then
+      local csha cfound
+      git rev-list --reverse --grep="^gi comment mark $i" HEAD |
+	while read -r csha ; do
+	  create_comment "$csha" "$provider" "$user" "$repo" "$num"
+	done
+    fi
+  done
 }

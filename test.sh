@@ -10,7 +10,7 @@
 #    Rationale: We run this after creating the directory
 #
 #
-# (C) Copyright 2016 Diomidis Spinellis
+# (C) Copyright 2016-2020 Diomidis Spinellis
 #
 # This file is part of gi, the Git-based issue management system.
 #
@@ -179,6 +179,10 @@ echo 'TAP version 13'
 ntest=0
 gi=$(pwd)/git-issue.sh
 gi_re=$(echo "$gi" | sed 's/[^0-9A-Za-z]/\\&/g')
+
+# Setup GIT_ISSUE_LIB_PATH to allow pulling import-export.sh from lib
+GIT_ISSUE_LIB_PATH="$(pwd)/lib"
+export GIT_ISSUE_LIB_PATH
 
 start sync-docs
 GenFiles="git-issue.sh git-issue.1"
@@ -487,7 +491,7 @@ else
     try "$gi" new -c "github $ghrepo" -s "Issue exported directly"
     "$gi" assign "$issue2" "$ghuser" > /dev/null 2>&1
     try "$gi" export github $ghrepo
-    start ; "$gi" export github $ghrepo | try_grep "Issue $issue.* hasn't been modified, skipping..."
+    start ; "$gi" export github $ghrepo | try_grep "Issue $issue.* not modified, skipping..."
     # Test invalid assignee
     "$gi" assign "$issue2" octocat > /dev/null 2>&1
     start ; "$gi" export github $ghrepo | try_grep "Couldn't add assignee octocat. Skipping..."
