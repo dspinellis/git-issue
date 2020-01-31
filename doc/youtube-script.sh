@@ -7,18 +7,23 @@ remote: Total 1683 (delta 559), reused 1029 (delta 538), pack-reused 626
 Receiving objects: 100% (1683/1683), 494.52 KiB | 1.74 MiB/s, done.
 Resolving deltas: 100% (947/947), done.
 $ cd git-issue
+
 $ sudo make install # Install
 mkdir -p "/usr/local/share/man/man1"
 mkdir -p "/usr/local/bin"
+mkdir -p "/usr/local/lib"/git-issue
 install git-issue.sh "/usr/local/bin"/git-issue
+install lib/git-issue/import-export.sh "/usr/local/lib"/git-issue/import-export.sh
 install -m 644 git-issue.1 "/usr/local/share/man/man1"/
 mkdir -p /usr/local/etc/bash_completion.d
 install -m 644 gi-completion.sh /usr/local/etc/bash_completion.d/git-issue
+
 $ make install PREFIX=$HOME # Install for current user
 install git-issue.sh "/home/dds/bin"/git-issue
 install lib/git-issue/import-export.sh "/home/dds/lib"/git-issue/import-export.sh
 install -m 644 git-issue.1 "/home/dds/share/man/man1"/
 install -m 644 gi-completion.sh /home/dds/etc/bash_completion.d/git-issue
+
 $ git issue init # Initialize issue repository
 Initialized empty Issues repository in /home/dds/src/git-issue/.issues
 $ git issue new -s 'New issue entered from the command line'
