@@ -181,7 +181,8 @@ gi=$(pwd)/git-issue.sh
 gi_re=$(echo "$gi" | sed 's/[^0-9A-Za-z]/\\&/g')
 
 # Setup LD_LIBRARY_PATH to allow pulling import-export.sh from lib
-export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$(pwd)/lib"
+LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$(pwd)/lib"
+export LD_LIBRARY_PATH
 
 start sync-docs
 GenFiles="git-issue.sh git-issue.1"
