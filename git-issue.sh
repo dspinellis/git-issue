@@ -43,6 +43,7 @@ for i in ${LD_LIBRARY_PATH} ; do
   fi
 done
 
+
 IFS=$my_IFS
 
 if command -v gdate > /dev/null ; then
@@ -59,6 +60,9 @@ error()
 }
 
 $DATEBIN --help | grep 'gnu' > /dev/null || error "Require GNU date"
+
+test "x$MY_LIB" != x || error "No git-issue directory in path $LD_LIBRARY_PATH"
+
 # Return a unique identifier for the specified file
 filesysid()
 {
