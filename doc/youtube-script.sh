@@ -153,22 +153,23 @@ $ git issue init
 Initialized empty issues repository in /home/dds/github-project/.issues
 
 $ git issue import github dspinellis git-issue-test-issues # Import GitHub issues
-Imported/updated issue #3 as 0a27c66
-Imported/updated issue #2 as feb2a2c
-Imported/updated issue #2 comment 416631296 as f7de92c
-Imported/updated issue #2 comment 416631349 as 03acf84
-Imported/updated issue #2 comment 417048301 as 0cd48ed
-Imported/updated issue #2 comment 417049466 as 325a581
-Imported/updated issue #1 as bbe144d
+Imported/updated issue #3 as 4a0b58a
+Imported/updated issue #2 as 1e87224
+Imported/updated issue #2 comment 416631296 as 11bf4e3
+Imported/updated issue #2 comment 416631349 as 002e327
+Imported/updated issue #2 comment 417048301 as 20aeee8
+Imported/updated issue #2 comment 417049466 as a8a12ac
+Imported/updated issue #1 as 3ea0e3e
 
 $ git issue list
-feb2a2c An open issue on GitHub with a description and comments
-0a27c66 An open issue on GitHub with assignees and tags
+1e87224 An open issue on GitHub with a description and comments
+4a0b58a An open issue on GitHub with assignees and tags
 
-$ git issue show 0a27c66
-issue 0a27c6633f492e42bb2a24e6ae458482a4690a55
+$ git issue show 4a0b58a
+issue 4a0b58a4b7eb7e4e0a3e451746ccd687d9f45048
 Author: dspinellis <dspinellis@users.noreply.github.com>
 Date:   Thu, 30 Aug 2018 20:59:59 +0000
+GitHub issue: #3 at dspinellis/git-issue-test-issues
 Tags:   bug
         duplicate
         enhancement
@@ -184,4 +185,25 @@ Assigned-to:    dspinellis
 Edit History:
 * Thu, 30 Aug 2018 20:59:59 +0000 by dspinellis
 * <dspinellis@users.noreply.github.com>
+
+$ git issue milestone 4a0b58a R-3.5 # Add milestone
+Added milestone R-3.5
+
+$ git issue duedate 4a0b58a 2038-01-18 # Set a nice due date
+Added duedate 2038-01-18T00:00:00+02:00
+
+$ git issue close 1e87224 # Close another issue
+Added tag closed
+Removed tag open
+
+$ git issue export github dspinellis git-issue-test-issues # Export modified issues
+Issue 3ea0e3ef91619eedfdfd25f93135a9dd99e3435b not modified, skipping...
+Exporting issue 1e872249eebe4f984d188700115484d75ab28cd8 as #2
+Comment 11bf4e3c5a950142eff5579c23f805ee67c19a93 not modified, skipping...
+Comment 002e327f35f76111ce2693969de3cfff2f35d6c7 not modified, skipping...
+Comment 20aeee8898c28bc6793fb6114baf2e41397c0d8e not modified, skipping...
+Comment a8a12aca79e8a14c09f91e5faaa8ce79a1b9f180 not modified, skipping...
+Exporting issue 4a0b58a4b7eb7e4e0a3e451746ccd687d9f45048 as #3
+Creating new Milestone R-3.5...
+
 $ 
