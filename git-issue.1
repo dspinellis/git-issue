@@ -1,6 +1,6 @@
-.TH GIT-ISSUE 1 "11 October 2019"
+.TH GIT-ISSUE 1 "31 January 2020"
 .\"
-.\" (C) Copyright 2016-2018 Diomidis Spinellis
+.\" (C) Copyright 2016-2020 Diomidis Spinellis
 .\"
 .\" This file is part of git-issue, the Git-based issue management system.
 .\"
@@ -172,7 +172,7 @@ Run \fCcommand\fP in every issue directory. The following environment variables 
 
   The command can read, add/remove or edit any of the issue's attributes.
   Some potentially useful scripts to be used with this command are in the scripts/ directory.
-  Remember to inspect the results (e.g \fCgi git diff\fP) and commit them with \fCgi git commit -a\fP.
+  Remember to inspect the results (e.g. \fCgi git diff\fP) and commit them with \fCgi git commit -a\fP.
 
 .RE
 .PP
@@ -203,7 +203,7 @@ Import/update GitHub/GitLab issues from the specified project.
 .RS 4
 Create the issue in the provided GitHub repository.
   With the \fC-e\fP option any escape sequences for the attributes present in the description, will be replaced as above.
-  This can be used to e.g export an unsupported attribute to GitHub as text.
+  This can be used to e.g. export an unsupported attribute to GitHub as text.
 .RE
 .PP
 \fBgit issue export\fP
@@ -211,7 +211,7 @@ Create the issue in the provided GitHub repository.
 Export issues for the specified project.
   Only the issues that have been imported and modified (or created by \fCgit issue create\fP) by \fCgit-issue\fP will be exported.
   With the \fC-e\fP option any escape sequences for the attributes present in the description, will be replaced as above.
-  This can be used to e.g export an unsupported attribute to GitHub as text.
+  This can be used to e.g. export an unsupported attribute to GitHub as text.
 .RE
 .PP
 \fBgit issue exportall\fP
@@ -679,7 +679,9 @@ e6a95c9 - New issue entered from the command line
 <\fIhttps://github\.com/dspinellis/git\-issue\fR>
 
 .SH AUTHOR
-Written by Diomidis Spinellis <\fIdds@aueb\.gr\fP>
+First version written by Diomidis Spinellis <\fIdds@aueb\.gr\fP>.
+Vuron Drosos <\fIvyrondrosos@gmail.com\fP> implemented the GitHub/GitLab
+export functionality during the Google Summer of Code 2019.
 
 .SH BUGS
 Report bugs through
