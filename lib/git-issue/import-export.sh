@@ -17,7 +17,7 @@ usage_export()
 {
   cat <<\USAGE_export_EOF
 gi export usage: git issue export provider user repo
--e        Expand escape attribute sequences before exporting(see gi list -l)
+-e        Expand escape attribute sequences before exporting (see gi list -l)
 
 Example: git issue export github torvalds linux
 USAGE_export_EOF
@@ -157,7 +157,7 @@ usage_create_issue()
 {
   cat <<\USAGE_create_issue_EOF
 gi create usage: git issue create id provider user repo
--e        Expand escape attribute sequences before exporting(see gi list -l)
+-e        Expand escape attribute sequences before exporting (see gi list -l)
 -n        Keep HTTP transaction files
 -u num    Update issue #num instead of creating a new one
 
