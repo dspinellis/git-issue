@@ -6,7 +6,7 @@
 #    Rationale: Local makes for better code and works on many modern shells
 #  - SC1117: Backslash is literal. Prefer explicit escaping.
 #
-# (C) Copyright 2016-2019 Diomidis Spinellis
+# (C) Copyright 2016-2020 Diomidis Spinellis
 #
 # This file is part of git-issue, the Git-based issue management system.
 #
@@ -35,7 +35,7 @@ IFS=:
 
 # shellcheck disable=SC2086
 # Rationale: Word splitting not an issue
-LD_LIBRARY_PATH="$(dirname $0)/lib:$LD_LIBRARY_PATH:/usr/lib:/usr/local/lib"
+LD_LIBRARY_PATH="$(dirname $0)/../lib:$LD_LIBRARY_PATH:/usr/lib:/usr/local/lib"
 for i in ${LD_LIBRARY_PATH} ; do
   if [ -d "${i}/git-issue" ] ; then
     MY_LIB="${i}/git-issue"
