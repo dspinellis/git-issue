@@ -6,7 +6,7 @@
 #    Rationale: Local makes for better code and works on many modern shells
 #  - SC1117: Backslash is literal. Prefer explicit escaping.
 #
-# (C) Copyright 2016-2019 Diomidis Spinellis
+# (C) Copyright 2016-2020 Diomidis Spinellis
 #
 # This file is part of git-issue, the Git-based issue management system.
 #
@@ -27,7 +27,7 @@
 # User agent string
 # shellcheck disable=SC2034
 # SC2034 : USER_AGENT appears unused. Verify use (or export if used externally)
-USER_AGENT=https://github.com/dspinellis/git-issue/tree/3565b3b
+USER_AGENT=https://github.com/dspinellis/git-issue/tree/ea66152
 
 # Determine our script library path
 my_IFS=$IFS
@@ -35,7 +35,7 @@ IFS=:
 
 # shellcheck disable=SC2086
 # Rationale: Word splitting not an issue
-LD_LIBRARY_PATH="$(dirname $0)/lib:$LD_LIBRARY_PATH:/usr/lib:/usr/local/lib"
+LD_LIBRARY_PATH="$(dirname $0)/../lib:$LD_LIBRARY_PATH:/usr/lib:/usr/local/lib"
 for i in ${LD_LIBRARY_PATH} ; do
   if [ -d "${i}/git-issue" ] ; then
     MY_LIB="${i}/git-issue"
@@ -1391,7 +1391,7 @@ Show multiple issues
 * list -l formatstring: This will list issues in the specified format, given as an argument to -l
 
 Work with multiple issues
-* filter-apply command: Run command in every issue directory The following environment variables will be set: 
+* filter-apply command: Run command in every issue directory The following environment variables will be set:
 
 Synchronize with remote repositories
    push       Update remote Git repository with local changes
