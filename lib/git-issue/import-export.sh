@@ -951,49 +951,47 @@ sub_exportall()
       usage_exportall
       ;;
   esac
-done
-shift $((OPTIND - 1));
-
-test "$1" = github -o "$1" = gitlab || usage_exportall
-test -n "$2" -a -n "$3" || usage_exportall
-provider="$1"
-user="$2"
-repo="$3"
-
-# Create list of relevant shas sorted by date
-shas=$(sub_list -l %i -o %c "$all"| sed '/^$/d' | tr '\n' ' ')
-
-cdissues
-
-# Remove already exported issues
-if [ -d "imports/$provider/$user/$repo" ] ; then
-  for i in "imports/$provider/$user/$repo/"[0-9]* ; do
-    shas=$(echo "$shas" | sed "s/$(head -c 7 "$i/sha")//")
   done
-fi
+  shift $((OPTIND - 1));
 
-for i in $shas ; do
-  echo "Creating issue $i..."
-  create_issue -n "$i" "$provider" "$user" "$repo"
-  # get created issue id
-  if [ "$provider" = github ] ; then
-    num=$(jq '.number' create-body)
-  else
-    num=$(jq '.iid' create-body)
+  test "$1" = github -o "$1" = gitlab || usage_exportall
+  test -n "$2" -a -n "$3" || usage_exportall
+  provider="$1"
+  user="$2"
+  repo="$3"
+
+  # Create list of relevant shas sorted by date
+  shas=$(sub_list -l %i -o %c "$all"| sed '/^$/d' | tr '\n' ' ')
+
+  cdissues
+
+  # Remove already exported issues
+  if [ -d "imports/$provider/$user/$repo" ] ; then
+    for i in "imports/$provider/$user/$repo/"[0-9]* ; do
+      shas=$(echo "$shas" | sed "s/$(head -c 7 "$i/sha")//")
+    done
   fi
-  rm -f create-header create-body
- 
-  # Create comments
 
-  path=$(issue_path_part "$i") || exit
-  if [ -d "$path/comments" ] ; then
-    local csha cfound
-    git rev-list --reverse --grep="^gi comment mark $i" HEAD |
-      while read -r csha ; do
-        create_comment "$csha" "$provider" "$user" "$repo" "$num"
-      done
-  fi
- 
-done
+  for i in $shas ; do
+    echo "Creating issue $i..."
+    create_issue -n "$i" "$provider" "$user" "$repo"
+    # get created issue id
+    if [ "$provider" = github ] ; then
+      num=$(jq '.number' create-body)
+    else
+      num=$(jq '.iid' create-body)
+    fi
+    rm -f create-header create-body
 
+    # Create comments
+
+    path=$(issue_path_part "$i") || exit
+    if [ -d "$path/comments" ] ; then
+      local csha cfound
+      git rev-list --reverse --grep="^gi comment mark $i" HEAD |
+	while read -r csha ; do
+	  create_comment "$csha" "$provider" "$user" "$repo" "$num"
+	done
+    fi
+  done
 }
