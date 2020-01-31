@@ -829,7 +829,7 @@ export_issues()
 
       rm -f create-body create-header
     else
-      echo "Issue $sha hasn't been modified, skipping..."
+      echo "Issue $sha not modified, skipping..."
     fi
 
     # Comments
@@ -850,7 +850,7 @@ export_issues()
           if [ -n "$(git rev-list "$lastimport"..HEAD "$path/comments/$csha")" ] || [ -z "$cfound" ] ; then
             create_comment "$csha" "$provider" "$user" "$repo" "$num"
           else
-            echo "Comment $csha hasn't been modified, skipping..."
+            echo "Comment $csha not modified, skipping..."
           fi
         done
     fi
