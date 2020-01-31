@@ -1,11 +1,11 @@
 $ git clone git@github.com:dspinellis/git-issue.git
 Cloning into 'git-issue'...
-remote: Counting objects: 75, done.
-remote: Compressing objects: 100% (39/39), done.
-remote: Total 75 (delta 42), reused 69 (delta 36), pack-reused 0
-Receiving objects: 100% (75/75), 29.52 KiB | 0 bytes/s, done.
-Resolving deltas: 100% (42/42), done.
-Checking connectivity... done.
+remote: Enumerating objects: 1057, done.
+remote: Counting objects: 100% (1057/1057), done.
+remote: Compressing objects: 100% (260/260), done.
+remote: Total 1683 (delta 559), reused 1029 (delta 538), pack-reused 626
+Receiving objects: 100% (1683/1683), 494.52 KiB | 1.74 MiB/s, done.
+Resolving deltas: 100% (947/947), done.
 $ cd git-issue
 $ sudo make install # Install
 mkdir -p "/usr/local/share/man/man1"
