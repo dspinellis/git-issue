@@ -6,7 +6,7 @@ offering (optional) biderectional integration with GitHub and GitLab issue manag
 It has the following advantages over other systems.
 
 * **No backend, no dependencies:**
-  You can install and use _git issue_ with a single shell script.
+  You can install and use _git issue_ with a single shell command.
   There's no need for a server or a database back-end, and the corresponding
   problems and requirements for their administration.
 * **Decentralized asynchronous management:**
