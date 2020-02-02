@@ -221,7 +221,7 @@ create_issue()
         # if assignee is valid github should return no data
         if [ -n "$ret" ] ; then
           echo "Couldn't add assignee $a. Skipping..."
-          assignee=$(echo "$assignee" | sed "s/\($a \| $a\|^$a$\)//")
+          assignee=$(echo "$assignee" | sed "s/\\($a \\| $a\\|^$a$\\)//")
         fi
       done
       if [ "$assignee" != '[]' ] ; then
@@ -821,7 +821,7 @@ export_issues()
     # Extract number
     num=$(echo "$i" | grep -o '/[0-9].*$' | tr -d '/')
     # Check if the issue has been modified since last import/export
-    lastimport=$(git rev-list --grep "gi: \(Add imports/$provider/$user/$repo/$num\|Import issue #$num from github/$user/$repo\)" HEAD | head -n 1)
+    lastimport=$(git rev-list --grep "gi: \\(Add imports/$provider/$user/$repo/$num\\|Import issue #$num from github/$user/$repo\\)" HEAD | head -n 1)
     test -n "$lastimport" || error "Cannot find import commit."
     if [ -n "$(git rev-list --grep='\(gi: Import comment message\|gi: Add comment message\|gi: Edit comment\)' --invert-grep "$lastimport"..HEAD "$path")" ] ; then
       echo "Exporting issue $sha as #$num"
@@ -838,7 +838,7 @@ export_issues()
       local csha cfound
       git rev-list --reverse --grep="^gi comment mark $sha" HEAD |
         while read -r csha ; do
-          lastimport=$(git rev-list --grep "\(gi comment message .* $csha\|gi comment export $csha at $provider $user $repo\)" HEAD | head -n 1)
+          lastimport=$(git rev-list --grep "\\(gi comment message .* $csha\\|gi comment export $csha at $provider $user $repo\\)" HEAD | head -n 1)
           cfound=
           for j in "imports/$provider/$user/$repo/$num"/comments/* ; do
             if [ "$(cat "$j" 2> /dev/null)" = "$csha" ] ; then
