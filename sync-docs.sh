@@ -46,8 +46,6 @@ MAN_PAGE=git-issue.1
     s/git issue //g
     # Remove code markup
     s/`//g
-    # Remove fullstops
-    s/\.//g
     # Format commands, depending on length
     s/^\* ([^:]{3}): /   \1        /g
     s/^\* ([^:]{4}): /   \1       /g

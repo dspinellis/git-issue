@@ -185,21 +185,20 @@ GIT_ISSUE_LIB_PATH="$(pwd)/lib"
 export GIT_ISSUE_LIB_PATH
 
 start sync-docs
-GenFiles="git-issue.sh git-issue.1"
+GenFiles='git-issue.sh git-issue.1'
 if ! git diff --quiet HEAD ; then
   fail "Uncommitted files sync-docs test skipped and pending"
 else
   sh sync-docs.sh --no-user-agent
-  Status=$(git status --porcelain -- "$GenFiles")
+  Status=$(git status --porcelain -- $GenFiles)
   if [ -z "$Status" ]; then
       ok "make sync-docs left $GenFiles as committed"
   else
       fail "make sync-docs changed $GenFiles"
-      git diff -- "$GenFiles" >>"$TopDir/error.log"
-      git checkout -- "$GenFiles"
+      git diff -- $GenFiles >>"$TopDir/error.log"
+      git checkout -- $GenFiles
   fi
 fi
-
 cd "$TopDir"
 
 mkdir testdir

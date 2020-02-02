@@ -136,7 +136,7 @@ You use _git issue_ with the following sub-commands.
 
   The command can read, add/remove or edit any of the issue's attributes.
   Some potentially useful scripts to be used with this command are in the scripts/ directory.
-  Remember to inspect the results (e.g `gi git diff`) and commit them with `gi git commit -a`.
+  Remember to inspect the results (e.g. `gi git diff`) and commit them with `gi git commit -a`.
 
 ### Synchronize with remote repositories
 * `git issue push`: Update remote Git repository with local changes.
@@ -152,11 +152,11 @@ You use _git issue_ with the following sub-commands.
   In case the repository is part of a GitLab group, specify repository as groupname/reponame.
 * `git issue create`: Create the issue in the provided GitHub repository.
   With the `-e` option any escape sequences for the attributes present in the description, will be replaced as above.
-  This can be used to e.g export an unsupported attribute to GitHub as text.
-* `git issue export`: Export issues for the specified project.
+  This can be used to e.g. export an unsupported attribute to GitHub as text.
+* `git issue export`: Export modified issues for the specified project.
   Only the issues that have been imported and modified (or created by `git issue create`) by `git-issue` will be exported.
   With the `-e` option any escape sequences for the attributes present in the description, will be replaced as above.
-  This can be used to e.g export an unsupported attribute to GitHub as text.
+  This can be used to e.g. export an unsupported attribute to GitHub as text.
 * `git issue exportall`: Export all open issues in the database (`-a` to include closed ones) to GitHub/GitLab. Useful for cloning whole repositories.
 
 ### Help and debug
@@ -497,14 +497,14 @@ Edited comment d72c68d
 
 ```
 $ git issue export github dspinellis git-issue-test-issues # Needs a token with the relevant permissions
-Issue b83d92872dc16440402516a5f4ce1b8cc6436344 hasn't been modified, skipping...
-Comment a93764f32179e93493ceb0a7060efce1e980aff1 hasn't been modified, skipping...
+Issue b83d92872dc16440402516a5f4ce1b8cc6436344 not modified, skipping...
+Comment a93764f32179e93493ceb0a7060efce1e980aff1 not modified, skipping...
 Exporting issue 9179d381135273220301f175c03b101b3e9c703d as #15
-Issue 3651dd38e4e1d9dbce66649710324235c773fe78 hasn't been modified, skipping...
+Issue 3651dd38e4e1d9dbce66649710324235c773fe78 not modified, skipping...
 Updating comment d72c68d0177b500a91ea37548e6594f84457fd5b...
-Comment 6966d4d718c80cf8635e9276d6f391de70c22f93 hasn't been modified, skipping...
-Comment 85293a6904d0fbd6238fbb2e1c36fc65af9ffc60 hasn't been modified, skipping...
-Comment aea83723c0414ff135afcfb5165d64f8a7ad687c hasn't been modified, skipping...
+Comment 6966d4d718c80cf8635e9276d6f391de70c22f93 not modified, skipping...
+Comment 85293a6904d0fbd6238fbb2e1c36fc65af9ffc60 not modified, skipping...
+Comment aea83723c0414ff135afcfb5165d64f8a7ad687c not modified, skipping...
 ```
 
 ### Sub-command auto-completion

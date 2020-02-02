@@ -27,7 +27,7 @@
 # User agent string
 # shellcheck disable=SC2034
 # SC2034 : USER_AGENT appears unused. Verify use (or export if used externally)
-USER_AGENT=https://github.com/dspinellis/git-issue/tree/ea66152
+USER_AGENT=https://github.com/dspinellis/git-issue/tree/e643025
 
 # Determine our script library path
 my_IFS=$IFS
@@ -1376,44 +1376,44 @@ usage: git issue <command> [<args>]
 The following commands are available:
 
 Start an issue repository
-   clone      Clone the specified remote repository
-   init       Create a new issues repository in the current directory
+   clone      Clone the specified remote repository.
+   init       Create a new issues repository in the current directory.
 
 Work with an issue
-   new        Create a new open issue (with optional -s summary and -c "provider user repo" for github/gitlab export)
-   show       Show specified issue (and its comments with -c)
-   comment    Add an issue comment
+   new        Create a new open issue (with optional -s summary and -c "provider user repo" for github/gitlab export).
+   show       Show specified issue (and its comments with -c).
+   comment    Add an issue comment.
    edit       Edit the specified issue's (or comment's with -c) description
-   tag        Add (or remove with -r) a tag
-   milestone  Specify (or remove with -r) the issue's milestone
-   weight     Specify (or remove with -r) the issue's weight
-   duedate    Specify (or remove with -r) the issue's due date
-* timeestimate: Specify (or remove with -r) a time estimate for this issue
-   timespent  Specify (or remove with -r) the time spent working on an issue so far
-   assign     Assign (or remove -r) an issue to a person
-   attach     Attach (or remove with -r) a file to an issue
-   watcher    Add (or remove with -r) an issue watcher
+   tag        Add (or remove with -r) a tag.
+   milestone  Specify (or remove with -r) the issue's milestone.
+   weight     Specify (or remove with -r) the issue's weight.
+   duedate    Specify (or remove with -r) the issue's due date.
+* timeestimate: Specify (or remove with -r) a time estimate for this issue.
+   timespent  Specify (or remove with -r) the time spent working on an issue so far.
+   assign     Assign (or remove -r) an issue to a person.
+   attach     Attach (or remove with -r) a file to an issue.
+   watcher    Add (or remove with -r) an issue watcher.
    close      Remove the open tag, add the closed tag
 
 Show multiple issues
-   list       List open issues (or all with -a)
-* list -l formatstring: This will list issues in the specified format, given as an argument to -l
+   list       List open issues (or all with -a).
+* list -l formatstring: This will list issues in the specified format, given as an argument to -l.
 
 Work with multiple issues
-* filter-apply command: Run command in every issue directory The following environment variables will be set:
+* filter-apply command: Run command in every issue directory. The following environment variables will be set:
 
 Synchronize with remote repositories
-   push       Update remote Git repository with local changes
-   pull       Update local Git repository with remote changes
-   import     Import/update GitHub/GitLab issues from the specified project
-   create     Create the issue in the provided GitHub repository
-   export     Export modified issues for the specified project
-   exportall  Export all open issues in the database (-a to include closed ones) to GitHub/GitLab. Useful for cloning whole repositories
+   push       Update remote Git repository with local changes.
+   pull       Update local Git repository with remote changes.
+   import     Import/update GitHub/GitLab issues from the specified project.
+   create     Create the issue in the provided GitHub repository.
+   export     Export modified issues for the specified project.
+   exportall  Export all open issues in the database (-a to include closed ones) to GitHub/GitLab. Useful for cloning whole repositories.
 
 Help and debug
-   help       Display help information about git issue
+   help       Display help information about git issue.
    log        Output a log of changes made
-   git        Run the specified Git command on the issues repository
+   git        Run the specified Git command on the issues repository.
 USAGE_EOF
 }
 
