@@ -27,7 +27,7 @@
 # User agent string
 # shellcheck disable=SC2034
 # SC2034 : USER_AGENT appears unused. Verify use (or export if used externally)
-USER_AGENT=https://github.com/dspinellis/git-issue/tree/e643025
+USER_AGENT=https://github.com/dspinellis/git-issue/tree/afda065
 
 # Determine our script library path
 my_IFS=$IFS
