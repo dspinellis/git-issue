@@ -213,6 +213,9 @@ Note that to avoid duplicating information, the subcommands, the used files,
 and usage examples, are automatically inserted into the script and its
 documentation from the `README.md` file using the `sync-docs.sh` command.
 
+## Video
+The video of a presentation of *git issue* at [FOSDEM 2020](https://fosdem.org/2020/schedule/event/git_issue_management/) is available [for streaming](https://video.fosdem.org/2020/H.2215/git_issue_management.webm) or [download](https://video.fosdem.org/2020/H.2215/git_issue_management.mp4).
+
 ## Example session
 You can also view a video of the following session on [YouTube](https://youtu.be/9aKHTjtTbFs).
 
@@ -519,9 +522,6 @@ $ git issue show [Tab]
 7dfa5b7 - An issue entered from the editor
 e6a95c9 - New issue entered from the command line
 ```
-
-## See also
-The video of a presentation of *git issue* at [FOSDEM 2020](https://fosdem.org/2020/schedule/event/git_issue_management/) is available [for streaming](https://video.fosdem.org/2020/H.2215/git_issue_management.webm) or [download](https://video.fosdem.org/2020/H.2215/git_issue_management.mp4).
 
 ## Related work
 * [deft](https://github.com/npryce/deft) developed in 2011 is based on
