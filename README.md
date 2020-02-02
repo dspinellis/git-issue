@@ -6,7 +6,7 @@ offering (optional) biderectional integration with GitHub and GitLab issue manag
 It has the following advantages over other systems.
 
 * **No backend, no dependencies:**
-  You can install and use _git issue_ with a single shell script.
+  You can install and use _git issue_ with a single shell command.
   There's no need for a server or a database back-end, and the corresponding
   problems and requirements for their administration.
 * **Decentralized asynchronous management:**
@@ -532,6 +532,6 @@ e6a95c9 - New issue entered from the command line
   code review system for Git repos based again on Git.
 * [Fossil](http://fossil-scm.org/) is a distributed version control software that also supports issue tracking and a wiki. It runs as a single executable.
 * [Perceval](https://github.com/chaoss/grimoirelab-perceval) can download issues from a variety of systems, including GitHub and GitLab.
-* [SD (Simple Defects)], a (now defunct?) distributed bug tracking system based on a distributed database. It can import/export from/to foreign ticketing systems.
+* [SD (Simple Defects)](https://syncwith.us/sd/), an (unmaintained) distributed bug tracking system based on a distributed database. It can import/export from/to foreign ticketing systems.
 
 More historical references can be found in [this old LWN article on distributed bug tracking](https://lwn.net/Articles/281849/).
