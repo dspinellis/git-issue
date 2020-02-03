@@ -32,9 +32,8 @@ SCRIPT_NAME=git-issue.sh
 MAN_PAGE=git-issue.1
 
 sed -n \
-    -E '{ 1,/^SYSCONFDIR/p; /^install:/,/^(\S|\s*$)/p }' Makefile | \
+    -E '1,/^SYSCONFDIR/p; /^install:/,/^\S/ { /^\S/d; p; }' Makefile | \
   sed -E '{
-    /^install:/d ;
     # remove Makefile leading no-echo @
     s/^\s*@?// ;
     # convert Makefile ?= conditional assignment to bash :-
