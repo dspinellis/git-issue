@@ -217,7 +217,7 @@ documentation from the `README.md` file using the `sync-docs.sh` command.
 The video of a presentation of *git issue* at [FOSDEM 2020](https://fosdem.org/2020/schedule/event/git_issue_management/) is available [for streaming](https://video.fosdem.org/2020/H.2215/git_issue_management.webm) or [download](https://video.fosdem.org/2020/H.2215/git_issue_management.mp4).
 
 ## Example session
-You can also view a video of the following session on [YouTube](https://youtu.be/9aKHTjtTbFs).
+You can also view a video of the following session on [YouTube](https://youtu.be/eVMrkhCmEyU).
 
 ### Initialize issue repository
 
