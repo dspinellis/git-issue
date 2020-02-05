@@ -36,7 +36,7 @@ IFS=:
 # Set library path
 # shellcheck disable=SC2086
 # Rationale: Word splitting not an issue
-LIB_PATH="$(dirname $0)/../lib:$LD_LIBRARY_PATH:/usr/lib:/usr/local/lib"
+LIB_PATH="$(dirname $0)/../libexec:$LD_LIBRARY_PATH:/usr/libexec:/usr/local/libexec"
 if [ "x$GIT_ISSUE_LIB_PATH" != x ] ; then
   LIB_PATH="$GIT_ISSUE_LIB_PATH"
 fi
