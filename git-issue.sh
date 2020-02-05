@@ -41,7 +41,7 @@ if [ "x$GIT_ISSUE_LIB_PATH" != x ] ; then
   LIB_PATH="$GIT_ISSUE_LIB_PATH"
 fi
 for i in ${LIB_PATH} ; do
-  if [ -d "${i}" -a -f "${i}/import-export.sh" ] ; then
+  if [ -d "${i}" ] && [ -f "${i}/import-export.sh" ] ; then
     MY_LIB="${i}"
     break
   fi
