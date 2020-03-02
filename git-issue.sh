@@ -204,10 +204,39 @@ edit()
   mv "$file.new" "$file"
 }
 
+ttysize="$(stty size)"
+
 # Pipe input through the user's pager
 pager()
 {
-  ${PAGER:-more}
+	local output use_pager txt rows cols lines
+	output=""
+	use_pager=
+	read -r rows cols <<EOF
+	$ttysize
+EOF
+	if [ -t 1 ] && [ "$rows" -gt 0 ] && [ "$cols" -gt 0 ]
+	then
+		lines=0
+		while read -r txt; do
+			lines=$(( lines + ( ( ${#txt} + cols - 1 ) / cols ) ))
+			output="${output}${txt}
+"
+			[ "$lines" -lt "$rows" ] || { use_pager=1; break; }
+		done
+		if [ -n "$use_pager" ]
+		then
+			{
+				echo -n "$output"
+				cat
+			} | ${PAGER:-more}
+		else
+			echo -n "$output"
+			cat
+		fi
+	else
+		${PAGER:-more}
+	fi
 }
 
 # init: Initialize a new issue repository {{{1
