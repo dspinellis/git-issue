@@ -228,11 +228,12 @@ EOF
 		then
 			{
 				echo -n "$output"
-				cat
+				while read -r txt; do
+					echo "$txt"
+				done
 			} | ${PAGER:-more}
 		else
 			echo -n "$output"
-			cat
 		fi
 	else
 		${PAGER:-more}
