@@ -191,7 +191,7 @@ create_issue()
     esac
   done
   shift $((OPTIND - 1));
-    
+
   test -n "$1" || usage_create_issue
   test "$2" = github -o "$2" = gitlab || usage_create_issue
   test -n "$3" || usage_create_issue
@@ -459,7 +459,7 @@ create_issue()
 }
 
 # Create a comment in GitHub/GitLab, based on a local one
-# create_comment 
+# create_comment
 create_comment()
 {
   local cbody cfound cjstring csha isha path provider user repo num import_dir url escrepo j
@@ -470,7 +470,7 @@ create_comment()
   repo="$4"
   num="$5"
 
-  
+
   if [ "$provider" = github ] ; then
     url="https://api.github.com/repos/$user/$repo/issues/$num"
   else
@@ -528,7 +528,7 @@ create_comment()
   git add "$import_dir"
   # mark export
   commit "gi: Export comment $csha" "gi comment export $csha at $provider $user $repo"
-  rm -f commentupdate-header commentupdate-body commentcreate-header commentcreate-body 
+  rm -f commentupdate-header commentupdate-body commentcreate-header commentcreate-body
 }
 
 # Import GitHub/GitLab comments for the specified issue
@@ -736,7 +736,7 @@ import_issues()
         echo "$timespent" >"$path/timespent" || trans_abort
         git add "$path/timespent" || trans_abort
       fi
-      
+
       # Timeestimate
       timeestimate=$(jq -r ".[$i].time_stats.time_estimate" issue-body)
       if [ "$timeestimate" = '0' ] ; then
@@ -804,7 +804,7 @@ export_issues()
     esac
   done
   shift $((OPTIND - 1));
- 
+
   test -n "$2" -a -n "$3" || usage_export
   test "$1" = github -o "$1" = gitlab || usage_export
   provider=$1
@@ -821,7 +821,7 @@ export_issues()
     # Extract number
     num=$(echo "$i" | grep -o '/[0-9].*$' | tr -d '/')
     # Check if the issue has been modified since last import/export
-    lastimport=$(git rev-list --grep "gi: \\(Add imports/$provider/$user/$repo/$num\\|Import issue #$num from github/$user/$repo\\)" HEAD | head -n 1)
+    lastimport=$(git rev-list --grep "gi: \\(Add imports/$provider/$user/$repo/$num\\|Import issue #$num from $provider/$user/$repo\\)" HEAD | head -n 1)
     test -n "$lastimport" || error "Cannot find import commit."
     if [ -n "$(git rev-list --grep='\(gi: Import comment message\|gi: Add comment message\|gi: Edit comment\)' --invert-grep "$lastimport"..HEAD "$path")" ] ; then
       echo "Exporting issue $sha as #$num"
