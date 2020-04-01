@@ -93,10 +93,10 @@ rest_api_get()
     trans_abort
   fi
 
-  if ! grep -q '^\(Status: 200\|HTTP/[[:digit:]].[[:digit:]] 200 OK\)' "$prefix-header" ; then
+  if ! grep -q '^\(Status: 200\|HTTP/[[:digit:]].[[:digit:]] 200 OK\|HTTP/[[:digit:]] 200\)' "$prefix-header" ; then
     echo "$provider API communication failure" 1>&2
     echo "URL: $url" 1>&2
-    if grep -q '^\(Status: 4\|HTTP/[0-9].[0-9] 4\)' "$prefix-header" ; then
+    if grep -q '^\(Status: 4\|HTTP/[0-9].[0-9] 4\|HTTP/[0-9] 4\)' "$prefix-header" ; then
       jq -r '.message' "$prefix-body" 1>&2
     fi
     trans_abort
