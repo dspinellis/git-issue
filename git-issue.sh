@@ -36,13 +36,13 @@ IFS=:
 # Set library path
 # shellcheck disable=SC2086
 # Rationale: Word splitting not an issue
-LIB_PATH="$(dirname $0)/../lib:$LD_LIBRARY_PATH:/usr/local/lib:/usr/lib"
+LIB_PATH="/usr/local/libexec/git-issue:$(dirname $0)/../libexec/git-issue:$(dirname $0)/../lib/git-issue"
 if [ "x$GIT_ISSUE_LIB_PATH" != x ] ; then
   LIB_PATH="$GIT_ISSUE_LIB_PATH"
 fi
 for i in ${LIB_PATH} ; do
-  if [ -d "${i}/git-issue" ] ; then
-    MY_LIB="${i}/git-issue"
+  if [ -d "${i}" ] && [ -f "${i}/import-export.sh" ] ; then
+    MY_LIB="${i}"
     break
   fi
 done
