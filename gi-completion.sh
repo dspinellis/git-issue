@@ -69,7 +69,7 @@ _gi_autocomplete_subcommand_argument()
       # Store the matching issues along with their description
       gi_list+=($(printf '%*s' "-$COLUMNS" "$cmd - ${desc[1]}"))
     fi
-  done <<< "$(git issue list $list_args 2>/dev/null)"
+  done <<< "$(git issue list "$list_args" 2>/dev/null)"
 
   if [[ ${#gi_list[@]} == 1 ]]; then
     # If only one match, autocomplete the sha without the description
