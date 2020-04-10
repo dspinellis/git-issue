@@ -136,7 +136,8 @@ rest_api_send()
     trans_abort
   fi
 
-  # shellcheck disable=SC2086 (unquoted curl_mode won't glob)
+  # The unquoted curl_mode won't glob, due to the way it's initialized
+  # shellcheck disable=SC2086
   if ! curl --header "Content-Type: application/json" -H "$authtoken" -A "$USER_AGENT" -s \
     -o "$prefix-body" -D "$prefix-header" $curl_mode --data "$data" "$url" ; then
     echo 'GitHub connection failed' 1>&2
