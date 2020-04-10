@@ -617,7 +617,7 @@ Comment URL: $html_url" \
     done # For all comments on page
 
     # Return if no more pages
-    if ! grep -q '^Link:.*rel="next"' comments-header ; then
+    if ! grep -q '^[Ll]ink:.*rel="next"' comments-header ; then
       break
     fi
 
@@ -867,11 +867,11 @@ rest_next_page_url()
 :again
 # Print "next" link
 # This works only for the first element of the Link header
-s/^Link:.<\([^>]*\)>; rel="next".*/\1/p
+s/^[Ll]ink:.<\([^>]*\)>; rel="next".*/\1/p
 # If substitution worked branch to end of script
 t
 # Remove first element of the Link header and retry
-s/^Link: <[^>]*>; rel="[^"]*", */Link: /
+s/^[Ll]ink: <[^>]*>; rel="[^"]*", */[Ll]ink: /
 t again
 ' "$1"-header
 }
@@ -910,7 +910,7 @@ sub_import()
     import_issues "$user" "$repo" "$provider"
 
     # Return if no more pages
-    if ! grep -q '^Link:.*rel="next"' issue-header ; then
+    if ! grep -q '^[Ll]ink:.*rel="next"' issue-header ; then
       break
     fi
 
