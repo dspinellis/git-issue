@@ -564,7 +564,7 @@ import_comments()
     trans_abort
   fi
 
-  while ! [ -z "$endpoint" ] ; do
+  while [ -n "$endpoint" ] ; do
     rest_api_get "$endpoint" comments "$provider"
 
     # For each comment in the comments-body file
