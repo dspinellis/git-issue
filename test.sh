@@ -180,10 +180,6 @@ ntest=0
 gi=$(pwd)/git-issue.sh
 gi_re=$(echo "$gi" | sed 's/[^0-9A-Za-z]/\\&/g')
 
-# Setup GIT_ISSUE_LIB_PATH to allow pulling import-export.sh from lib
-GIT_ISSUE_LIB_PATH="$(pwd)/lib"
-export GIT_ISSUE_LIB_PATH
-
 start sync-docs
 GenFiles='git-issue.sh git-issue.1'
 if ! git diff --quiet HEAD ; then
