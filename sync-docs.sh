@@ -75,6 +75,7 @@ replace_section()
   local man_section="$1"
   local md_section="$2"
   local command="$3"
+  local extra_command="$4"
 
   {
     # Output until the specified section
@@ -101,7 +102,10 @@ replace_section()
 /
       s/^    \* /.IP "" 12\
 /
+      # format urls
       s/\[\([^]]*\)\](\([^)]*\))/\1 <\2>/
+
+      '"$extra_command"'
       p
     }' README.md
 
@@ -118,8 +122,9 @@ replace_section 'GIT ISSUE COMMANDS' 'Use' 's/^\* `\([^`]*\)`: /.RE\
 .PP\
 \\fB\1\\fP\
 .RS 4\
-/'
-replace_section FILES 'Internals'
+/' 's/^ \+//'
+
+replace_section FILES 'Internals' '' 's/^ \+//'
 # shellcheck disable=SC2016
 replace_section EXAMPLES 'Example session' '/```/d;/^###/N;s/^### \(.*\)/.fi\
 .ft R\
