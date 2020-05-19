@@ -873,7 +873,7 @@ s/^[Ll]ink:.<\([^>]*\)>; rel="next".*/\1/p
 # If substitution worked branch to end of script
 t
 # Remove first element of the Link header and retry
-s/^[Ll]ink: <[^>]*>; rel="[^"]*", */[Ll]ink: /
+s/^[Ll]ink: <[^>]*>; rel="[^"]*", */Link: /
 t again
 ' "$1"-header
 }
