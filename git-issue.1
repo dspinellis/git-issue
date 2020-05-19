@@ -48,7 +48,7 @@ Clone the specified remote repository.
 \fBgit issue init\fP
 .RS 4
 Create a new issues repository in the current directory.
-  The \fC-e\fP option uses an existing Git project repository.
+The \fC-e\fP option uses an existing Git project repository.
 
 .RE
 .PP
@@ -85,37 +85,37 @@ Specify (or remove with \fC-r\fP) the issue's milestone.
 \fBgit issue weight\fP
 .RS 4
 Specify (or remove with \fC-r\fP) the issue's weight.
-  The weight is a positive integer that serves as a measure of importance.
+The weight is a positive integer that serves as a measure of importance.
 .RE
 .PP
 \fBgit issue duedate\fP
 .RS 4
 Specify (or remove with \fC-r\fP) the issue's due date.
-  The command accepts all formats supported by the \fCdate\fP utility.
+The command accepts all formats supported by the \fCdate\fP utility.
 .RE
 .PP
 \fBgit issue timeestimate\fP
 .RS 4
 Specify (or remove with \fC-r\fP) a time estimate for this issue.
-  Time estimates can be given in a format accepted by \fCdate\fP,
-  however bear in mind that it represents a time interval, not a date.
+Time estimates can be given in a format accepted by \fCdate\fP,
+however bear in mind that it represents a time interval, not a date.
 .RE
 .PP
 \fBgit issue timespent\fP
 .RS 4
 Specify (or remove with \fC-r\fP) the time spent working on an issue so far.
-  Follows the same format outlined above.
-  If the \fC-a\fP option is given, the time interval will be added together with the existing one.
+Follows the same format outlined above.
+If the \fC-a\fP option is given, the time interval will be added together with the existing one.
 .RE
 .PP
 \fBgit issue assign\fP
 .RS 4
 Assign (or remove \fC-r\fP) an issue to a person.
-  The person is specified with his/her email address.
-  The form \fC@name\fP or \fCname@\fP can be used as a shortcut, provided it
-  uniquely identifies an existing assignee or committer.
-  Note that if you plan to export the issue to a GitHub/GitLab repository, the assignee may be rejected if
-  it doesn't correspond to a valid username, or if you don't have the necessary permissions.
+The person is specified with his/her email address.
+The form \fC@name\fP or \fCname@\fP can be used as a shortcut, provided it
+uniquely identifies an existing assignee or committer.
+Note that if you plan to export the issue to a GitHub/GitLab repository, the assignee may be rejected if
+it doesn't correspond to a valid username, or if you don't have the necessary permissions.
 .RE
 .PP
 \fBgit issue attach\fP
@@ -136,43 +136,58 @@ Remove the \fCopen\fP tag, add the closed tag
 \fBgit issue list\fP
 .RS 4
 List open issues (or all with \fC-a\fP).
-   An optional argument can show issues matching a tag or milestone.
+An optional argument can show issues matching a tag or milestone.
 .RE
 .PP
 \fBgit issue list -l formatstring\fP
 .RS 4
 This will list issues in the specified format, given as an argument to \fC-l\fP.
-   The following escape sequences can be used:
+The following escape sequences can be used:
 
-   - \fC%n\fP : newline
-   - \fC%i\fP : issue ID
-   - \fC%c\fP : creation date
-   - \fC%d\fP : due date
-   - \fC%e\fP : time estimate
-   - \fC%s\fP : time spent
-   - \fC%w\fP : weight
-   - \fC%M\fP : Milestone
-   - \fC%A\fP : Assignee(s)
-   - \fC%T\fP : Tags
-   - \fC%D\fP : Description(first line)
+.IP "" 8
+\fC%n\fP : newline
+.IP "" 8
+\fC%i\fP : issue ID
+.IP "" 8
+\fC%c\fP : creation date
+.IP "" 8
+\fC%d\fP : due date
+.IP "" 8
+\fC%e\fP : time estimate
+.IP "" 8
+\fC%s\fP : time spent
+.IP "" 8
+\fC%w\fP : weight
+.IP "" 8
+\fC%M\fP : Milestone
+.IP "" 8
+\fC%A\fP : Assignee(s)
+.IP "" 8
+\fC%T\fP : Tags
+.IP "" 8
+\fC%D\fP : Description(first line)
 
-   If the format string is one of: (\fConeline\fP, \fCshort\fP or `full`) it will interpreted as the corresponding preset.
+If the format string is one of: (\fConeline\fP, \fCshort\fP or `full`) it will interpreted as the corresponding preset.
 
-   Optionally, one of the above given with \fC-o\fP will order based on this field(reverse order with \fC-r\fP).
+Optionally, one of the above given with \fC-o\fP will order based on this field(reverse order with \fC-r\fP).
 
 .RE
 .PP
 \fBgit issue filter-apply command\fP
 .RS 4
 Run \fCcommand\fP in every issue directory. The following environment variables will be set:
-  - \fCGI_SHA\fP : Sha of the current issue
-  - \fCGI_IMPORTS\fP : The imports directories for current issue(one on each line)
-  - \fCGI_AUTHOR\fP : Author of current issue
-  - \fCGI_DATE\fP : Creation date of current issue
+.IP "" 8
+\fCGI_SHA\fP : Sha of the current issue
+.IP "" 8
+\fCGI_IMPORTS\fP : The imports directories for current issue(one on each line)
+.IP "" 8
+\fCGI_AUTHOR\fP : Author of current issue
+.IP "" 8
+\fCGI_DATE\fP : Creation date of current issue
 
-  The command can read, add/remove or edit any of the issue's attributes.
-  Some potentially useful scripts to be used with this command are in the scripts/ directory.
-  Remember to inspect the results (e.g. \fCgi git diff\fP) and commit them with \fCgi git commit -a\fP.
+The command can read, add/remove or edit any of the issue's attributes.
+Some potentially useful scripts to be used with this command are in the scripts/ directory.
+Remember to inspect the results (e.g. \fCgi git diff\fP) and commit them with \fCgi git commit -a\fP.
 
 .RE
 .PP
@@ -189,29 +204,29 @@ Update local Git repository with remote changes.
 \fBgit issue import\fP
 .RS 4
 Import/update GitHub/GitLab issues from the specified project.
-  If the import involves more than a dozen of issues or if the repository
-  is private, set the environment variable \fCGH_CURL_AUTH\fP (GitHub) or \fCGL_CURL_AUTH\fP (GitLab) to the authentication token.
-  For example, run the following command: \fCexport GH_CURL_AUTH="Authorization: token badf00ddead9bfee8f3c19afc3c97c6db55fcfde"\fP
-  You can create the authorization token through
-  GitHub settings <https://github.com/settings/tokens/new>, with the \fCrepo\fP and \fCdelete_repo\fP(only for running the tests) permissions.
-  For GitLab: \fCexport GL_CURL_AUTH="PRIVATE-TOKEN: JvHLsdnDmD7rjUXzT-Ea"\fP. The \fCapi\fP permission is required.
-  Use the GitLab settings <https://gitlab.com/profile/personal\fIaccess\fPtokens> to create the token.
-  In case the repository is part of a GitLab group, specify repository as groupname/reponame.
+If the import involves more than a dozen of issues or if the repository
+is private, set the environment variable \fCGH_CURL_AUTH\fP (GitHub) or \fCGL_CURL_AUTH\fP (GitLab) to the authentication token.
+For example, run the following command: \fCexport GH_CURL_AUTH="Authorization: token badf00ddead9bfee8f3c19afc3c97c6db55fcfde"\fP
+You can create the authorization token through
+GitHub settings <https://github.com/settings/tokens/new>, with the \fCrepo\fP and \fCdelete_repo\fP(only for running the tests) permissions.
+For GitLab: \fCexport GL_CURL_AUTH="PRIVATE-TOKEN: JvHLsdnDmD7rjUXzT-Ea"\fP. The \fCapi\fP permission is required.
+Use the GitLab settings <https://gitlab.com/profile/personal\fIaccess\fPtokens> to create the token.
+In case the repository is part of a GitLab group, specify repository as groupname/reponame.
 .RE
 .PP
 \fBgit issue create\fP
 .RS 4
 Create the issue in the provided GitHub repository.
-  With the \fC-e\fP option any escape sequences for the attributes present in the description, will be replaced as above.
-  This can be used to e.g. export an unsupported attribute to GitHub as text.
+With the \fC-e\fP option any escape sequences for the attributes present in the description, will be replaced as above.
+This can be used to e.g. export an unsupported attribute to GitHub as text.
 .RE
 .PP
 \fBgit issue export\fP
 .RS 4
 Export modified issues for the specified project.
-  Only the issues that have been imported and modified (or created by \fCgit issue create\fP) by \fCgit-issue\fP will be exported.
-  With the \fC-e\fP option any escape sequences for the attributes present in the description, will be replaced as above.
-  This can be used to e.g. export an unsupported attribute to GitHub as text.
+Only the issues that have been imported and modified (or created by \fCgit issue create\fP) by \fCgit-issue\fP will be exported.
+With the \fC-e\fP option any escape sequences for the attributes present in the description, will be replaced as above.
+This can be used to e.g. export an unsupported attribute to GitHub as text.
 .RE
 .PP
 \fBgit issue exportall\fP
@@ -262,21 +277,21 @@ A \fCconfig\fP file with configuration data.
 An \fCimports\fP directory contains details about imported issues.
 .IP "" 8
 The \fCsha\fP file under \fCimport/<provider>/<user>/<repo>/<number>\fP contains the
-    \fIgit-issue\fP SHA corresponding to an imported GitHub \fInumber\fP issue.
-    Likewise for GitLab.
+\fIgit-issue\fP SHA corresponding to an imported GitHub \fInumber\fP issue.
+Likewise for GitLab.
 .IP "" 8
 The \fCsha\fP file under \fCimport/<provider>/<user>/<repo>/<number>/comments/<number>\fP
-    contains the \fIgit-issue\fP comment SHA corresponding to an imported GitHub/GitLab
-    \fInumber\fP comment.
+contains the \fIgit-issue\fP comment SHA corresponding to an imported GitHub/GitLab
+\fInumber\fP comment.
 .IP "" 8
 The file \fCimport/<provider>/<user>/<repo>/checkpoint\fP contains the SHA
-    of the last imported or updated issue.  This can be used for merging
-    future updates.
+of the last imported or updated issue.  This can be used for merging
+future updates.
 .IP "" 4
 An \fCissues\fP directory contains the individual issues.
 .IP "" 4
 Each issue is stored in a directory named \fCissues/xx/xxxxxxx...\fP,
-    where the x's are the SHA of the issue's initial commit.
+where the x's are the SHA of the issue's initial commit.
 .IP "" 4
 Each issue can have the following elements in its directory.
 .IP "" 8
@@ -289,8 +304,8 @@ A \fCweight\fP file with the weight stored as a positive integer.
 A \fCtimespent\fP and \fCtimeestimate\fP file with the time estimate and time spent respectively, stored in seconds.
 .IP "" 8
 A \fCcomments\fP directory where comments are stored, each with the SHA of
-    a commit containing the text \fCgi comment mark\fP
-    \fIissue SHA\fP.
+a commit containing the text \fCgi comment mark\fP
+\fIissue SHA\fP.
 .IP "" 8
 An \fCattachments\fP directory where the issue's attachments are stored.
 .IP "" 8
