@@ -122,9 +122,9 @@ replace_section 'GIT ISSUE COMMANDS' 'Use' 's/^\* `\([^`]*\)`: /.RE\
 .PP\
 \\fB\1\\fP\
 .RS 4\
-/' 's/^ \+//'
+/' 's/^  *//'
 
-replace_section FILES 'Internals' '' 's/^ \+//'
+replace_section FILES 'Internals' '' 's/^  *//'
 # shellcheck disable=SC2016
 replace_section EXAMPLES 'Example session' '/```/d;/^###/N;s/^### \(.*\)/.fi\
 .ft R\
