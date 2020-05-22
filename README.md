@@ -109,30 +109,30 @@ You use _git issue_ with the following sub-commands.
 * `git issue list`: List open issues (or all with `-a`).
    An optional argument can show issues matching a tag or milestone.
 * `git issue list -l formatstring`: This will list issues in the specified format, given as an argument to `-l`.
-   The following escape sequences can be used:
+  The following escape sequences can be used:
 
-   - `%n` : newline
-   - `%i` : issue ID
-   - `%c` : creation date
-   - `%d` : due date
-   - `%e` : time estimate
-   - `%s` : time spent
-   - `%w` : weight
-   - `%M` : Milestone
-   - `%A` : Assignee(s)
-   - `%T` : Tags
-   - `%D` : Description(first line)
+  * `%n` : newline
+  * `%i` : issue ID
+  * `%c` : creation date
+  * `%d` : due date
+  * `%e` : time estimate
+  * `%s` : time spent
+  * `%w` : weight
+  * `%M` : Milestone
+  * `%A` : Assignee(s)
+  * `%T` : Tags
+  * `%D` : Description(first line)
 
-   If the format string is one of: (`oneline`, `short` or `full`) it will interpreted as the corresponding preset.
+  If the format string is one of: (`oneline`, `short` or `full`) it will interpreted as the corresponding preset.
 
-   Optionally, one of the above given with `-o` will order based on this field(reverse order with `-r`).
+  Optionally, one of the above given with `-o` will order based on this field(reverse order with `-r`).
 
 ### Work with multiple issues
 * `git issue filter-apply command`: Run `command` in every issue directory. The following environment variables will be set:
-  - `GI_SHA` : Sha of the current issue
-  - `GI_IMPORTS` : The imports directories for current issue(one on each line)
-  - `GI_AUTHOR` : Author of current issue
-  - `GI_DATE` : Creation date of current issue
+  * `GI_SHA` : Sha of the current issue
+  * `GI_IMPORTS` : The imports directories for current issue(one on each line)
+  * `GI_AUTHOR` : Author of current issue
+  * `GI_DATE` : Creation date of current issue
 
   The command can read, add/remove or edit any of the issue's attributes.
   Some potentially useful scripts to be used with this command are in the scripts/ directory.
