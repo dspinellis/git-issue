@@ -177,7 +177,7 @@ fi
 
 echo 'TAP version 13'
 ntest=0
-gi=$(pwd)/git-issue.sh
+gi="$(cd "$(dirname "$0")" && pwd)"/git-issue.sh
 gi_re=$(echo "$gi" | sed 's/[^0-9A-Za-z]/\\&/g')
 
 start sync-docs
