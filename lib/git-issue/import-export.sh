@@ -24,6 +24,11 @@ USAGE_export_EOF
   exit 2
 }
 
+convert_to_lower_case()
+{
+  echo "$1" | tr '[:upper:]' '[:lower:]'
+}
+
 # importsget: Return all mentions of SHA given in imports
 
 importsget()
@@ -202,8 +207,8 @@ create_issue()
   path=$(issue_path_part "$1") || exit
   isha=$(issue_sha "$path")
   provider="$2"
-  user="$3"
-  repo="$4"
+  user="$(convert_to_lower_case $3)"
+  repo="$(convert_to_lower_case $4)"
 
   if [ "$provider" = gitlab ] ; then
     # if the repo belongs to a group, repo will be in the format groupname/reponame
@@ -810,8 +815,8 @@ export_issues()
   test -n "$2" -a -n "$3" || usage_export
   test "$1" = github -o "$1" = gitlab || usage_export
   provider=$1
-  user="$2"
-  repo="$3"
+  user="$(convert_to_lower_case $2)"
+  repo="$(convert_to_lower_case $3)"
 
   cdissues
   test -d "imports/$provider/$user/$repo" || error "No local issues found for this repository."
@@ -886,8 +891,8 @@ sub_import()
   test "$1" = github -o "$1" = gitlab -a -n "$2" -a -n "$3" || usage_import
   provider="$1"
   # convert to lowercase to avoid duplicates
-  user="$(echo "$2" | tr '[:upper:]' '[:lower:]')"
-  repo="$(echo "$3" | tr '[:upper:]' '[:lower:]')"
+  user="$(convert_to_lower_case $2)"
+  repo="$(convert_to_lower_case $3)"
 
   cdissues
 
@@ -959,8 +964,8 @@ sub_exportall()
   test "$1" = github -o "$1" = gitlab || usage_exportall
   test -n "$2" -a -n "$3" || usage_exportall
   provider="$1"
-  user="$2"
-  repo="$3"
+  user="$(convert_to_lower_case $2)"
+  repo="$(convert_to_lower_case $3)"
 
   # Create list of relevant shas sorted by date
   shas=$(sub_list -l %i -o %c "$all"| sed '/^$/d' | tr '\n' ' ')
