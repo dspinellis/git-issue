@@ -10,7 +10,8 @@ install:
 	@mkdir -p $(DESTDIR)$(MANPREFIX)
 	@mkdir -p $(DESTDIR)$(BINPREFIX)
 	@mkdir -p $(DESTDIR)$(LIBPREFIX)/git-issue
-	install git-issue.sh $(DESTDIR)$(BINPREFIX)/git-issue
+	sed "s|/usr/local|$(PREFIX)|g" git-issue.sh > git-issue
+	install git-issue $(DESTDIR)$(BINPREFIX)/git-issue
 	install lib/git-issue/import-export.sh $(DESTDIR)$(LIBPREFIX)/git-issue/import-export.sh
 	install -m 644 git-issue.1 $(DESTDIR)$(MANPREFIX)/
 	@mkdir -p $(DESTDIR)$(SYSCONFDIR)/bash_completion.d
@@ -34,5 +35,6 @@ uninstall:
 	rm -f $(DESTDIR)$(SYSCONFDIR)/bash_completion.d/git-issue
 
 clean:
+	rm -f git-issue
 
 .PHONY: default clean install uninstall sync-docs test
