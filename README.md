@@ -529,6 +529,7 @@ e6a95c9 - New issue entered from the command line
   It requires Python and offers a GUI.
 * [Bugs Everywhere](http://www.bugseverywhere.org/), also written in Python, supports many version control backends and offers a web interface.
 * [bug](https://github.com/driusan/bug), inspired by Bugs Everywhere, written in Go, supports git and hg
+* [GitHub cli](https://cli.github.com/manual/gh_issue), offers a subcommand for managing GitHub's issues.
 * [git-bug](https://github.com/MichaelMure/git-bug), again written in Go, is a distributed bug tracker embedded in git.
 * [git-appraise](https://github.com/google/git-appraise) is a distributed
   code review system for Git repos based again on Git.
