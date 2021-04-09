@@ -524,16 +524,16 @@ e6a95c9 - New issue entered from the command line
 ```
 
 ## Related work
+* [bug](https://github.com/driusan/bug), inspired by Bugs Everywhere, written in Go, supports git and hg
+* [Bugs Everywhere](http://www.bugseverywhere.org/), also written in Python, supports many version control backends and offers a web interface.
 * [deft](https://github.com/npryce/deft) developed in 2011 is based on
   the same idea.
   It requires Python and offers a GUI.
-* [Bugs Everywhere](http://www.bugseverywhere.org/), also written in Python, supports many version control backends and offers a web interface.
-* [bug](https://github.com/driusan/bug), inspired by Bugs Everywhere, written in Go, supports git and hg
-* [GitHub cli](https://cli.github.com/manual/gh_issue), offers a subcommand for managing GitHub's issues.
-* [git-bug](https://github.com/MichaelMure/git-bug), again written in Go, is a distributed bug tracker embedded in git.
+* [Fossil](http://fossil-scm.org/) is a distributed version control software that also supports issue tracking and a wiki. It runs as a single executable.
 * [git-appraise](https://github.com/google/git-appraise) is a distributed
   code review system for Git repos based again on Git.
-* [Fossil](http://fossil-scm.org/) is a distributed version control software that also supports issue tracking and a wiki. It runs as a single executable.
+* [git-bug](https://github.com/MichaelMure/git-bug), again written in Go, is a distributed bug tracker embedded in git.
+* [GitHub cli](https://cli.github.com/manual/gh_issue), offers a subcommand for managing GitHub's issues.
 * [Perceval](https://github.com/chaoss/grimoirelab-perceval) can download issues from a variety of systems, including GitHub and GitLab.
 * [SD (Simple Defects)](https://syncwith.us/sd/), an (unmaintained) distributed bug tracking system based on a distributed database. It can import/export from/to foreign ticketing systems.
 
