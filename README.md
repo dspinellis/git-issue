@@ -61,7 +61,11 @@ You can even put `gi` in your project's current directory and run it from there.
 
 ### Portability and testing
 The `git-issue.sh` script has been tested on:
-Debian GNU/Linux, FreeBSD, macOS, and Cygwin.
+* Archlinux (20220101)
+* Debian GNU/Linux
+* FreeBSD
+* macOS
+* Cygwin.
 If you're running *git issue* on another system,
 run the `test.sh` script to verify
 its operation, and (please) update this file.
