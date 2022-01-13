@@ -56,6 +56,66 @@ else
   DATEBIN="date"
 fi
 
+
+##
+## PLUGIN AREA
+## (how to specify in different file when run from different location)
+##
+
+opt_archive=1
+opt_sign=1
+
+sig_by_state() {
+	if [ -z $opt_sign ]; then
+		return 0
+	fi
+
+	cdissues
+	path=$(issue_path_part $1 2> /dev/null)
+	if [ -z "$path" ]; then
+		return 1
+	fi
+
+	issue_hash=$1
+	state_hash=$2
+
+	# signature message is the signature of the TAR archive wrapping the three items, added in the sequence defined by archive_by_path
+	gpg_key=$(git config --get user.signingKey)
+	if [ -z "$gpg_key" ]; then
+		echo "no gpg key"
+		return 1
+	fi
+	echo -n $h | gpg -a -b -u $gpg_key > $path/$state_hash.asc
+}
+
+archive_by_path() {
+	if [ -z $opt_archive ]; then
+		return 0
+	fi
+
+	cdissues
+	path=$(issue_path_part $1 2> /dev/null)
+	if [ -z "$path" ]; then
+		return 1
+	fi
+
+	t=$(mktemp -d)
+	now=$(date +%s)
+	echo -n $now > $t/timestamp
+	cp -v $path/description $t/description
+	cp -v $path/tags $t/tags
+	pushd $t 
+	tar -zcvf a.tar.gz description tags timestamp
+	h=$(sha1sum a.tar.gz | awk '{ print $1; }')
+	popd
+	mv -v $t/a.tar.gz $path/${now}_${h}.tar.gz
+	sig_by_state $1 $h
+}
+
+##
+## END PLUGIN AREA
+## 
+
 # Exit after displaying the specified error
 error()
 {
@@ -963,6 +1023,9 @@ sub_edit()
 
     trans_start
     edit "$path/description" || trans_abort
+
+    archive_by_path $1
+
     git add "$path/description" || trans_abort
     commit 'gi: Edit issue description' "gi edit description $isha"
     echo "Edited issue $(short_sha "$isha")"
