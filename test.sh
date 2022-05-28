@@ -161,7 +161,7 @@ TopDir=$(mktemp -d)
 } 1>&2
 
 if command -v gdate ; then
-  DATEBIN="gdate"                
+  DATEBIN="gdate"
 else
   DATEBIN="date"
 fi
@@ -199,10 +199,16 @@ cd "$TopDir"
 
 mkdir testdir
 cd testdir
+git init > /dev/null 2>&1;
+git config --local user.name "Joe"
+git config --local user.email "joe@example.com"
+echo ".issues" > .gitignore
 
 try "$gi" init
 try "$gi" list
 
+start ; ( cd .issues; git config --local user.name ) | try_grep "Joe"
+start ; ( cd .issues; git config --local user.email ) | try_grep "joe@example.com"
 start ; "$gi" list "$issue" | try_ngrep .
 
 # New
@@ -517,11 +523,11 @@ else
     start ; "$gi" show -c "$rissue" | try_grep '^ *comment 1 line 2'
     start ; "$gi" show -c "$rissue" | try_grep '^ *comment 2'
     start ; "$gi" show -c "$rissue" | try_grep '^ *comment 4'
- 
+
     start ; "$gi" show "$rissue2" | try_grep '^Milestone: ver4'
     rissue3=$("$gi" list | awk '/An open issue on GitHub with assignees and tags/ {print $1}')
     start ; "$gi" show "$rissue3" | try_grep 'good first issue'
-    
+
     cd ../testdir
 
     # delete repo
