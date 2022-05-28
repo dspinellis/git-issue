@@ -1145,14 +1145,22 @@ sub_list()
   esac
   shift $((OPTIND - 1));
   tag="$1"
-  : "${tag:=open}"
+  if [ "$tag" = "closed" ] ; then
+    # when explicitly searching for closed tickets, don't show only open ones
+    all=1
+  fi
   cdissues
   test -d issues || exit 0
   find issues -type f -name tags -o -name milestone |
+  if [ "$tag" ] ; then
+    xargs grep -Flx "$tag"
+  else
+    cat
+  fi |
   if [ "$all" ] ; then
     cat
   else
-    xargs grep -Flx "$tag"
+    sed 's/\/milestone$/\/tags/' | xargs grep -Flx open
   fi |
   # Convert list of tag or milestone file paths into the corresponding
   # directory and issue id
