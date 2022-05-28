@@ -222,7 +222,7 @@ USAGE_new_EOF
 
 sub_init()
 {
-  local existing
+  local existing username useremail
 
   while getopts e flag ; do
     case $flag in
@@ -238,6 +238,8 @@ sub_init()
 
   test -d .issues && error 'An .issues directory is already present'
   mkdir .issues || error 'Unable to create .issues directory'
+  username=`git config --local user.name`
+  useremail=`git config --local user.email`
   cdissues
   if ! [ "$existing" ] ; then
     git init -q || error 'Unable to initialize Git directory'
@@ -273,6 +275,12 @@ This is an distributed issue tracking repository based on Git.
 Visit [git-issue](https://github.com/dspinellis/git-issue) for more information.
 EOF
   git add config README.md templates/comment templates/description
+  if [ -n "$username" ] ; then
+    git config --local user.name "$username"
+  fi
+  if [ -n "$useremail" ] ; then
+    git config --local user.email "$useremail"
+  fi
   commit 'gi: Initialize issues repository' 'gi init'
   echo "Initialized empty issues repository in $(pwd)"
 }
@@ -951,7 +959,7 @@ sub_edit()
       ;;
     esac
   done
- 
+
   shift $((OPTIND - 1));
   test -n "$1" || usage_edit
 
