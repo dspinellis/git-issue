@@ -1160,7 +1160,7 @@ sub_list()
   if [ "$all" ] ; then
     cat
   else
-    sed 's/\/milestone$/\/tags/' - | xargs grep -Flx open
+    sed 's/\/milestone$/\/tags/' | xargs grep -Flx open
   fi |
   # Convert list of tag or milestone file paths into the corresponding
   # directory and issue id
