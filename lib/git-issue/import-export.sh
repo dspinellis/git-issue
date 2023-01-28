@@ -350,7 +350,7 @@ create_issue()
     # get milestone list
     rest_api_get "$mileurl" milestone "$provider"
 
-    for i in $(seq 0 $(($(jq '. | length' milestone-body) - 1)) ) ; do
+    for i in $( jq 'range( .|length )' milestone-body ) ; do
       milenum=$(jq -r ".[$i].$jmileid" milestone-body)
       miletitle=$(jq -r ".[$i].title" milestone-body)
       if [ "$miletitle" = "$milestone" ] ; then
@@ -573,7 +573,7 @@ import_comments()
     rest_api_get "$endpoint" comments "$provider"
 
     # For each comment in the comments-body file
-    for i in $(seq 0 $(($(jq '. | length' comments-body) - 1)) ) ; do
+    for i in $( jq 'range( .|length )' comments-body ) ; do
       # Dont import automated system comments
       test ! "$(jq -r ".[$i].system" comments-body)" = true || continue
       comment_id=$(jq -r ".[$i].id" comments-body)
@@ -663,7 +663,7 @@ import_issues()
   fi
 
   # For each issue in the issue-body file
-  for i in $(seq 0 $(($(jq '. | length' issue-body) - 1)) ) ; do
+  for i in $( jq 'range( .|length )' issue-body ) ; do
     issue_number=$(jq -r ".[$i].$jid" issue-body)
 
     # See if issue already there
