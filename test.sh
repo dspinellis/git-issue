@@ -43,15 +43,24 @@ message()
   sed "s/$gi_re/gi/"
 }
 
+RED=''
+GREEN=''
+NC=''
+if [ -t 1 ] && command -v tput > /dev/null 2>&1 && [ "$(tput colors)" -gt 2 ] ; then
+  RED=$(tput setaf 1)
+  GREEN=$(tput setaf 2)
+  NC=$(tput sgr0)
+fi
+
 ok()
 {
-  message ok "$*"
+  message ${GREEN}ok${NC} "$*"
 }
 
 fail()
 {
   printf "%d " "$ntest" >>"$TopDir/failure"
-  message fail "$*"
+  message ${RED}fail${NC} "$*"
 }
 
 # Test specified command, which should succeed
