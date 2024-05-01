@@ -1,0 +1,21 @@
+# This CITATION.cff file was generated with cffinit.
+# Visit https://bit.ly/cffinit to generate yours today!
+
+cff-version: 1.2.0
+title: git-issue
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+  - given-names: Diomidis
+    family-names: Spinellis
+    email: dds@aueb.gr
+    affiliation: Athens University of Economics and Business
+    orcid: 'https://orcid.org/0000-0003-4231-1897'
+repository-code: 'https://github.com/dspinellis/git-issue'
+keywords:
+  - Git
+  - issue tracking
+  - CLI
+license: GPL-3.0
