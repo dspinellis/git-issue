@@ -56,6 +56,22 @@ else
   DATEBIN="date"
 fi
 
+# Function to determine the available pager
+get_pager() {
+    if [ -n "$PAGER" ]; then
+        echo "$PAGER"
+    elif command -v more >/dev/null 2>&1; then
+        echo "more"
+    elif command -v less >/dev/null 2>&1; then
+        echo "less"
+    else
+        echo "cat"
+    fi
+}
+
+# Get the pager
+PAGER=$(get_pager)
+
 # Exit after displaying the specified error
 error()
 {
