@@ -19,6 +19,7 @@ sed -n '
     :body
     s/^\t@/\t/
     y/()/{}/
+    s/\tinstall/\tcommand install/
     s/^\t/  /p
     # Close function and terminate block processing on empty line
     # (Reset "t" status)
