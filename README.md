@@ -81,7 +81,8 @@ You use _git issue_ with the following sub-commands.
 ### Start an issue repository
 * `git issue clone`: Clone the specified remote repository.
 * `git issue init`: Create a new issues repository in the current directory.
-  The `-e` option uses an existing Git project repository.
+  The `-e` option uses an existing Git project repository and store issues as a private issues branch.
+  The `-r` option stores the issues in a new issues repository.
 
 ### Work with an issue
 * `git issue new`: Create a new open issue (with optional `-s` summary and -c "provider user repo" for github/gitlab export).
