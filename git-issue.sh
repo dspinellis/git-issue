@@ -27,7 +27,7 @@
 # User agent string
 # shellcheck disable=SC2034
 # SC2034 : USER_AGENT appears unused. Verify use (or export if used externally)
-USER_AGENT=https://github.com/dspinellis/git-issue/tree/afda065
+USER_AGENT=https://github.com/dspinellis/git-issue/tree/4d2bc41
 
 # Determine our script library path
 my_IFS=$IFS
@@ -214,20 +214,24 @@ pager()
 usage_init()
 {
   cat <<\USAGE_new_EOF
-gi init usage: git issue init [-e]
--e	Use existing project's Git repository
+gi init usage: git issue init [-e] [-r]
+-e    Use existing project's Git repository
+-r    Store issues in a new issues repository
 USAGE_new_EOF
   exit 2
 }
 
 sub_init()
 {
-  local existing username useremail
+  local existing username useremail issuesrepository currentbranch
 
-  while getopts e flag ; do
+  while getopts er flag ; do
     case $flag in
     e)
       existing=1
+      ;;
+    r)
+      issuesrepository=1
       ;;
     ?)
       usage_init
@@ -243,6 +247,19 @@ sub_init()
   cdissues
   if ! [ "$existing" ] ; then
     git init -q || error 'Unable to initialize Git directory'
+  else
+    currentbranch=$(git symbolic-ref --short HEAD) || error 'you are not in a existing git repository'
+  fi
+  if ! [ "$issuesrepository" ] && [ "$existing" ] ; then
+    cd ..
+    cat >.git-issues-init.txt <<\EOF
+Initialized by git-issue
+EOF
+    git add .git-issues-init.txt
+    git commit -q -m "init git-issue"
+    git checkout -q --orphan issues
+    git rm -rfq .
+    cdissues
   fi
 
   # Editing templates
@@ -281,8 +298,18 @@ EOF
   if [ -n "$useremail" ] ; then
     git config --local user.email "$useremail"
   fi
-  commit 'gi: Initialize issues repository' 'gi init'
-  echo "Initialized empty issues repository in $(pwd)"
+  if ! [ "$issuesrepository" ] && [ "$existing" ] ; then
+    cd ..
+    git mv .issues/* .
+    cdissues
+    commit 'gi: Created private issues branch' 'gi init'
+    git switch -q $currentbranch
+    git worktree add -q ../.issues issues
+    echo "Created private issues branch in $(pwd)"
+  else
+    commit 'gi: Initialize issues repository' 'gi init'
+    echo "Initialized empty issues repository in $(pwd)"
+  fi
 }
 
 # new: Open a new issue {{{1
