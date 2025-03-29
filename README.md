@@ -48,6 +48,14 @@ by adding the following to your .bashrc.
 source ${REPO_PATH}/gi-completion.sh
 ```
 
+If you are using Git for Windows, the "make" command may not be present.  You can perform installation and other operations supported by the Makefile using the
+gfw_inst.sh script.  For example, to
+install in a personal directory/folder, you can run:
+```
+PREFIX=/path/to/personal/install/ ./gfw-inst.sh install
+```
+The destination should be in your PATH environment variable for commands to work.
+
 ### Backward compatibility with the gi command
 For backward compatibility you can also use the original _gi_ command,
 by copying `gi.sh` to someplace in your path.
