@@ -261,8 +261,10 @@ that element and can be used to derive its date and author.
 .SH ENVIRONMENT
 The \fCVISUAL\fP environment variable is used for determining the user's
 editor.
-The \fCPAGER\fP environment variable is used for determining the program
-to use to display long lists of results.
+The \fCGIT_PAGER\fP environment variable (set by git when using --no-pager)
+takes precedence over \fCPAGER\fP for determining the program to use to
+display long lists of results.
+If \fCGIT_PAGER\fP is not set, the \fCPAGER\fP environment variable is used.
 
 .SH FILES
 .\" Auto-generated content from README.md; do not edit this section

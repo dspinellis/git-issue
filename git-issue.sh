@@ -207,7 +207,7 @@ edit()
 # Pipe input through the user's pager
 pager()
 {
-  ${PAGER:-more}
+  ${GIT_PAGER:-${PAGER:-more}}
 }
 
 # init: Initialize a new issue repository {{{1
